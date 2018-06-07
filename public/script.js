@@ -71,8 +71,8 @@
 
 
 		      $('button').on('click',function(d) {
-		      		$('button').attr('class',null)
-		      		$(this).attr('class','selectedButton')
+		      		//$('button').attr('class',null)
+		      		//$(this).attr('class','selectedButton')
 		      });
 
 		      GRAPH();
