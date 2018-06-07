@@ -11,9 +11,9 @@
  			  	//var selectedID = selected.attr('id');
  			  	//var selectedFill = selected.style('fill');
 
- 			  	d3.selectAll('path').remove();
- 			  	var projection = d3.geo.mercator();
- 			  	Mapa(projection)
+ 			  	//d3.selectAll('path').remove();
+ 			  	//var projection = d3.geo.mercator();
+ 			  	//Mapa(projection)
  			  	//d3.select('#'+selectedID).style('fill',selectedFill);
  /*----------------------------------Redimensionar los resultados desplegables si es que existen-------------------------------------*/
  				if($('div.resultadosDesplegables')[0]) {
@@ -74,6 +74,8 @@
 		      		$('button').attr('class',null)
 		      		$(this).attr('class','selectedButton')
 		      });
+
+		      GRAPH();
 
     });
 

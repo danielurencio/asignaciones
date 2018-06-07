@@ -6,7 +6,7 @@ const divStyle = {
   height:'100%'
 }
 
-const heightHeaderInPixels = 70;
+const heightHeaderInPixels = 60;
 //const heightTailInPixels = 300;
 
 const headerHeight = {
@@ -14,12 +14,12 @@ const headerHeight = {
 }
 
 const tailHeight = {
-  height:'60%'//heightTailInPixels +'px'
+  height:'70%'//heightTailInPixels +'px'
 }
 
 const centerStyle = {
   width:'100%',
-  height: '40%',//'calc(100% - '+ (heightHeaderInPixels + heightTailInPixels) +'px)',
+  height: '30%',//'calc(100% - '+ (heightHeaderInPixels + heightTailInPixels) +'px)',
   backgroundColor:'transparent',
   display:'table',
   borderTop:'1px solid lightGray',
@@ -113,7 +113,7 @@ class Center extends Component {
 class CenterLeft extends Component {
   render() {
     return (
-      <div className='centerLeft' style={{display:'table-cell', width:'50%', height:'100%', backgroundColor:'transparent'}}>
+      <div className='centerLeft' style={{display:'table-cell', width:'40%', height:'100%', backgroundColor:'transparent'}}>
         <svg className='map' preserveAspectRatio='xMidYMid meet' style={{width:'100%',height:'100%',backgroundColor:'white' }}>
           <g style={{width:'100%',height:'100%'}}></g>
         </svg>
@@ -125,11 +125,11 @@ class CenterLeft extends Component {
 class CenterRight extends Component {
   render() {
     return (
-      <div className='centerRight' style={{position:'relative',display:'table-cell', width:'50%', height:'100%', backgroundColor:'transparent' }}>
+      <div className='centerRight' style={{position:'relative',display:'table-cell', width:'60%', height:'100%', backgroundColor:'transparent' }}>
         <div style={{ display:'table',position:'absolute',width:'100%',height:'50%'}}>
           <div style={{display:'table-cell',width:'100%',verticalAlign:'middle'}}>
 
-            <table style={{width:'100%', marginLeft:'5%',paddingRight:'10%',minHeight:'50%'}}>
+            <table style={{width:'100%', marginLeft:'0%',paddingRight:'0%',minHeight:'50%'}}>
               <thead style={{minHeight:'10px',backgroundColor:'lightGray',width:'100%'}}>
                 <tr style={{fontSize:'5px'}}>
                   <td>&nbsp;</td>
@@ -159,7 +159,9 @@ class CenterRight extends Component {
                 </tr>
               </tbody>
             </table>
-
+            <div id='titulo' style={{textAlign:'center',color:'rgb(13,180,190)',padding:'12px',fontWeight:'800','cursor':'pointer'}}>
+                Título de la asignación
+            </div>
           </div>
         </div>
       </div>
@@ -169,44 +171,61 @@ class CenterRight extends Component {
 
 class Tail extends Component {
   render() {
-
-    const elements = ['Producción','Reservas','Actividad','Inversión'];
-
-    const divButtonStyle = {
-      display:'table-cell',
-      height:'100%',
-      width:String(100 / elements.length) + '%',
-      textAlign:'center',
-      verticalAlign:'middle'
-    };
-
-    const onlyButtonStyle = {
-      width:'calc(100% - 10px)',
-      height:'calc(100% - 10px)',
-      border:'none',
-      verticalAlign:'middle'
-    };
-
     return (
       <div className='tail' style={tailHeight}>
-        <div style={{ width:'100%', height:'50px' }}>
-        
-          <div style={{ width:'100%', height:'calc(100% - 0px)', backgroundColor:'transparent', display:'table' }}>
+        <Pestanas cuatro={true} elements={['Producción','Reservas','Pozos','Inversión']}/>
+        <Pestanas cuatro={false} elements={['Compromiso Mínimo de Trabajo','Aprovechamiento de gas','Dictámenes']}/>
+        <div style={{ width:'100%',height:'calc(100% - 57px)',marginTop:'13px' }} id='visor'></div>
+      </div>
+    )
+  }
+}
+
+
+class Pestanas extends Component {
+
+  render() {
+
+  const elements = this.props.elements;//['Producción','Reservas','Pozos','Inversión'];
+
+  const divButtonStyle = {
+      display:'table-cell',
+      height:'100%',
+      maxWidth: String( 100 / 4 ) + '%',
+      minWidth:'25%',
+      width:'25%',
+      textAlign:'center',
+      verticalAlign:'middle'
+  };
+
+  const onlyButtonStyle = {
+      width:'calc(100% - 5px)',
+      height:'calc(100% - 0px)',
+      border:'none',
+      verticalAlign:'middle'
+  };
+
+    return(
+        <div style={{ width:'100%', height:'20px',marginTop:'7px',textAlign:'center' }}>
+          <div style={{ width:this.props.cuatro ? '100%' : '75%', height:'100%', display:'table', 'marginLeft':this.props.cuatro ? null : '12.5%' }}>
             {
               elements.map(function(d,i) {
                 return (
                 <div key={ i + '_' + d } style={ divButtonStyle }>
-                  <button className={ i === 0 ? 'selectedButton' : null } style={ onlyButtonStyle }>{d}</button>
+                  <button className={ d === 'Producción' ? 'selectedButton' : null } style={ onlyButtonStyle }>{d}</button>
                 </div>
                 )
               })
             }
           </div>
         </div>
-      </div>
     )
   }
 }
 
+
+class Visor extends Component {
+
+}
 
 export default App;

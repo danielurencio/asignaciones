@@ -45,7 +45,7 @@ div.centerRight table td {
 button {
 	font-family:'Open Sans';
 	font-weight:400;
-	font-size:16px;
+	font-size:0.7em;
 	color:white;
 	background-color:gray;
 	border-radius:2px;
@@ -64,4 +64,14 @@ option,input {
 
 table tr:nth-child(odd) {
 	background-color:rgba(150,150,150,0.1);
+}
+
+div#titulo {
+	background-color:rgba(13,180,190,0.1);
+	border-top:1px solid lightGray;
+}
+
+div#titulo:hover {
+	background-color:rgba(13,180,190,0.2);
+	text-decoration: underline;
 }
