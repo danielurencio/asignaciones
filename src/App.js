@@ -175,7 +175,7 @@ class Tail extends Component {
       <div className='tail' style={tailHeight}>
         <Pestanas cuatro={true} elements={['Producción','Reservas','Pozos','Inversión']}/>
         <Pestanas cuatro={false} elements={['Compromiso Mínimo de Trabajo','Aprovechamiento de gas','Dictámenes']}/>
-        <div style={{ width:'100%',height:'calc(100% - 57px)',marginTop:'13px' }} id='visor'></div>
+        <div style={{ width:'90%',height:'calc(100% - 57px)',marginTop:'13px',marginLeft:'3%' }} id='visor'></div>
       </div>
     )
   }
