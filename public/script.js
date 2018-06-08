@@ -13,7 +13,7 @@
 
  			  	//d3.selectAll('path').remove();
  			  	//var projection = d3.geo.mercator();
- 			  	//Mapa(projection)
+ 			  	Mapa(projection)
  			  	//d3.select('#'+selectedID).style('fill',selectedFill);
  /*----------------------------------Redimensionar los resultados desplegables si es que existen-------------------------------------*/
  				if($('div.resultadosDesplegables')[0]) {
@@ -35,7 +35,6 @@
 		      });
 
 		      cuencas = _.uniq(cuencas);
-
 
 
 		      $('select').filter(function(i,d){
@@ -70,12 +69,11 @@
 		      });
 
 
-		      $('button').on('click',function(d) {
-		      		//$('button').attr('class',null)
-		      		//$(this).attr('class','selectedButton')
-		      });
+		      speechBubbles();
 
-		      GRAPH();
+		      //GRAPH();
+		      //HighStock();
+
 
     });
 
@@ -152,7 +150,7 @@ function datosAsignacion(data,nombre,projection) {
       			  			.transition()
       			  			.duration(1000)
       			  			.attr('transform','translate('+ translate +')scale('+ scale +')')
-      			  			.attr('stroke-width',0.05);
+      			  			.attr('stroke-width',0.02);
 
       			});
    
@@ -268,7 +266,110 @@ function datosAsignacion(data,nombre,projection) {
 
 
 
+
+
+
  function resultadosDesplegablesProperties() {
  	var properties = $('input.buscador')[0].getBoundingClientRect();
  	return properties;
+ };
+
+
+
+
+
+
+ function speechBubbles() {
+ 	$('div.button:not(.selectedButton)').on('mouseover',function() {
+
+ 		var text = $(this).attr('id');
+ 		var pos = +$(this).attr('pos');
+ 		var width = +$(this).css('width').split('px')[0];
+ 		var left = width*pos;
+
+ 		var p = '<div id="bubble" style="left:'+ left +'px">'+ text +'</div>'
+ 		$('div#bubbles').append(p)
+
+ 		var offset = Math.abs($('#bubble')[0].getBoundingClientRect().width - width) / 2;
+ 		var currentLeft = +$('#bubble').css('left').split('px')[0];
+ 		var newLeft = currentLeft - offset;
+
+ 		$('#bubble').css('left',newLeft + 'px');
+
+ 	});
+
+ 	$('div.button').on('mouseout',function() {
+ 		$('#bubbles>div#bubble').remove()
+ 	});
+
+
+	$('div.button').on('click',function(d) {
+		clicker(this);
+		d3.selectAll('div#botones_>div:not(.espacioBlanco)').attr('class','button');
+
+		$(this).attr('class','selectedButton')
+	});
+
+	$('#Producción').click();
+
+
+ };
+
+
+
+
+
+ function clicker(element) {
+
+ 	var id = $(element).attr('id');
+ 	var clase = $(element).attr('class');
+ 	console.log(clase)
+
+ 	if(clase != 'selectedButton') {
+	 	$('#visor').html('');
+
+	 	switch (true) {
+	 		case id === 'Producción':
+	 			grapher(LineChart);
+	 			break;
+
+	 		case id === 'Reservas':
+	 			grapher(BarChart)
+	 			break;
+
+	 		case id === 'Pozos':
+	 			console.log(id)
+	 			break;
+
+	 		case id === 'Inversión':
+	 			console.log(id)
+	 			break;
+
+	 		case id === 'Compromiso Mínimo de Trabajo':
+	 			console.log(id)
+	 			break;
+
+	 		case id === 'Aprovechamiento de gas':
+	 			console.log(id)
+	 			break;
+
+	 		case id === 'Dictámenes':
+	 			console.log(id)
+	 			break;
+
+	 		case id === 'Autorizaciones':
+	 			console.log(id)
+	 			break;
+
+	 	}
+	 }
+ }
+
+
+
+ function grapher(fn) {
+ 	fn();
+ 	window.setTimeout(function() {
+ 			$('.highcharts-background').attr('fill','transparent');
+ 	},300);
  }

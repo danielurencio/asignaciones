@@ -6,6 +6,7 @@ html,body,div#root {
   margin: 0;
   padding: 0;
   font-family: 'Open Sans';
+  overflow:hidden;
 }
 
 div.header {
@@ -20,50 +21,49 @@ div.header_child {
 	height:100%;
 }
 
-div.tail {
-  background-color:transparent;
-}
-
-div.centerRight table {
+div.ficha table {
 	border-spacing:0px;
-	font-size:16px;
+	font-size:14px;
 }
 
-div.centerRight table td:nth-child(1) {
+div.ficha table td:nth-child(1) {
 	font-weight:600;
 }
 
-div.centerRight table td:nth-child(2) {
+div.ficha table td:nth-child(2) {
 	font-weight:300;
 }
 
-div.centerRight table td {
+div.ficha table td {
 	text-align:center;
 	padding:none;
 }
 
-button {
-	font-family:'Open Sans';
-	font-weight:400;
-	font-size:0.7em;
-	color:white;
-	background-color:gray;
-	border-radius:2px;
+div.button {
+	background-color:WhiteSmoke;
+	border-bottom:1px solid lightGray;
+	position:relative;
 }
 
-button.selectedButton {
-	background-color:rgb(13,180,190);
+div.button:hover {
+	cursor:pointer;
+}
+
+div.selectedButton {
+	background-color:white;
+	border-bottom:none;
 	font-weight:800;
+	position:relative;
+}
+
+div.espacioBlanco {
+	border-bottom:1px solid lightGray;
 }
 
 option,input {
 	font-family:'Open Sans';
 	font-weight:300;
 	text-align:center;
-}
-
-table tr:nth-child(odd) {
-	background-color:rgba(150,150,150,0.1);
 }
 
 div#titulo {
@@ -74,4 +74,34 @@ div#titulo {
 div#titulo:hover {
 	background-color:rgba(13,180,190,0.2);
 	text-decoration: underline;
+}
+
+div#bubble {
+	max-width:150px;
+	min-width:100px;
+	padding:5px;
+	height:25px;
+	position: relative;
+	background-color:black;
+	color:white;
+	border-radius: .4em;
+	text-align:center;
+	font-size:12px;
+	vertical-align:middle;
+	display:table-cell;
+	font-weight:600;
+}
+
+div#bubble:after {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 50%;
+	width: 0;
+	height: 0;
+	border: 8px solid transparent;
+	border-bottom-color: black;
+	border-top: 0;
+	margin-left: -8px;
+	margin-top: -8px;
 }
