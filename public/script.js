@@ -69,6 +69,8 @@
 		      });
 
 
+
+
 		      speechBubbles();
 
 		      //GRAPH();
@@ -99,6 +101,14 @@ function datosAsignacion(data,nombre,projection) {
       	for(var i in filas) {
       		$('.' + filas[i]).text(sel_asignacion_obj[filas[i]])
       	}
+
+/*------------------------AGRAGAR URL DE DESCARGA DE TITULO--------------------------------------------*/
+      	var URL = 'http://asignaciones.energia.gob.mx/asignaciones/_doc/publico/Asignaciones/';
+      	var tituloLink = URL + sel_asignacion_obj.NOMBRE.split(' - ')[0] + '.pdf';
+
+      	var fnString = 'openInNewTab("' + tituloLink + '");';
+      	$('#titulo').attr('onclick',fnString)
+/*------------------------AGRAGAR URL DE DESCARGA DE TITULO--------------------------------------------*/
 
 
       	var zoomAttemp = window.setInterval(function() {
@@ -373,3 +383,8 @@ function datosAsignacion(data,nombre,projection) {
  			$('.highcharts-background').attr('fill','transparent');
  	},300);
  }
+
+ function openInNewTab(url) {
+  var win = window.open(url, '_blank');
+  win.focus();
+}

@@ -19,6 +19,29 @@ function Mapa(projection) {
 
 	      projection.scale(s).translate(t);
 
+/*
+	      var zoom = d3.behavior.zoom()
+	      				.translate(t)
+	      				.scale(s)
+	      				.scaleExtent([s,s*2])
+	      				.on('zoom',zoomed)
+
+
+	      function zoomed() {
+ 				projection
+			      .translate(zoom.translate())
+      			  .scale(zoom.scale());
+
+  				d3.select('svg.map>g').selectAll("path")
+      				.attr("d", path);
+		  }
+
+
+		  d3.select('svg.map').call(zoom)
+		  					  .call(zoom.event);
+
+*/
+
 	      d3.select('svg.map>g').selectAll('path')
 	      	.data(topojson.feature(data,data.objects.shape).features)
 	      	.enter().append('path')
