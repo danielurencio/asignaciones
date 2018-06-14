@@ -225,10 +225,12 @@ class TextBox extends Component {
 class Mapa extends Component {
   render() {
     return (
-      <div  style={{position:'relative',width:'100%', height:'calc(100% - 4px)', backgroundColor:'transparent'}}>
+      <div id='MAPA' style={{position:'relative',width:'100%', height:'calc(100% - 4px)', backgroundColor:'transparent'}}>
+      {/*}
         <svg className='map' preserveAspectRatio='xMidYMid meet' style={{width:'100%',height:'100%',backgroundColor:'white' }}>
           <g style={{width:'100%',height:'100%'}}></g>
         </svg>
+      */}
       </div>
     )
   }

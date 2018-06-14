@@ -105,3 +105,19 @@ div#bubble:after {
 	margin-left: -8px;
 	margin-top: -8px;
 }
+
+.polygonTooltip {
+	background-color:black;
+	border-color:black;
+	color:white;
+	font-family:'Open Sans';
+	font-weight:600;
+}
+
+.leaflet-tooltip-left.polygonTooltip::before {
+	border-left-color:black;
+}
+
+.leaflet-tooltip-right.polygonTooltip::before {
+	border-right-color:black;
+}

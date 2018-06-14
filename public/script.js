@@ -1,20 +1,17 @@
  $(document).ready(function() {
  	//Mapa();
 
-    $.getJSON('file.json',function(data) {
-    		  var asigCache;
+    d3.json('file.json',function(err,data_) {
+    	d3.json('shapes.json',function(err,shapes) {
+
+    		  var markersANDmap = leafletMap(shapes);
+    		  var asignaciones = markersANDmap[0];
+    		  var mymap = markersANDmap[1];
+
 		      var projection = d3.geo.mercator();
-		      Mapa(projection);
+		      //Mapa(projection);
 
  			  window.onresize = function() {
- 			  	//var selected = d3.select('.selected');
- 			  	//var selectedID = selected.attr('id');
- 			  	//var selectedFill = selected.style('fill');
-
- 			  	//d3.selectAll('path').remove();
- 			  	//var projection = d3.geo.mercator();
- 			  	Mapa(projection)
- 			  	//d3.select('#'+selectedID).style('fill',selectedFill);
  /*----------------------------------Redimensionar los resultados desplegables si es que existen-------------------------------------*/
  				if($('div.resultadosDesplegables')[0]) {
  					$('div.resultadosDesplegables').css('left',resultadosDesplegablesProperties().x)
@@ -23,7 +20,7 @@
 /*----------------------------------Redimensionar los resultados desplegables si es que existen-------------------------------------*/
  			  }
 
-		      var data = JSON.stringify(data.filter(function(d) { return d.VIGENTE == 'Vigente'; }))
+		      var data = JSON.stringify(data_.filter(function(d) { return d.VIGENTE == 'Vigente'; }))
 		      				  .replace(/M\¿xico/g,'México')
 		      				  .replace(/Cintur\¿n/g,'Cinturón')
 		      				  .replace(/Yucat\¿n/g,'Yucatán');
@@ -52,31 +49,46 @@
 		      });
 
 
+
+			  asignaciones.on('click',function(event) {
+				var id_asignacion = event.layer.feature.properties.ID;
+				//console.log(data,id_asignacion)
+				var sel_asignacion = data.filter(function(d) { return d.ID == id_asignacion; })[0];
+				
+				$('.cuenca').val(sel_asignacion.PROVINCIA)
+					.trigger('change');
+
+				$('.asignacion').val(sel_asignacion.NOMBRE)
+						.trigger('change');
+
+				//mymap.fitBounds(event.layer.getBounds())
+				//mymap.setView(event.layer.getBounds())
+				//console.log(event.layer.feature.properties)
+			  });
+
+
+
 		      cambioAsignacion(data);
-		      datosAsignacion(data,null,projection);
+		      datosAsignacion(data,null,projection,mymap,asignaciones);
 
 		      $('.cuenca').on('change',function() {
 		      		cambioAsignacion(data);
-		      		datosAsignacion(data,null,projection);
+		      		datosAsignacion(data,null,projection,mymap,asignaciones);
 		      });
 
 		      $('.asignacion').on('change',function() {
-		      		datosAsignacion(data,null,projection);
+		      		datosAsignacion(data,null,projection,mymap,asignaciones);
 		      })
 
 		      $('input.buscador').on('input',function(d) {
-		      		inputEnBuscador(d,data)
+		      		inputEnBuscador(d,data);
 		      });
 
-
-
-
 		      speechBubbles();
-
 		      //GRAPH();
 		      //HighStock();
 
-
+		});
     });
 
  });
@@ -84,14 +96,14 @@
 
 
 
-function datosAsignacion(data,nombre,projection) {
+function datosAsignacion(data,nombre,projection,mymap,asignaciones) {
 
 		var sel_asignacion_obj;
 
 		if(!nombre) { 														// <-- ¿Esto qué?
 			sel_asignacion = $('.asignacion>option:selected').text();
 		} else {
-			sel_asignacion_obj = nombre;
+			sel_asignacion = nombre;
 		}
 
       	var sel_asignacion_obj = data.filter(function(d) { return d.NOMBRE == sel_asignacion; })[0];
@@ -101,6 +113,29 @@ function datosAsignacion(data,nombre,projection) {
       	for(var i in filas) {
       		$('.' + filas[i]).text(sel_asignacion_obj[filas[i]])
       	}
+
+
+      	for(var k in asignaciones._layers) {
+      		if(asignaciones._layers[k].feature.properties.ID == sel_asignacion.split(' - ')[0]) {
+      			d3.selectAll('path').transition().duration(800).style('opacity',0)
+      			mymap.flyTo(asignaciones._layers[k].getCenter(),9)
+      		}
+      	}
+
+      	mymap.on('moveend',function(){
+      		d3.selectAll('path:not(.'+ sel_asignacion.split(' - ')[0] +')')
+      		  .transition()
+      		  .duration(500)
+      		  .style('opacity',1)
+      		  .style('stroke-width',0.5)
+
+      		d3.select('path.' + sel_asignacion.split(' - ')[0])
+      		  .transition()
+      		  .duration(300)
+      		  .delay(500)
+      		  .style('opacity',1)
+      		  .style('stroke-width',5)
+      	});
 
 /*------------------------AGRAGAR URL DE DESCARGA DE TITULO--------------------------------------------*/
       	var URL = 'http://asignaciones.energia.gob.mx/asignaciones/_doc/publico/Asignaciones/';
@@ -122,8 +157,8 @@ function datosAsignacion(data,nombre,projection) {
   			  var height = $('svg.map').css('height').split('px')[0];
 
 
-      		  d3.selectAll('path.asig')
-	      		.style('fill',"rgb(1,114,158)");
+      		  //d3.selectAll('path.asig')
+	      		//.style('fill',"rgb(1,114,158)");
 
 	      	  d3.selectAll('.selected')
 	      	  		.attr('class',null)
@@ -148,7 +183,7 @@ function datosAsignacion(data,nombre,projection) {
       			  scale = .1 / Math.max(dx / width, dy / height),
       			  translate = [width / 2 - scale * x, height / 2 - scale * y];
 
-
+/*
       		  d3.select('svg.map>g')
       			.transition()
       			.duration(1000)
@@ -163,7 +198,7 @@ function datosAsignacion(data,nombre,projection) {
       			  			.attr('stroke-width',0.02);
 
       			});
-   
+ */  
       		  clearInterval(zoomAttemp);
 
       		} catch(err) {
