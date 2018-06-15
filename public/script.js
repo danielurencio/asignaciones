@@ -108,7 +108,7 @@ function datosAsignacion(data,nombre,projection,mymap,asignaciones) {
 
       	var sel_asignacion_obj = data.filter(function(d) { return d.NOMBRE == sel_asignacion; })[0];
 
-      	var filas = ['NOMBRE','VIG_INICIO','VIG_FIN','SUPERFICIE_KM2','ESTATUS'];
+      	var filas = ['NOMBRE','VIGENCIA_ANIOS','VIG_INICIO','VIG_FIN','SUPERFICIE_KM2','ESTATUS'];
 
       	for(var i in filas) {
       		$('.' + filas[i]).text(sel_asignacion_obj[filas[i]])
@@ -118,7 +118,7 @@ function datosAsignacion(data,nombre,projection,mymap,asignaciones) {
       	for(var k in asignaciones._layers) {
       		if(asignaciones._layers[k].feature.properties.ID == sel_asignacion.split(' - ')[0]) {
       			d3.selectAll('path').transition().duration(800).style('opacity',0)
-      			mymap.flyTo(asignaciones._layers[k].getCenter(),9)
+      			mymap.flyTo(asignaciones._layers[k].getCenter(),10)
       		}
       	}
 

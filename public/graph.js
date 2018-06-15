@@ -150,7 +150,7 @@ function LineChart() {
             },
 
             title: {
-                text: 'AAPL Stock Price'
+                text: 'Producción'
             },
 
             series: [{
@@ -159,7 +159,8 @@ function LineChart() {
                 tooltip: {
                     valueDecimals: 2
                 }
-            }]
+            }],
+
         });
     });
 }

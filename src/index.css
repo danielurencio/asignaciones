@@ -21,6 +21,7 @@ div.header_child {
 	height:100%;
 }
 
+
 div.ficha table {
 	border-spacing:0px;
 	font-size:14px;
@@ -37,7 +38,24 @@ div.ficha table td:nth-child(2) {
 div.ficha table td {
 	text-align:center;
 	padding:none;
+	width:50%;
+	font-size:12px;
+	max-height:20px;
+	min-height:20px;
 }
+
+div.ficha button {
+	border:none;
+	font-family:'Open Sans';
+	font-weight:600;
+	background-color:rgb(13,190,190);
+	border: 0px solid lightGray;
+	color:white;
+	border-radius:2px;
+	min-height:40px;
+	cursor:pointer;
+}
+
 
 div.button {
 	background-color:WhiteSmoke;
@@ -67,13 +85,15 @@ option,input {
 }
 
 div#titulo {
-	background-color:rgba(13,180,190,0.1);
-	border-top:1px solid lightGray;
+	/*background-color:rgba(13,180,190,0.1);*/
+	/*border-top:1px solid lightGray;*/
 }
 
 div#titulo:hover {
+	/*
 	background-color:rgba(13,180,190,0.2);
 	text-decoration: underline;
+	*/
 }
 
 div#bubble {

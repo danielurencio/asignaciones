@@ -3,7 +3,7 @@ import './App.css';
 
 
 
-const heightHeaderInPixels = 60;
+const heightHeaderInPixels = 90;
 //const heightTailInPixels = 300;
 
 
@@ -71,7 +71,7 @@ class ColumnSide extends Component {
     const columnStyle = {
       width:this.props.width,
       borderRight: this.props.borderRight ? this.props.borderRight : null,
-      height:'100%',
+      height:'calc(100% - 30px)',
       display:'table-cell'
     }
 
@@ -93,10 +93,15 @@ class Header extends Component {
     }
 
     return (
-      <div className='header' style={headerStyle}>
-          <DropDownMenu className='cuenca' name='Cuenca'/>
-          <DropDownMenu name='Asignación'/>
-          <TextBox/>
+        <div className='header' style={headerStyle}>
+          <div style={{backgroundColor:'rgb(50,50,50)',height:'30px', position:'fixed', width:'100%', textAlign:'center'}}>
+            <img src='cnh-logo-white.svg' width='30px' height='30px'></img>
+          </div>
+          <div style={{top:'35px',position:'fixed'}}>
+              <DropDownMenu className='cuenca' name='Cuenca'/>
+              <DropDownMenu name='Asignación'/>
+              <TextBox/>
+          </div>
       </div>
     )
   }
@@ -113,7 +118,7 @@ class Visor extends Component {
         <div style={{ width:'100%',height:'calc(100% - '+ this.props.boton_width + 'px)' }}>
             <div id='bubbles' style={{ width:'100%',height:'0px',backgroundColor:'transparent',zIndex:'20' }}></div>
             <div id='controles' style={{ width:'100%',height:'20px',backgroundColor:'transparent' }}></div>
-            <div id='visor_holder' style={{ margin:'20px',width:'calc(100% - 20px)',height:'calc(100% - 40px - 0px - 20px)' }}>
+            <div id='visor_holder' style={{ position:'relative',margin:'20px',width:'calc(100% - 20px)',height:'calc(100% - 40px - 0px - 20px)' }}>
               <div id='visor' style={{ width:'calc(100% - 20px)',height:'calc(100% - 20px)' }}></div>
             </div>
         </div>
@@ -128,7 +133,9 @@ class Botones extends Component {
   render() {
 
     const botones = this.props.elements;
-    const boton_width = this.props.boton_width;
+    const boton_width = '10'//this.props.boton_width;
+    const option_A = boton_width + '%'//'calc(100% - ' + botones.length*boton_width + '%)';
+    const option_B = boton_width + '%';
     botones.push(null);
 
     return (
@@ -147,15 +154,15 @@ class Botones extends Component {
                 return (
                     <div id={d} pos={i} className={clase} key={ i + '_' + d } style={{
                                               borderRadius:'2px',
-                                              borderRight:'1px solid lightGray',
+                                              borderRight: i === (botones.length - 1) ? null : '1px solid lightGray',
                                               height:'100%',
-                                              width: i === (botones.length - 1) ? 'calc(100% - ' + botones.length*boton_width + 'px)' : boton_width+'px',
-                                              minWidth:boton_width+'px',
-                                              maxWidth:boton_width+'px',
-                                              display:'table-cell',
+                                              width: i === (botones.length - 1) ? option_A : option_B,
+                                              display:'table-cell'
                                             }}>
+                                            {/*<i className='glyphicon glyphicon-tint'></i>*/}
                     </div>
                 )
+
               })
             }
       </div>
@@ -164,7 +171,7 @@ class Botones extends Component {
 }
 
 
-
+{/*
 class Tail extends Component {
   render() {
     const tailHeight = {
@@ -181,7 +188,7 @@ class Tail extends Component {
     )
   }
 }
-
+*/}
 
 
 class DropDownMenu extends Component {
@@ -241,14 +248,16 @@ class Ficha extends Component {
     return (
       <div className='ficha' style={{position:'relative', width:'100%', height:'100%', backgroundColor:'transparent' }}>
         <div style={{ display:'table',position:'absolute',width:'100%',height:'100%'}}>
-          <div style={{display:'table-cell',width:'100%',verticalAlign:'middle'}}>
-
-            <table style={{width:'100%', marginLeft:'0%',paddingRight:'0%',minHeight:'50%'}}>
-              <tbody style={{height:'90%',fontWeight:'900'}}>
+          <div style={{display:'table-cell',width:'100%',verticalAlign:'middle',textAlign:'center'}}>
+          <div className='NOMBRE' style={{ margin:'6px',fontWeight:'700',fontSize:'14px' }}></div>
+            <table style={{width:'100%', marginLeft:'0%',paddingRight:'0%',maxHeight:'50%'}}>
+              <tbody style={{height:'70%',fontWeight:'900'}}>
+              
                 <tr>
-                  <td>Nombre de la asignación</td>
-                  <td className='NOMBRE'></td>
+                  <td>Vigencia (años):</td>
+                  <td className='VIGENCIA_ANIOS'></td>
                 </tr>
+              
                 <tr>
                   <td>Inicio de vigencia</td>
                   <td className='VIG_INICIO'></td>
@@ -267,8 +276,24 @@ class Ficha extends Component {
                 </tr>
               </tbody>
             </table>
-            <div id='titulo' style={{textAlign:'center',color:'rgb(13,180,190)',padding:'12px',fontWeight:'800','cursor':'pointer'}}>
-                Título de la asignación
+            <div style={{textAlign:'center',padding:'0px',fontWeight:'800'}}>
+                <div style={{display:'table',width:'100%'}}>
+
+                  <div style={{'width':'50%',display:'table-cell', backgroundColor:'white', verticalAlign:'middle' }}>
+                    <div style={{ padding:'7px',margin:'5px', color:'white',borderRadius:'2px', verticalAlign:'middle', background:'url() rgb(13,180,190) no-repeat 20px 3px' }}>
+                      Ver título
+                    </div>
+                  </div>
+
+
+                  <div style={{'width':'50%',display:'table-cell', backgroundColor:'white', verticalAlign:'middle' }}>
+                    <div style={{ padding:'7px',margin:'5px', color:'white',borderRadius:'2px', verticalAlign:'middle', background:'url() rgb(13,180,190) no-repeat 20px 3px' }}>
+                      Resumen
+                    </div>
+                  </div>
+
+                </div>
+
             </div>
           </div>
         </div>
