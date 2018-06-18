@@ -4,12 +4,36 @@
     d3.json('file.json',function(err,data_) {
     	d3.json('shapes.json',function(err,shapes) {
 
+/*------------------------------------------------Highcharts language settings------------------------------------------------------------------*/
+			  Highcharts.setOptions({
+			  	lang: {
+			  		shortMonths:['En','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
+			  	}
+			  })
+
+/*------------------------------------------------Highcharts language settings------------------------------------------------------------------*/
+
     		  var markersANDmap = leafletMap(shapes);
     		  var asignaciones = markersANDmap[0];
     		  var mymap = markersANDmap[1];
 
 		      var projection = d3.geo.mercator();
 		      //Mapa(projection);
+
+		      var rtime;
+		      var timeout = false;
+		      var delta = 200;
+
+				function resizeend() {
+				    if (new Date() - rtime < delta) {
+				        setTimeout(resizeend, delta);
+				    } else {
+				        timeout = false;
+				        //alert('Done resizing');
+				        var id_ = $('.selectedButton').attr('id');
+				        switcher(id_);
+				    }               
+				}
 
  			  window.onresize = function() {
  /*----------------------------------Redimensionar los resultados desplegables si es que existen-------------------------------------*/
@@ -18,6 +42,12 @@
  									   			   .css('width',resultadosDesplegablesProperties().width - 2);
  				}
 /*----------------------------------Redimensionar los resultados desplegables si es que existen-------------------------------------*/
+				$('#visor').html('')
+				rtime = new Date();
+				if ( timeout === false ) {
+					timeout = true;
+					setTimeout(resizeend,delta);
+				}
  			  }
 
 		      var data = JSON.stringify(data_.filter(function(d) { return d.VIGENTE == 'Vigente'; }))
@@ -90,6 +120,8 @@
 
 		});
     });
+
+
 
  });
 
@@ -373,7 +405,27 @@ function datosAsignacion(data,nombre,projection,mymap,asignaciones) {
  	if(clase != 'selectedButton') {
 	 	$('#visor').html('');
 
-	 	switch (true) {
+	 	switcher(id);
+	 }
+ }
+
+
+
+ function grapher(fn) {
+ 	fn();
+ 	window.setTimeout(function() {
+ 			$('.highcharts-background').attr('fill','transparent');
+ 	},300);
+ }
+
+ function openInNewTab(url) {
+  var win = window.open(url, '_blank');
+  win.focus();
+}
+
+
+function switcher(id) {
+		 	switch (true) {
 	 		case id === 'Producción':
 	 			grapher(LineChart);
 	 			break;
@@ -407,19 +459,4 @@ function datosAsignacion(data,nombre,projection,mymap,asignaciones) {
 	 			break;
 
 	 	}
-	 }
- }
-
-
-
- function grapher(fn) {
- 	fn();
- 	window.setTimeout(function() {
- 			$('.highcharts-background').attr('fill','transparent');
- 	},300);
- }
-
- function openInNewTab(url) {
-  var win = window.open(url, '_blank');
-  win.focus();
 }

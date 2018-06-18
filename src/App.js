@@ -95,9 +95,9 @@ class Header extends Component {
     return (
         <div className='header' style={headerStyle}>
           <div style={{backgroundColor:'rgb(50,50,50)',height:'30px', position:'fixed', width:'100%', textAlign:'center'}}>
-            <img src='cnh-logo-white.svg' width='30px' height='30px'></img>
+            <img alt='' src='cnh-logo-white.svg' width='30px' height='30px'></img>
           </div>
-          <div style={{top:'35px',position:'fixed'}}>
+          <div style={{top:'35px',position:'fixed',zIndex:2 }}>
               <DropDownMenu className='cuenca' name='Cuenca'/>
               <DropDownMenu name='Asignación'/>
               <TextBox/>
@@ -113,13 +113,15 @@ class Visor extends Component {
     return (
       <div style={{ width:'100%',height:'100%'}}>
         <div style={{ width:'100%',height:this.props.boton_width+'px', top:'0px',position:'relative' }}>
-            <Botones boton_width={ this.props.boton_width } elements={['Producción','Reservas','Pozos','Inversión','Compromiso Mínimo de Trabajo','Aprovechamiento de gas','Dictámenes','Autorizaciones']}/>
+           <Botones boton_width={ this.props.boton_width } elements={['Producción','Reservas','Pozos','Inversión','Compromiso Mínimo de Trabajo','Aprovechamiento de gas','Dictámenes','Autorizaciones','Modificaciones']}/>
         </div>
         <div style={{ width:'100%',height:'calc(100% - '+ this.props.boton_width + 'px)' }}>
             <div id='bubbles' style={{ width:'100%',height:'0px',backgroundColor:'transparent',zIndex:'20' }}></div>
             <div id='controles' style={{ width:'100%',height:'20px',backgroundColor:'transparent' }}></div>
             <div id='visor_holder' style={{ position:'relative',margin:'20px',width:'calc(100% - 20px)',height:'calc(100% - 40px - 0px - 20px)' }}>
-              <div id='visor' style={{ width:'calc(100% - 20px)',height:'calc(100% - 20px)' }}></div>
+              <div style={{ width:'calc(100% - 20px)',height:'calc(100% - 20px)' }}>
+                    <div id='visor' style={{ width:'100%', height:'100%' }}></div>
+              </div>
             </div>
         </div>
       </div>
@@ -134,7 +136,7 @@ class Botones extends Component {
 
     const botones = this.props.elements;
     const boton_width = '10'//this.props.boton_width;
-    const option_A = boton_width + '%'//'calc(100% - ' + botones.length*boton_width + '%)';
+    const option_A = 'calc(100% - ' + botones.length*boton_width + '%)';
     const option_B = boton_width + '%';
     botones.push(null);
 
@@ -142,6 +144,28 @@ class Botones extends Component {
       <div id='botones_' style={{ width:'100%', height:'100%',display:'table' }}>
             {
               botones.map(function(d,i) {
+                let glyph;
+
+                if( d === 'Producción' ) {
+                  glyph = 'oil';
+                } else if ( d === 'Reservas' ) {
+                  glyph = 'stats';
+                } else if ( d === 'Pozos' ) {
+                  glyph = 'tint';
+                } else if ( d === 'Inversión' ) {
+                  glyph = 'usd';
+                } else if ( d === 'Compromiso Mínimo de Trabajo' ) {
+                  glyph = 'tasks';
+                } else if ( d === 'Aprovechamiento de gas' ) {
+                  glyph = 'scale'
+                } else if ( d === 'Dictámenes' ) {
+                  glyph = 'list-alt'
+                } else if ( d === 'Autorizaciones' ) {
+                  glyph = 'ok'
+                } else if ( d === 'Modificaciones' ) {
+                  glyph = 'pencil'
+                }
+
                 let clase;
                     if(i === 0) {
                       clase = 'button';
@@ -157,9 +181,17 @@ class Botones extends Component {
                                               borderRight: i === (botones.length - 1) ? null : '1px solid lightGray',
                                               height:'100%',
                                               width: i === (botones.length - 1) ? option_A : option_B,
-                                              display:'table-cell'
+                                              display:'table-cell',
+                                              left:i*boton_width + '%',
+                                              position:'absolute',
+                                              verticalAlign:'middle',
+                                              textAlign:'center'
                                             }}>
-                                            {/*<i className='glyphicon glyphicon-tint'></i>*/}
+                                            <div style={{ height:'100%',width:'100%',verticalAlign:'middle',display:'table',textAlign:'center' }}>
+                                              <div style={{ 'display':'table-cell', verticalAlign:'middle',width:'100%',textAlign:'center' }}>
+                                                <i className={ 'glyphicon glyphicon-' + glyph } style={{ width:'100%',textAlign:'center',fontSize:'2.5vw',verticalAlign:'middle' }}></i>
+                                              </div>
+                                            </div>
                     </div>
                 )
 
@@ -169,26 +201,6 @@ class Botones extends Component {
     )
   }
 }
-
-
-{/*
-class Tail extends Component {
-  render() {
-    const tailHeight = {
-      height:'100%',
-      width:'100%',
-      backgroundColor:'transparent'
-    }
-
-    return (
-      <div style={tailHeight}>
-        <Pestanas cuatro={true} elements={['Producción','Reservas','Pozos','Inversión','Compromiso Mínimo de Trabajo','Aprovechamiento de gas','Dictámenes']}/>
-        <div style={{ width:'90%',height:'calc(100% - 0px)',marginTop:'0px',marginLeft:'0%' }} id='visor'></div>
-      </div>
-    )
-  }
-}
-*/}
 
 
 class DropDownMenu extends Component {
@@ -208,6 +220,8 @@ class DropDownMenu extends Component {
     )
   }
 }
+
+
 
 class TextBox extends Component {
   render() {
@@ -229,19 +243,20 @@ class TextBox extends Component {
 }
 
 
+
 class Mapa extends Component {
   render() {
     return (
-      <div id='MAPA' style={{position:'relative',width:'100%', height:'calc(100% - 4px)', backgroundColor:'transparent'}}>
-      {/*}
-        <svg className='map' preserveAspectRatio='xMidYMid meet' style={{width:'100%',height:'100%',backgroundColor:'white' }}>
-          <g style={{width:'100%',height:'100%'}}></g>
-        </svg>
-      */}
+      <div style={{ position:'relative',width:'100%',height:'calc(100% - 0px)' }}>
+          <div style={{ position:'absolute',width:'100%',textAlign:'center',fontWeight:800,top:'10px' }}>Ubicación</div>
+          <div id='MAPA' style={{position:'relative',width:'calc(100% - 50px)', height:'calc(100% - 70px)', backgroundColor:'transparent',left:'25px',top:'40px'}}>
+          </div>
       </div>
     )
   }
 }
+
+
 
 class Ficha extends Component {
   render() {
@@ -251,7 +266,7 @@ class Ficha extends Component {
           <div style={{display:'table-cell',width:'100%',verticalAlign:'middle',textAlign:'center'}}>
           <div className='NOMBRE' style={{ margin:'6px',fontWeight:'700',fontSize:'14px' }}></div>
             <table style={{width:'100%', marginLeft:'0%',paddingRight:'0%',maxHeight:'50%'}}>
-              <tbody style={{height:'70%',fontWeight:'900'}}>
+              <tbody style={{ height:'70%',fontWeight:'900' }}>
               
                 <tr>
                   <td>Vigencia (años):</td>
@@ -276,18 +291,18 @@ class Ficha extends Component {
                 </tr>
               </tbody>
             </table>
-            <div style={{textAlign:'center',padding:'0px',fontWeight:'800'}}>
+            <div style={{ textAlign:'center',padding:'0px',fontWeight:'800',position:'relative',top:'12px' }}>
                 <div style={{display:'table',width:'100%'}}>
 
-                  <div style={{'width':'50%',display:'table-cell', backgroundColor:'white', verticalAlign:'middle' }}>
-                    <div style={{ padding:'7px',margin:'5px', color:'white',borderRadius:'2px', verticalAlign:'middle', background:'url() rgb(13,180,190) no-repeat 20px 3px' }}>
+                  <div style={{'width':'50%',display:'table-cell', backgroundColor:'white', verticalAlign:'middle',position:'relative' }}>
+                    <div id='titulo' style={{ width:'70%',padding:'2px',left:'20%',position:'relative',margin:'0px', color:'white',borderRadius:'2px', verticalAlign:'middle', background:'url() rgb(13,180,190) no-repeat 20px 3px',cursor:'pointer' }}>
                       Ver título
                     </div>
                   </div>
 
 
-                  <div style={{'width':'50%',display:'table-cell', backgroundColor:'white', verticalAlign:'middle' }}>
-                    <div style={{ padding:'7px',margin:'5px', color:'white',borderRadius:'2px', verticalAlign:'middle', background:'url() rgb(13,180,190) no-repeat 20px 3px' }}>
+                  <div style={{'width':'50%',display:'table-cell', backgroundColor:'white', verticalAlign:'middle',position:'relative' }}>
+                    <div style={{ width:'70%',padding:'2px',left:'10%',position:'relative', color:'white',borderRadius:'2px', verticalAlign:'middle', background:'url() rgb(13,180,190) no-repeat 20px 3px' }}>
                       Resumen
                     </div>
                   </div>
@@ -302,53 +317,5 @@ class Ficha extends Component {
   }
 }
 
-
-class Pestanas extends Component {
-
-  render() {
-
-  const elements = this.props.elements;//['Producción','Reservas','Pozos','Inversión'];
-
-  const divButtonStyle = {
-      display:'table-cell',
-      height:'100%',
-      width: String( 100 / elements.length ) + '%',
-      //minWidth:'25%',
-      //width:'25%',
-      textAlign:'center',
-      verticalAlign:'middle'
-  };
-
-  const onlyButtonStyle = {
-      width:'calc(100% - 5px)',
-      height:'calc(100% - 20px)',
-      border:'none',
-      verticalAlign:'middle'
-  };
-
-    return(
-        <div style={{ width:'100%', height:'20px',marginTop:'0px',textAlign:'center' }}>
-          <div style={{ width:'100%', height:'100%', display:'table' }}>
-            {
-              elements.map(function(d,i) {
-                return (
-                <div key={ i + '_' + d } style={ divButtonStyle }>
-                  <button className={ d === 'Producción' ? 'selectedButton' : null } style={ onlyButtonStyle }>{d}</button>
-                </div>
-                )
-              })
-            }
-          </div>
-        </div>
-    )
-  }
-}
-
-
-/*
-class Visor extends Component {
-
-}
-*/
 
 export default App;

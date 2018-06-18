@@ -61,10 +61,12 @@ div.button {
 	background-color:WhiteSmoke;
 	border-bottom:1px solid lightGray;
 	position:relative;
+	color:gray;
 }
 
 div.button:hover {
 	cursor:pointer;
+	color:rgb(40,40,40);
 }
 
 div.selectedButton {
@@ -72,6 +74,7 @@ div.selectedButton {
 	border-bottom:none;
 	font-weight:800;
 	position:relative;
+	color:black;
 }
 
 div.espacioBlanco {
@@ -97,8 +100,10 @@ div#titulo:hover {
 }
 
 div#bubble {
+/*	
 	max-width:150px;
 	min-width:100px;
+*/
 	padding:5px;
 	height:25px;
 	position: relative;
