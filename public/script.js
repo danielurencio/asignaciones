@@ -3,7 +3,7 @@
 
     d3.json('file.json',function(err,data_) {
     	d3.json('shapes.json',function(err,shapes) {
-
+console.log(shapes)
 /*------------------------------------------------Highcharts language settings------------------------------------------------------------------*/
 			  Highcharts.setOptions({
 			  	lang: {
@@ -49,13 +49,13 @@
 					setTimeout(resizeend,delta);
 				}
  			  }
-
+/*
 		      var data = JSON.stringify(data_.filter(function(d) { return d.VIGENTE == 'Vigente'; }))
 		      				  .replace(/M\¿xico/g,'México')
 		      				  .replace(/Cintur\¿n/g,'Cinturón')
 		      				  .replace(/Yucat\¿n/g,'Yucatán');
-
-		      data = JSON.parse(data);
+*/
+		      var data = data_;//JSON.parse(data);
 
 		      var cuencas = data.map(function(d) {
 		      		return d.PROVINCIA;
@@ -63,7 +63,7 @@
 
 		      cuencas = _.uniq(cuencas);
 
-
+//console.log(cuencas)
 		      $('select').filter(function(i,d){
 		      	return i == 0;
 		      }).attr('class','cuenca');
@@ -81,8 +81,9 @@
 
 
 			  asignaciones.on('click',function(event) {
+			  	console.log(event.layer.feature.properties.ID)
 				var id_asignacion = event.layer.feature.properties.ID;
-				//console.log(data,id_asignacion)
+				console.log(data,id_asignacion)
 				var sel_asignacion = data.filter(function(d) { return d.ID == id_asignacion; })[0];
 				
 				$('.cuenca').val(sel_asignacion.PROVINCIA)

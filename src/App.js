@@ -189,7 +189,7 @@ class Botones extends Component {
                                             }}>
                                             <div style={{ height:'100%',width:'100%',verticalAlign:'middle',display:'table',textAlign:'center' }}>
                                               <div style={{ 'display':'table-cell', verticalAlign:'middle',width:'100%',textAlign:'center' }}>
-                                                <i className={ 'glyphicon glyphicon-' + glyph } style={{ width:'100%',textAlign:'center',fontSize:'2.5vw',verticalAlign:'middle' }}></i>
+                                                <i className={ 'glyphicon glyphicon-' + glyph } style={{ width:'100%',textAlign:'center',fontSize:'2.5em',verticalAlign:'middle' }}></i>
                                               </div>
                                             </div>
                     </div>
