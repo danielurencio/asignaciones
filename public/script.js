@@ -1,8 +1,8 @@
  $(document).ready(function() {
  	//Mapa();
 
-    d3.json('file.json',function(err,data_) {
-    	d3.json('shapes.json',function(err,shapes) {
+    d3.json('file_.json',function(err,data_) {
+    	d3.json('shapes_.json',function(err,shapes) {
 console.log(shapes)
 /*------------------------------------------------Highcharts language settings------------------------------------------------------------------*/
 			  Highcharts.setOptions({
