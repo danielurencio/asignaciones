@@ -42,12 +42,12 @@ class Columns extends Component {
       <div style={ columnsStyle }>
 
           <ColumnSide borderRight='1px solid lightGray' width='40%'>
-
+{/*
               <div style={{width:'100%','height':'30%'}}>
                     <Ficha/>
               </div>
-
-              <div style={{width:'100%','height':'70%'}}>
+*/}
+              <div style={{width:'100%','height':'100%'}}>
                     <Mapa/>
               </div>
 
@@ -92,15 +92,34 @@ class Header extends Component {
       borderBottom:'1px solid lightGray'
     }
 
+    //const dropdowns = ['Cuenca','Ubicación','Tipo','Asignacion'];
+    const dropdowns = ['Cuenca','Ubicación','Tipo','Asignación'];
+    const childrenWidth = ( 100 / (dropdowns.length + 1) ) + '%';
+
     return (
         <div className='header' style={headerStyle}>
           <div style={{backgroundColor:'rgb(50,50,50)',height:'30px', position:'fixed', width:'100%', textAlign:'center'}}>
             <img alt='' src='cnh-logo-white.svg' width='30px' height='30px'></img>
           </div>
-          <div style={{top:'35px',position:'fixed',zIndex:2 }}>
-              <DropDownMenu className='cuenca' name='Cuenca'/>
-              <DropDownMenu name='Asignación'/>
-              <TextBox/>
+          <div style={{width:'100%',top:'35px',position:'fixed',zIndex:2 }}>
+              <DropDownMenu title={ ['Cuenca','Ubicación'] } w_={childrenWidth}/>
+              <DropDownMenu title={ ['Tipo','Asignación'] } w_={childrenWidth}/>
+              {/*
+                dropdowns.map(function(d,i) {
+                  return (
+                    <DropDownMenu w_={childrenWidth} key={i} name={d} tag={
+                                                        d.toLowerCase()
+                                                         .replace(/á/g,'a')
+                                                         .replace(/é/g,'e')
+                                                         .replace(/í/g,'i')
+                                                         .replace(/ó/g,'o')
+                                                         .replace(/ú/g,'u')
+                                                      }/>
+                  )
+                })
+              }*/}
+
+              <TextBox w_={childrenWidth}/>
           </div>
       </div>
     )
@@ -113,7 +132,18 @@ class Visor extends Component {
     return (
       <div style={{ width:'100%',height:'100%'}}>
         <div style={{ width:'100%',height:this.props.boton_width+'px', top:'0px',position:'relative' }}>
-           <Botones boton_width={ this.props.boton_width } elements={['Producción','Reservas','Pozos','Inversión','Compromiso Mínimo de Trabajo','Aprovechamiento de gas','Dictámenes','Autorizaciones','Modificaciones']}/>
+           <Botones boton_width={ this.props.boton_width }
+           elements={[
+             'Datos generales',
+             'Producción',
+             'Reservas',
+             'Pozos',
+             'Inversión',
+             'Compromiso Mínimo de Trabajo',
+             'Aprovechamiento de gas',
+             'Dictámenes',
+             'Autorizaciones'
+           ]}/>
         </div>
         <div style={{ width:'100%',height:'calc(100% - '+ this.props.boton_width + 'px)' }}>
             <div id='bubbles' style={{ width:'100%',height:'0px',backgroundColor:'transparent',zIndex:'20' }}></div>
@@ -162,8 +192,8 @@ class Botones extends Component {
                   glyph = 'list-alt'
                 } else if ( d === 'Autorizaciones' ) {
                   glyph = 'ok'
-                } else if ( d === 'Modificaciones' ) {
-                  glyph = 'pencil'
+                } else if ( d === 'Datos generales' ) {
+                  glyph = 'pushpin'
                 }
 
                 let clase;
@@ -204,15 +234,71 @@ class Botones extends Component {
 
 
 class DropDownMenu extends Component {
+  tableDimension = .9;
+  selectDimension = .8;
+
+  tableStyle = {
+    display:'table',
+    tableLayout:'fixed',
+    textAlign:'center',
+    width: String(this.tableDimension*100) + '%',
+    position:'relative',
+    left: String( ((1 - this.tableDimension)*100) / 2) + '%'
+  };
+
+  titleStyle = {
+    display:'table-cell',
+    width:'10%',
+    fontWeight:'800',
+    textAlign:'right'
+  };
+
+  selectContStyle = {
+    display:'table-cell',
+    width:'90%'
+  };
+
+  selectStyle = {
+    width:'70%',
+    minWidth:'70%',
+    maxWidth:'70%'
+  };
+
+  replaceChars(str) {
+    let str_ = str.toLowerCase()
+                  .replace(/á/g,'a')
+                  .replace(/é/g,'e')
+                  .replace(/í/g,'i')
+                  .replace(/ó/g,'o')
+                  .replace(/ú/g,'u');
+
+    return str_;
+  }
+
   render() {
     return (
-      <div className='header_child' style={{display:'table-cell',textAlign:'center'}}>
+      <div className='header_child' style={{display:'table-cell',textAlign:'center',width:this.props.w_}}>
         <div style={{display:'table',position:'absoulte',height:'100%', width:'100%', textAlign:'center',tableLayout:'fixed'}}>
            <div style={{display:'table-cell',verticalAlign:'middle',textAlign:'center'}}>
               <div>
-                <div style={{ fontWeight:'800' }}>{this.props.name}</div>
-                <select style={{minWidth:'70%',maxWidth:'70%'}}>
-                </select>
+                <div style={ this.tableStyle }>
+                  <div style={ this.titleStyle }>
+                  { this.props.title[0] }
+                  </div>
+                  <div style={ this.selectContStyle }>
+                    <select className={ this.replaceChars(this.props.title[0]) } style={ this.selectStyle }/>
+                  </div>
+                </div>
+                <div style={ this.tableStyle }>
+                  <div style={ this.titleStyle }>
+                  { this.props.title[1] }
+                  </div>
+                  <div style={ this.selectContStyle }>
+                    <select className={ this.replaceChars(this.props.title[1]) } style={ this.selectStyle }/>
+                  </div>
+                </div>
+                {/*<select className={this.props.tag} style={{minWidth:'70%',maxWidth:'70%'}}>*/}
+
               </div>
           </div>
         </div>
@@ -226,7 +312,7 @@ class DropDownMenu extends Component {
 class TextBox extends Component {
   render() {
     return (
-      <div className='header_child' style={{display:'table-cell',textAlign:'center'}}>
+      <div className='header_child' style={{display:'table-cell',textAlign:'center',width:this.props.w_}}>
         <div style={{display:'table',position:'absoulte',height:'100%', width:'100%', textAlign:'center'}}>
            <div style={{display:'table-cell',verticalAlign:'middle',textAlign:'center'}}>
               <div style={{ display:'table',width:'100%' }}>
@@ -248,8 +334,8 @@ class Mapa extends Component {
   render() {
     return (
       <div style={{ position:'relative',width:'100%',height:'calc(100% - 0px)' }}>
-          <div style={{ position:'absolute',width:'100%',textAlign:'center',fontWeight:800,top:'10px' }}>Ubicación</div>
-          <div id='MAPA' style={{position:'relative',width:'calc(100% - 50px)', height:'calc(100% - 70px)', backgroundColor:'transparent',left:'25px',top:'40px'}}>
+          {/*<div style={{ position:'absolute',width:'100%',textAlign:'center',fontWeight:800,top:'10px' }}>Ubicación</div>*/}
+          <div id='MAPA' style={{position:'relative',width:'calc(100% - 20px)', height:'calc(100% - 20px)', backgroundColor:'transparent',left:'10px',top:'10px'}}>
           </div>
       </div>
     )
@@ -267,12 +353,12 @@ class Ficha extends Component {
           <div className='NOMBRE' style={{ margin:'6px',fontWeight:'700',fontSize:'14px' }}></div>
             <table style={{width:'100%', marginLeft:'0%',paddingRight:'0%',maxHeight:'50%'}}>
               <tbody style={{ height:'70%',fontWeight:'900' }}>
-              
+
                 <tr>
                   <td>Vigencia (años):</td>
                   <td className='VIGENCIA_ANIOS'></td>
                 </tr>
-              
+
                 <tr>
                   <td>Inicio de vigencia</td>
                   <td className='VIG_INICIO'></td>

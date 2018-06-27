@@ -17,15 +17,25 @@ div.header {
 
 div.header_child {
 	display:table-cell;
-	width:33.33%;
 	height:100%;
 }
 
-
+/*-------------------TABLA DE FICHA--------------------*/
 div.ficha table {
 	border-spacing:0px;
 	font-size:14px;
 }
+
+/*
+div.ficha tr {
+  width:100%;
+}
+
+div.ficha td {
+  min-width:50%;
+  max-width:50%;
+}
+*/
 
 div.ficha table td:nth-child(1) {
 	font-weight:600;
@@ -43,6 +53,8 @@ div.ficha table td {
 	max-height:20px;
 	min-height:20px;
 }
+/*-------------------TABLA DE FICHA--------------------*/
+
 
 div.ficha button {
 	border:none;
@@ -100,7 +112,7 @@ div#titulo:hover {
 }
 
 div#bubble {
-/*	
+/*
 	max-width:150px;
 	min-width:100px;
 */
@@ -145,4 +157,19 @@ div#bubble:after {
 
 .leaflet-tooltip-right.polygonTooltip::before {
 	border-right-color:black;
+}
+
+
+div#mapLegend {
+  background-color:rgba(0,0,0,0.70);
+  border-radius:2px;
+  padding:15px;
+  font-size:13px;
+  font-weight:300;
+  color:lightGray;
+}
+
+div#mapLegend>span {
+  font-size:18px;
+  font-weight:800;
 }
