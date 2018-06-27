@@ -1,142 +1,63 @@
- function GRAPH() {
- var info = {"serie":{"name":"Petróleo (Mbd)","data":[["2018/Abr",1882.6],["2018/Mar",1861.1],["2018/Feb",1891.2],["2018/Ene",1925.1],["2017/Dic",1877.1],["2017/Nov",1868.6],["2017/Oct",1903.7],["2017/Sep",1732],["2017/Ago",1932.1],["2017/Jul",1987.9],["2017/Jun",2009.6]],"showInLegend":false,"color":"rgb(13,180,190)","_symbolIndex":0},"grandparent":"NACIONAL","parent":"PRODUCCIÓN","tema":"Petróleo (Mbd)","subtema":"","fechas":["2017/Jun","2017/Jul","2017/Ago","2017/Sep","2017/Oct","2017/Nov","2017/Dic","2018/Ene","2018/Feb","2018/Mar","2018/Abr"]}
- Highcharts.chart('visor', {
-        lang: {
-            'img': 'Descargar imagen'
-        },
-        exporting: {
-            enabled: true,
-            buttons: {
-                contextButton: {
-                    symbolX: 19,
-                    symbolY: 18,
-                    //symbol: 'url(img/download.svg)',
-                    _titleKey: 'img',
-                    menuItems: [{
-                            textKey: 'downloadPNG',
-                            //onclick: descargarPNG,
-                            text: "PNG"
-                        },
-                        {
-                            textKey: 'downloadCSV',
-                            //onclick: descargarSerie,
-                            text: "CSV"
-                        }
-                    ]
-                }
-            }
-        },
-        chart: {
-            style: {
-                fontFamily: 'Open Sans'
-            },
-            inverted: false,
-            //marginBottom: marginCred//window.innerWidth > 640 ? marginCred : 40
-        },
-        tooltip: {
-            useHTML: true,
-            backgroundColor: null,
-            borderWidth: 0,
-            style: {
-                fontWeight: 800
-            },
-            formatter: function() {
-                var t =
-                    "<div style='text-align:center;'>"
-		   + "<span style='font-size:11px;font-weight:800;color:"
-		   + 'black' + ";'>" +
-                    this.point.name +
-                    "</span>" +
-                    "<br>" +
-                    "<span style='font-weight:300;font-size:18px;'>" +
-                    this.y.toLocaleString("es-MX") +
-                    "</span></div>";
-                return t;
-            }
-        },
-        credits:false,
-/*
-        {
+function DatosGrales() {
 
-            enabled: true,//window.innerWidth > 640 ? true : false,
-            
-            text: NOTAS,
-            position: {
-                align: "left",
-                x: 50,
-                y: marginCred > 100 ? -75 * offsetCred : -50
-            },
-            style: {
-                fontSize: '10px',
-                fontWeight: 300,
-                color: "black"
-            },
-            href: null
-            
-        },
-*/
-        title: {
-            text: info.subtema ? info.subtema : info.tema
-        },
-        subtitle: {
-            text: null//info.grandparent + " - " + info.parent
-        },
-        xAxis: {
-            labels: {
-                enabled: true,
-                formatter: function() {
-                    return info.fechas[this.value];
-                }
-            }
-        },
-        yAxis: {
-            gridLineWidth: 1,
-            labels: {
-                formatter: function() {
-                    return this.value.toLocaleString('es-MX');
-                },
-            },
-            title: {
-                style: {
-                    fontWeight: 700
-                },
-                text: info.tema
-            },
-            min:0
-        },
-        plotOptions: {
-            series: {
-		turboThreshold:0,
-                label: {
-                    connectorAllowed: false
-                },
-                marker: {
-                    radius: 0,
-                    states: {
-                        hover: {
-                            radius: 5
-                        }
-                    }
-                }
-            }
-        },
-        series: [info.serie],
-        responsive: {
-            rules: [{
-                condition: {
-                    maxWidth: 500
-                },
-                chartOptions: {
-                    legend: {
-                        layout: 'horizontal',
-                        align: 'center',
-                        verticalAlign: 'bottom'
-                    }
-                }
-            }]
-        }
+  var str =
+  "<div class='ficha' style='position:relative;width:100%;height:100%;background-color:transparent;'>" +
+    "<div style='display:table;position:absolute;width:100%;height:100%;'>" +
+      "<div style='display:table-cell;width:100%;vertical-align:middle;text-align:center;'>" + // <- 'vertical-align:middle' para centrar
 
-    });
+          "<div class='NOMBRE' style='margin:6px;fontWeight:700;fontSize:14px'></div>" +
+            "<table style='width:100%; marginLeft:0%;paddingRight:0%;maxHeight:50%'>" +
+              "<tbody style='height:70%;fontWeight:900'>" +
+
+                "<tr>" +
+                  "<td>Vigencia (años):</td>" +
+                  "<td class='VIGENCIA_ANIOS'></td>" +
+                "</tr>" +
+
+                "<tr>" +
+                  "<td>Inicio de vigencia</td>" +
+                  "<td class='VIG_INICIO'></td>" +
+                "</tr>" +
+                "<tr>" +
+                  "<td>Fin de vigencia</td>" +
+                  "<td class='VIG_FIN'></td>" +
+                "</tr>" +
+                "<tr>" +
+                  "<td>Superficie (km<sup>2</sup>)</td>"+
+                  "<td class='SUPERFICIE_KM2'></td>" +
+                "</tr>" +
+                "<tr>" +
+                  "<td>Tipo de asignación</td>" +
+                  "<td class='ESTATUS'></td>" +
+                "</tr>" +
+              "</tbody>" +
+            "</table>" +
+
+            "<div style='text-align:center;padding:0px;font-weight:800;position:relative;top:12px'>" +
+                "<div style='display:table;width:100%'>" +
+
+                  "<div style='width:50%,display:table-cell; background-color:white; vertical-align:middle;position:relative'>" +
+                    "<div id='titulo' style='width:70%;padding:2px;left:20%;position:relative;margin:0px;color:white;border-radius:2px;vertical-align:middle;background:url() rgb(13,180,190) no-repeat 20px 3px;cursor:pointer'>" +
+                      "Ver título" +
+                    "</div>" +
+                  "</div>" +
+
+                  "<div style='width:50%;display:table-cell;background-color:white;vertical-align:middle;position:relative'>" +
+                    "<div style='width:70%;padding:2px;left:10%;position:relative;color:white;border-radius:2px;vertical-align:middle;background:url() rgb(13,180,190) no-repeat 20px 3px'>" +
+                      "Resumen" +
+                    "</div>" +
+                  "</div>" +
+
+                "</div>" +
+            "</div>" +
+
+          "</div>"
+
+      "</div>" +
+    "</div>" +
+  "</div>"
+
+  $('#visor').html(str);
 }
 
 function LineChart() {

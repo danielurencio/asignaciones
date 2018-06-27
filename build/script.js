@@ -1,9 +1,8 @@
  $(document).ready(function() {
- 	//Mapa();
 
     d3.json('file_.json',function(err,data_) {
     	d3.json('shapes_.json',function(err,shapes) {
-console.log(shapes)
+
 /*------------------------------------------------Highcharts language settings------------------------------------------------------------------*/
 			  Highcharts.setOptions({
 			  	lang: {
@@ -17,44 +16,50 @@ console.log(shapes)
     		  var asignaciones = markersANDmap[0];
     		  var mymap = markersANDmap[1];
 
-		      var projection = d3.geo.mercator();
-		      //Mapa(projection);
-
+/*======================================================================================================*/
+/*====== Redraw maps when resize event is finished =====================================================*/
+/*======================================================================================================*/
 		      var rtime;
 		      var timeout = false;
 		      var delta = 200;
 
+        // Esta función comprueba si el usuario ya terminó de redimensionar la ventana.
 				function resizeend() {
 				    if (new Date() - rtime < delta) {
 				        setTimeout(resizeend, delta);
 				    } else {
 				        timeout = false;
-				        //alert('Done resizing');
 				        var id_ = $('.selectedButton').attr('id');
 				        switcher(id_);
-				    }               
+				    }
 				}
 
  			  window.onresize = function() {
  /*----------------------------------Redimensionar los resultados desplegables si es que existen-------------------------------------*/
- 				if($('div.resultadosDesplegables')[0]) {
- 					$('div.resultadosDesplegables').css('left',resultadosDesplegablesProperties().x)
- 									   			   .css('width',resultadosDesplegablesProperties().width - 2);
- 				}
+ 				   if($('div.resultadosDesplegables')[0]) {
+ 					       $('div.resultadosDesplegables').css('left',resultadosDesplegablesProperties().x)
+ 									   			                      .css('width',resultadosDesplegablesProperties().width - 2);
+ 				   }
 /*----------------------------------Redimensionar los resultados desplegables si es que existen-------------------------------------*/
-				$('#visor').html('')
-				rtime = new Date();
-				if ( timeout === false ) {
-					timeout = true;
-					setTimeout(resizeend,delta);
-				}
+				   $('#visor').html('')
+				   rtime = new Date();
+				   if ( timeout === false ) {
+					        timeout = true;
+					        setTimeout(resizeend,delta);
+				   }
  			  }
-/*
-		      var data = JSON.stringify(data_.filter(function(d) { return d.VIGENTE == 'Vigente'; }))
-		      				  .replace(/M\¿xico/g,'México')
-		      				  .replace(/Cintur\¿n/g,'Cinturón')
-		      				  .replace(/Yucat\¿n/g,'Yucatán');
-*/
+
+/*======================================================================================================*/
+/*====== Redraw maps when resize event is finished ====================================================*/
+/*====================================================================================================*/
+
+          data_ = JSON.stringify(data_)
+              .replace(/M¿xico/g,'México')
+              .replace(/Cintur¿n/g,'Cinturón')
+              .replace(/Yucat¿n/g,'Yucatán');
+
+          data_ = JSON.parse(data_)
+
 		      var data = data_;//JSON.parse(data);
 
 		      var cuencas = data.map(function(d) {
@@ -62,15 +67,6 @@ console.log(shapes)
 		      });
 
 		      cuencas = _.uniq(cuencas);
-
-//console.log(cuencas)
-		      $('select').filter(function(i,d){
-		      	return i == 0;
-		      }).attr('class','cuenca');
-
-		      $('select').filter(function(i,d){
-		      	return i == 1;
-		      }).attr('class','asignacion');
 
 		      cuencas.forEach(function(d) {
 		      	if(d) {
@@ -81,50 +77,45 @@ console.log(shapes)
 
 
 			  asignaciones.on('click',function(event) {
-			  	console.log(event.layer.feature.properties.ID)
-				var id_asignacion = event.layer.feature.properties.ID;
-				console.log(data,id_asignacion)
-				var sel_asignacion = data.filter(function(d) { return d.ID == id_asignacion; })[0];
-				
-				$('.cuenca').val(sel_asignacion.PROVINCIA)
-					.trigger('change');
 
-				$('.asignacion').val(sel_asignacion.NOMBRE)
+				  var id_asignacion = event.layer.feature.properties.ID;
+				  var sel_asignacion = data.filter(function(d) { return d.ID == id_asignacion; })[0];
+
+				  $('.cuenca').val(sel_asignacion.PROVINCIA)
+					  .trigger('change');
+
+				  $('.asignacion').val(sel_asignacion.NOMBRE)
 						.trigger('change');
 
-				//mymap.fitBounds(event.layer.getBounds())
-				//mymap.setView(event.layer.getBounds())
-				//console.log(event.layer.feature.properties)
 			  });
 
+          var mapNdataObj = {
+            'data':data,
+            'asignaciones':asignaciones,
+            'mymap':mymap
+          };
 
-
-		      cambioAsignacion(data);
-		      datosAsignacion(data,null,projection,mymap,asignaciones);
+          cambioAsignacion(data);
+          speechBubbles(mapNdataObj);
+		      //cambioAsignacion(data);
+		      //datosAsignacion(data,null,null,mymap,asignaciones);
 
 		      $('.cuenca').on('change',function() {
 		      		cambioAsignacion(data);
-		      		datosAsignacion(data,null,projection,mymap,asignaciones);
+		      		datosAsignacion(data,null,null,mymap,asignaciones);
 		      });
 
 		      $('.asignacion').on('change',function() {
-		      		datosAsignacion(data,null,projection,mymap,asignaciones);
+		      		datosAsignacion(data,null,null,mymap,asignaciones);
 		      })
 
 		      $('input.buscador').on('input',function(d) {
 		      		inputEnBuscador(d,data);
 		      });
 
-		      speechBubbles();
-		      //GRAPH();
-		      //HighStock();
-
 		});
-    });
-
-
-
- });
+  });
+});
 
 
 
@@ -140,7 +131,7 @@ function datosAsignacion(data,nombre,projection,mymap,asignaciones) {
 		}
 
       	var sel_asignacion_obj = data.filter(function(d) { return d.NOMBRE == sel_asignacion; })[0];
-
+console.log(sel_asignacion_obj)
       	var filas = ['NOMBRE','VIGENCIA_ANIOS','VIG_INICIO','VIG_FIN','SUPERFICIE_KM2','ESTATUS'];
 
       	for(var i in filas) {
@@ -178,72 +169,11 @@ function datosAsignacion(data,nombre,projection,mymap,asignaciones) {
       	$('#titulo').attr('onclick',fnString)
 /*------------------------AGRAGAR URL DE DESCARGA DE TITULO--------------------------------------------*/
 
-
-      	var zoomAttemp = window.setInterval(function() {
-
-      		try {
-
-      		  var element = d3.select('#' + sel_asignacion_obj.ID);
-      		  var datum = element.datum();
-
-      		  var width = $('svg.map').css('width').split('px')[0];
-  			  var height = $('svg.map').css('height').split('px')[0];
-
-
-      		  //d3.selectAll('path.asig')
-	      		//.style('fill',"rgb(1,114,158)");
-
-	      	  d3.selectAll('.selected')
-	      	  		.attr('class',null)
-	      	  		.style('fill',function() {
-	      	  			var color = d3.select('path.asig:not(.selected)').style('fill');
-	      	  			return color;
-	      	  		})
-
-      		  element.transition()
-      		  		 .delay(1500)
-      		  		 .duration(1000)
-      		  		 .attr('class','selected')
-      		  		 .style('fill','rgb(13,180,190)')
- 
-      		  var path = d3.geo.path().projection(projection);
-
-      		  var bounds = path.bounds(datum),
-      			  dx = bounds[1][0] - bounds[0][0],
-      			  dy = bounds[1][1] - bounds[0][1],
-      			  x = (bounds[0][0] + bounds[1][0]) / 2,
-      			  y = (bounds[0][1] + bounds[1][1]) / 2,
-      			  scale = .1 / Math.max(dx / width, dy / height),
-      			  translate = [width / 2 - scale * x, height / 2 - scale * y];
-
-/*
-      		  d3.select('svg.map>g')
-      			.transition()
-      			.duration(1000)
-      			.attr('transform','')
-      			.attr('stroke-width',0.5)
-      			.each('end',function() {
-
-      			  		d3.select(this)
-      			  			.transition()
-      			  			.duration(1000)
-      			  			.attr('transform','translate('+ translate +')scale('+ scale +')')
-      			  			.attr('stroke-width',0.02);
-
-      			});
- */  
-      		  clearInterval(zoomAttemp);
-
-      		} catch(err) {
-      			return
-      		};
-
-        },100);
 };
 
 
 
-
+// Esta función maneja los cambios en los elementos 'select' (inserta las opciones según los filtros).
  function cambioAsignacion(data) {
  	  $('.asignacion').html('');
  	  var cuenca_sel = $('.cuenca>option:selected').text()
@@ -262,7 +192,7 @@ function datosAsignacion(data,nombre,projection,mymap,asignaciones) {
 
 
 
-
+// Maneja la funcionalidad a la hora de buscar asignaciones por palabra.
  function inputEnBuscador(d,data) {
 
  	var val = $('input.buscador').val();
@@ -290,10 +220,12 @@ function datosAsignacion(data,nombre,projection,mymap,asignaciones) {
 				str_ = d.NOMBRE;
 				return patts.every(regexCheck)
 		}).map(function(d) {
-			return '<div class="result_" style="font-size:12px;z-index:2;background-color:transparent;">'+ d.NOMBRE +'</div>'
-		})
+			return '<div class="result_" style="font-size:12px;z-index:2;background-color:transparent;">'
+                  + d.NOMBRE +
+             '</div>';
+		});
 
-		if(matches.length > 0) { 
+		if(matches.length > 0) {
 			matches = matches.reduce(function(a,b) { return a + b; });
 		} else {
 			matches = '<div style="font-size:12px;z-index:2;background-color:transparent;font-weight:700;color:rgb(13,180,190)">No hay coincidencias</div>'
@@ -303,7 +235,7 @@ function datosAsignacion(data,nombre,projection,mymap,asignaciones) {
 	 	var papaDelBuscador = $('input.buscador').parent();
 	 	var resultadosProps = resultadosDesplegablesProperties();
 	 	var resultadosStyle = '"width:'+ (resultadosProps.width - 2) +
-	 								'px;max-height:250px;background:rgba(255,255,255,0.8);position:absolute;left:'+ 
+	 								'px;max-height:250px;background:rgba(255,255,255,0.8);position:absolute;left:'+
 	 								resultadosProps.x +'px;border:1px solid black;overflow:auto;z-index:1;"'
 	 	var resultadosDiv = '<div class="resultadosDesplegables" style='+ resultadosStyle +'><div style="width:100%;z-index:1;">'+ matches +'</div></div>';
 
@@ -311,25 +243,28 @@ function datosAsignacion(data,nombre,projection,mymap,asignaciones) {
 
 
  	} else {
- 		$('div.resultadosDesplegables').remove()
+ 		     $('div.resultadosDesplegables').remove()
  	}
 
 	$('.result_').on('mouseover',function(d) {
+
 	  		$(this).css('background-color','lightBlue')
-	  			   .css('cursor','pointer');
+	  			     .css('cursor','pointer');
 
 	}).on('mouseout',function(d) {
+
 	  		$(this).css('background-color','transparent');
 
 	}).on('click',function(d) {
-		var nombre = $(this).text();
-		var sel_asignacion = data.filter(function(d) { return d.NOMBRE == nombre; })[0];
 
-		$('.cuenca').val(sel_asignacion.PROVINCIA)
-					.trigger('change');
+		    var nombre = $(this).text();
+		    var sel_asignacion = data.filter(function(d) { return d.NOMBRE == nombre; })[0];
 
-		$('.asignacion').val(nombre)
-						.trigger('change');
+		    $('.cuenca').val(sel_asignacion.PROVINCIA)
+					          .trigger('change');
+
+		    $('.asignacion').val(nombre)
+						            .trigger('change');
 
 	});
 
@@ -338,95 +273,101 @@ function datosAsignacion(data,nombre,projection,mymap,asignaciones) {
     		$('div.resultadosDesplegables').remove();
     		$('input.buscador').val('');
 	 });
-	 
+
  };
 
 
-
-
-
-
-
+// Esta función obtiene las dimensiones del cuadro desplegable de búsquedas por palabra.
  function resultadosDesplegablesProperties() {
- 	var properties = $('input.buscador')[0].getBoundingClientRect();
- 	return properties;
+ 	    var properties = $('input.buscador')[0].getBoundingClientRect();
+ 	    return properties;
+ };
+
+
+
+ function speechBubbles(mapNdataObj) {
+     	 $('div.button:not(.selectedButton)').on('mouseover',function() {
+
+         		var text = $(this).attr('id');
+         		var pos = +$(this).attr('pos');
+         		var width = +$(this).css('width').split('px')[0];
+         		var left = width*pos;
+
+         		var p = '<div id="bubble" style="left:'+ left +'px">'+ text +'</div>'
+         		$('div#bubbles').append(p)
+
+         		var offset = Math.abs($('#bubble')[0].getBoundingClientRect().width - width) / 2;
+         		var currentLeft = +$('#bubble').css('left').split('px')[0];
+         		var newLeft = currentLeft - offset;
+
+         		$('#bubble').css('left',newLeft + 'px');
+
+      });
+
+
+     	$('div.button').on('mouseout',function() {
+     		   $('#bubbles>div#bubble').remove()
+     	});
+
+
+    	$('div.button').on('click',function(d) {
+    		    clicker(this,mapNdataObj);
+    		    d3.selectAll('div#botones_>div:not(.espacioBlanco)')
+              .attr('class','button');
+
+    		   $(this).attr('class','selectedButton')
+    	});
+
+
+    	$('#botones_>div').filter(function(i,d) { return i === 0 })
+                        .click();
+
  };
 
 
 
 
 
+ function clicker(element,mapNdataObj) {
 
- function speechBubbles() {
- 	$('div.button:not(.selectedButton)').on('mouseover',function() {
+ 	  var id = $(element).attr('id');
+ 	  var clase = $(element).attr('class');
 
- 		var text = $(this).attr('id');
- 		var pos = +$(this).attr('pos');
- 		var width = +$(this).css('width').split('px')[0];
- 		var left = width*pos;
-
- 		var p = '<div id="bubble" style="left:'+ left +'px">'+ text +'</div>'
- 		$('div#bubbles').append(p)
-
- 		var offset = Math.abs($('#bubble')[0].getBoundingClientRect().width - width) / 2;
- 		var currentLeft = +$('#bubble').css('left').split('px')[0];
- 		var newLeft = currentLeft - offset;
-
- 		$('#bubble').css('left',newLeft + 'px');
-
- 	});
-
- 	$('div.button').on('mouseout',function() {
- 		$('#bubbles>div#bubble').remove()
- 	});
-
-
-	$('div.button').on('click',function(d) {
-		clicker(this);
-		d3.selectAll('div#botones_>div:not(.espacioBlanco)').attr('class','button');
-
-		$(this).attr('class','selectedButton')
-	});
-
-	$('#Producción').click();
-
+ 	  if(clase != 'selectedButton') {
+	 	   $('#visor').html('');
+	 	   switcher(id,mapNdataObj);
+	  }
 
  };
-
-
-
-
-
- function clicker(element) {
-
- 	var id = $(element).attr('id');
- 	var clase = $(element).attr('class');
- 	console.log(clase)
-
- 	if(clase != 'selectedButton') {
-	 	$('#visor').html('');
-
-	 	switcher(id);
-	 }
- }
 
 
 
  function grapher(fn) {
- 	fn();
- 	window.setTimeout(function() {
- 			$('.highcharts-background').attr('fill','transparent');
- 	},300);
- }
+ 	    fn();
+ 	    window.setTimeout(function() {
+ 			      $('.highcharts-background').attr('fill','transparent');
+ 	    },300);
+};
 
- function openInNewTab(url) {
+
+function openInNewTab(url) {
   var win = window.open(url, '_blank');
   win.focus();
-}
+};
 
 
-function switcher(id) {
+function switcher(id,mapNdataObj) {
+
 		 	switch (true) {
+      case id == 'Datos generales':
+        grapher(function() {
+
+          DatosGrales();
+          datosAsignacion(mapNdataObj.data,null,null,mapNdataObj.mymap,mapNdataObj.asignaciones);
+
+        });
+        break;
+
 	 		case id === 'Producción':
 	 			grapher(LineChart);
 	 			break;
@@ -460,4 +401,4 @@ function switcher(id) {
 	 			break;
 
 	 	}
-}
+};

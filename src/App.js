@@ -243,25 +243,26 @@ class DropDownMenu extends Component {
     textAlign:'center',
     width: String(this.tableDimension*100) + '%',
     position:'relative',
-    left: String( ((1 - this.tableDimension)*100) / 2) + '%'
+    left: String( ((1 - this.tableDimension)*100) / 2) + '%',
+    marginTop:'2px'
   };
 
   titleStyle = {
     display:'table-cell',
-    width:'10%',
+    width:'30%',
     fontWeight:'800',
     textAlign:'right'
   };
 
   selectContStyle = {
     display:'table-cell',
-    width:'90%'
+    width:'70%'
   };
 
   selectStyle = {
-    width:'70%',
-    minWidth:'70%',
-    maxWidth:'70%'
+    width:'100%',
+    //minWidth:'70%',
+    //maxWidth:'70%'
   };
 
   replaceChars(str) {
@@ -278,12 +279,12 @@ class DropDownMenu extends Component {
   render() {
     return (
       <div className='header_child' style={{display:'table-cell',textAlign:'center',width:this.props.w_}}>
-        <div style={{display:'table',position:'absoulte',height:'100%', width:'100%', textAlign:'center',tableLayout:'fixed'}}>
+        <div style={{display:'table',position:'absoulte',height:'100%', width:'100%', textAlign:'center' }}>
            <div style={{display:'table-cell',verticalAlign:'middle',textAlign:'center'}}>
-              <div>
+              <div style={{ position:'relative',top:'-2px' }}>
                 <div style={ this.tableStyle }>
                   <div style={ this.titleStyle }>
-                  { this.props.title[0] }
+                  { this.props.title[0] } <span>&nbsp;</span>
                   </div>
                   <div style={ this.selectContStyle }>
                     <select className={ this.replaceChars(this.props.title[0]) } style={ this.selectStyle }/>
@@ -291,7 +292,7 @@ class DropDownMenu extends Component {
                 </div>
                 <div style={ this.tableStyle }>
                   <div style={ this.titleStyle }>
-                  { this.props.title[1] }
+                  { this.props.title[1] } <span>&nbsp;</span>
                   </div>
                   <div style={ this.selectContStyle }>
                     <select className={ this.replaceChars(this.props.title[1]) } style={ this.selectStyle }/>

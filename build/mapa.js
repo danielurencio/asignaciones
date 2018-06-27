@@ -1,11 +1,18 @@
 function leafletMap(shapes) {
-//	d3.json('shapes.json',function(err,data) {
+
+		//	var tiposAsig = ['Extracción','Exploración','Resguardo'];
+
+			var polygonColor = {
+				'Extracción':'rgb(13,180,190)',//'rgb(1,114,158)',
+				'Exploración':'rgb(46,112,138)',
+				'Resguardo':'rgb(20,50,90)'
+			};
 
 			var mymap = L.map('MAPA',{
 					attributionControl:false,
 					zoomAnimation:true
 				})
-				 .setView([22.0, -97.0], 5.3);
+				.setView([22.0, -97.0], 5.3);
 
 			asignaciones = L.geoJSON(shapes,{
 				id:function(feature) {
@@ -17,7 +24,7 @@ function leafletMap(shapes) {
 
 						case 'Resguardo': return {
 							color:'white',
-							fillColor:'red',
+							fillColor:polygonColor['Resguardo'],
 							weight:0.5,
 							fillOpacity:0.7,
 							className:feature.properties.ID
@@ -25,7 +32,7 @@ function leafletMap(shapes) {
 
 						case 'Extracción': return {
 							color:'white',
-							fillColor:'rgb(1,114,158)',
+							fillColor:polygonColor['Extracción'],
 							weight:0.5,
 							fillOpacity:0.7,
 							className:feature.properties.ID
@@ -33,14 +40,14 @@ function leafletMap(shapes) {
 
 						case 'Exploración': return {
 							color:'white',
-							fillColor:'rgb(121,207,206)',
+							fillColor:polygonColor['Exploración'],
 							weight:0.5,
 							fillOpacity:0.7,
 							className:feature.properties.ID
 						};
 
 					}
-				},
+				}/*,
 				onEachFeature:function(feature,layer) {
 					//console.log(feature.properties.ID)
 					//console.log(d3.select('.'+feature.properties.ID).node())
@@ -50,7 +57,7 @@ function leafletMap(shapes) {
 							//feature.setStyle({ fillColor:'pink' })
 						}
 					})
-				}
+				*/
 
 			}).addTo(mymap)
 
@@ -60,21 +67,34 @@ function leafletMap(shapes) {
 				className:'polygonTooltip'
 			});
 
-/*
-			asignaciones.on('click',function(event) {
-				console.log(event)
-				mymap.fitBounds(event.layer.getBounds())
-				//mymap.setView(event.layer.getBounds())
-				console.log(event.layer.feature.properties)
-			});
-*/
 			var OpenStreetMap_BlackAndWhite = L.tileLayer('http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png',{//'http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png', {
 																	maxZoom: 18,
 																	attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 			}).addTo(mymap);
-//	});
 
-	return [asignaciones,mymap];
+
+			var legend = L.control({ position:'bottomleft' });
+			var legendStr =
+				'<div id="mapLegend">' +
+						'<div style="font-weight:800;padding-bottom:5px;">Tipos de Asignación</div>' +
+						'<div style="text-align:center;">' +
+							'<span style="color:'+ polygonColor['Extracción'] +'">&block;</span>&ensp;Extracción&ensp;<br>' +
+							'<span style="color:'+ polygonColor['Exploración'] +'">&block;</span>&ensp;Exploración<br>'+
+							'<span style="color:'+ polygonColor['Resguardo'] +'">&block;</span>&ensp;Resguardo&nbsp;'
+						'</div>'
+				'</div>';
+
+			legend.onAdd = function(map) {
+				var div = L.DomUtil.create('div','info legend');
+
+				div.innerHTML = legendStr;
+
+				return div;
+			};
+
+			legend.addTo(mymap)
+
+			return [asignaciones,mymap];
 };
 
 
@@ -86,7 +106,7 @@ function Mapa(projection) {
 
   var path = d3.geo.path().projection(projection);
 
-  //d3.json('entidades.json',function(err,data) {  	  
+  //d3.json('entidades.json',function(err,data) {
   	d3.json('asig.json',function(err,asignaciones){
   		  console.log(asignaciones)
   		  asigCache = asignaciones
