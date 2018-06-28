@@ -2,7 +2,7 @@
 
     d3.json('file_.json',function(err,data_) {
     	d3.json('shapes_.json',function(err,shapes) {
-
+console.log(data_);
 /*------------------------------------------------Highcharts language settings------------------------------------------------------------------*/
 			  Highcharts.setOptions({
 			  	lang: {
@@ -131,7 +131,7 @@ function datosAsignacion(data,nombre,projection,mymap,asignaciones) {
 		}
 
       	var sel_asignacion_obj = data.filter(function(d) { return d.NOMBRE == sel_asignacion; })[0];
-console.log(sel_asignacion_obj)
+
       	var filas = ['NOMBRE','VIGENCIA_ANIOS','VIG_INICIO','VIG_FIN','SUPERFICIE_KM2','ESTATUS'];
 
       	for(var i in filas) {
