@@ -1,8 +1,8 @@
  $(document).ready(function() {
-
+  d3.csv('datos_asignaciones_grales.csv', function(err,datos_grales) {
+   d3.csv('asignaciones_produccion.csv', function(err,produccion) {
     d3.json('file_.json',function(err,data_) {
     	d3.json('shapes_.json',function(err,shapes) {
-console.log(data_);
 /*------------------------------------------------Highcharts language settings------------------------------------------------------------------*/
 			  Highcharts.setOptions({
 			  	lang: {
@@ -11,6 +11,8 @@ console.log(data_);
 			  })
 
 /*------------------------------------------------Highcharts language settings------------------------------------------------------------------*/
+
+		  console.log(data_[0],datos_grales[0])
 
     		  var markersANDmap = leafletMap(shapes);
     		  var asignaciones = markersANDmap[0];
@@ -114,7 +116,9 @@ console.log(data_);
 		      });
 
 		});
+   });
   });
+ });
 });
 
 
