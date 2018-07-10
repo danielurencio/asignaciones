@@ -11,7 +11,7 @@ function DatosGrales() {
 
                 "<tr>" +
                   "<td>Vigencia (años):</td>" +
-                  "<td class='VIGENCIA_ANIOS'></td>" +
+                  "<td class='VIG_ANIOS'></td>" +
                 "</tr>" +
 
                 "<tr>" +
@@ -28,7 +28,7 @@ function DatosGrales() {
                 "</tr>" +
                 "<tr>" +
                   "<td>Tipo de asignación</td>" +
-                  "<td class='ESTATUS'></td>" +
+                  "<td class='TIPO'></td>" +
                 "</tr>" +
               "</tbody>" +
             "</table>" +
@@ -61,35 +61,57 @@ function DatosGrales() {
 }
 
 function LineChart() {
-    $.getJSON('aapl-c.json', function (data) {
-    // Create the chart
-        Highcharts.stockChart('visor', {
+    var asig_id = $('.asignacion>option:selected').attr('id');
 
-            credits:false,
-            rangeSelector: {
-                selected: 1,
-                inputEnabled:true,
-                buttonTheme: {
-                    visibility:'hidden'
+    $.ajax({
+        type:'GET',
+        dataType:'JSON',
+        url: HOSTNAME + 'produccion_asig.py?ID=' + asig_id,
+        //url:'aapl-c.json',
+        success: function(data) {
+            var mods = _.uniq( data.map(function(d) { return d.nombre; }) );
+
+            var series = mods.map(function(d) {
+                var aceite = data.filter(function(e) { return e.nombre == d; });
+                aceite = _.sortBy(aceite,function(d) { return d.fecha })
+                          .map(function(d) { return [d.fecha,d.aceite_mbd]; });
+
+                var serie = {
+                  name:d,
+                  data:aceite,
+                  tooltip: { valueDecimals:2 }
+                };
+
+                return serie;
+            });
+
+
+            var aceite = _.sortBy(data,function(d) { return d.fecha; })
+                          .map(function(d) { return [d.fecha,d.aceite_mbd] });
+
+            // Create the chart
+            Highcharts.stockChart('visor', {
+
+                credits:false,
+                rangeSelector: {
+                    selected: 1,
+                    inputEnabled:true,
+                    buttonTheme: {
+                        visibility:'hidden'
+                    },
+                    labelStyle:{
+                        visibility:'hidden'
+                    }
+
                 },
-                labelStyle:{
-                    visibility:'hidden'
-                }
 
-            },
+                title: {
+                    text: 'Producción'
+                },
 
-            title: {
-                text: 'Producción'
-            },
-
-            series: [{
-                name: 'AAPL',
-                data: data,
-                tooltip: {
-                    valueDecimals: 2
-                }
-            }],
-        });
+                series: series,
+            });
+        }
     });
 }
 

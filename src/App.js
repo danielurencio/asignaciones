@@ -374,7 +374,7 @@ class Ficha extends Component {
                 </tr>
                 <tr>
                   <td>Tipo de asignación</td>
-                  <td className='ESTATUS'></td>
+                  <td className='TIPO'></td>
                 </tr>
               </tbody>
             </table>

@@ -1,5 +1,13 @@
+var HOSTNAME = 'http://172.16.24.57/';
+
  $(document).ready(function() {
-  d3.csv('datos_asignaciones_grales.csv', function(err,datos_grales) {
+
+  $.ajax({
+    type:'GET',
+    dataType:'JSON',
+    url: HOSTNAME + 'grales_asig.py',
+    success:function(datos_grales) {
+
    d3.csv('asignaciones_produccion.csv', function(err,produccion) {
     d3.json('file_.json',function(err,data_) {
     	d3.json('shapes_.json',function(err,shapes) {
@@ -11,8 +19,6 @@
 			  })
 
 /*------------------------------------------------Highcharts language settings------------------------------------------------------------------*/
-
-		  console.log(data_[0],datos_grales[0])
 
     		  var markersANDmap = leafletMap(shapes);
     		  var asignaciones = markersANDmap[0];
@@ -62,10 +68,19 @@
 
           data_ = JSON.parse(data_)
 
-		      var data = data_;//JSON.parse(data);
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//    -----> ESTO TIENE QUE CAMBIAR!!!!
+/////////////////////////////////////////////////////////////////////////////////////////////
+          datos_grales = datos_grales.map(function(d) { if(!d.CUENCA) d.CUENCA='nada'; return d; });
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//    -----> ESTO TIENE QUE CAMBIAR!!!!
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+          var data = datos_grales;
 
 		      var cuencas = data.map(function(d) {
-		      		return d.PROVINCIA;
+		      		return d.CUENCA;
 		      });
 
 		      cuencas = _.uniq(cuencas);
@@ -76,18 +91,37 @@
 		      	}
 		      });
 
-
-
 			  asignaciones.on('click',function(event) {
+          //event.layer.setStyle({ background:'red' });
+    				  var id_asignacion = event.layer.feature.properties.ID;
+    				  var sel_asignacion = data.filter(function(d) {
+                /* Habrá que cambiar NOMBRE por ID*/
+                return d.NOMBRE.split(' - ')[0] == id_asignacion;
+                /* Habrá que cambiar NOMBRE por ID*/
+              })[0];
 
-				  var id_asignacion = event.layer.feature.properties.ID;
-				  var sel_asignacion = data.filter(function(d) { return d.ID == id_asignacion; })[0];
 
-				  $('.cuenca').val(sel_asignacion.PROVINCIA)
-					  .trigger('change');
+              /* -- Sustituir valores de filtros sin detonar eventos --*/
+    				  $('.cuenca').val(sel_asignacion.CUENCA)
+              cambio(data,'ubicacion',function(d) {
+                return localCond(d,'cuenca');
+              });
 
-				  $('.asignacion').val(sel_asignacion.NOMBRE)
-						.trigger('change');
+              $('.ubicacion').val(sel_asignacion.UBICACION)
+              cambio(data,'tipo',function(d) {
+                  return localCond(d,'cuenca') && localCond(d,'ubicacion');
+              });
+
+              $('.tipo').val(sel_asignacion.TIPO)
+              cambio(data,'asignacion',function(d) {
+                  return localCond(d,'cuenca') && localCond(d,'ubicacion') && localCond(d,'tipo');
+              },'NOMBRE');
+
+    				  $('.asignacion').val(sel_asignacion.NOMBRE);
+              /* -- Sustituir valores de filtros sin detonar eventos --*/
+
+
+              $('.asignacion').trigger('change');
 
 			  });
 
@@ -97,28 +131,47 @@
             'mymap':mymap
           };
 
+
           cambioAsignacion(data);
           speechBubbles(mapNdataObj);
-		      //cambioAsignacion(data);
-		      //datosAsignacion(data,null,null,mymap,asignaciones);
 
 		      $('.cuenca').on('change',function() {
 		      		cambioAsignacion(data);
 		      		datosAsignacion(data,null,null,mymap,asignaciones);
 		      });
 
+
+          $('.ubicacion').on('change',function() {
+                cambio(data,'tipo',function(d) {
+                  return localCond(d,'cuenca') && localCond(d,'ubicacion');
+                });
+
+                $('.tipo').trigger('change');
+          });
+
+
+          $('.tipo').on('change',function() {
+                cambio(data,'asignacion',function(d) {
+                    return localCond(d,'cuenca') && localCond(d,'ubicacion') && localCond(d,'tipo');
+                },'NOMBRE');
+
+                $('.asignacion').trigger('change');
+          });
+
+
 		      $('.asignacion').on('change',function() {
-		      		datosAsignacion(data,null,null,mymap,asignaciones);
-		      })
+		      		    datosAsignacion(data,null,null,mymap,asignaciones);
+		      });
+
 
 		      $('input.buscador').on('input',function(d) {
-		      		inputEnBuscador(d,data);
+		      		  inputEnBuscador(d,data);
 		      });
 
 		});
    });
   });
- });
+ }});
 });
 
 
@@ -131,24 +184,32 @@ function datosAsignacion(data,nombre,projection,mymap,asignaciones) {
 		if(!nombre) { 														// <-- ¿Esto qué?
 			sel_asignacion = $('.asignacion>option:selected').text();
 		} else {
-			sel_asignacion = nombre;
+			sel_asignacion = nombre.split(' - ')[0];   // <-- ¿Esto qué?
 		}
 
       	var sel_asignacion_obj = data.filter(function(d) { return d.NOMBRE == sel_asignacion; })[0];
 
-      	var filas = ['NOMBRE','VIGENCIA_ANIOS','VIG_INICIO','VIG_FIN','SUPERFICIE_KM2','ESTATUS'];
+      	var filas = ['NOMBRE','VIG_ANIOS','VIG_INICIO','VIG_FIN','SUPERFICIE_KM2','TIPO'];
 
       	for(var i in filas) {
       		$('.' + filas[i]).text(sel_asignacion_obj[filas[i]])
       	}
 
+       var arr_layers = Object.keys(asignaciones._layers)
+                  .map(function(d) {
+                      var obj = {};
+                      obj['key'] = d;
+                      obj['layer'] = asignaciones._layers[d];
+                      return obj;
+                  });
 
-      	for(var k in asignaciones._layers) {
-      		if(asignaciones._layers[k].feature.properties.ID == sel_asignacion.split(' - ')[0]) {
-      			d3.selectAll('path').transition().duration(800).style('opacity',0)
-      			mymap.flyTo(asignaciones._layers[k].getCenter(),10)
-      		}
-      	}
+        var selected_layer = arr_layers.filter(function(d) {
+          if(d.layer.feature.properties.ID == sel_asignacion.split(' - ')[0]) return d.key;
+        })[0].layer;
+
+
+        d3.selectAll('path').transition().duration(800).style('opacity',0);
+        mymap.flyTo(selected_layer.getCenter(),8);
 
       	mymap.on('moveend',function(){
       		d3.selectAll('path:not(.'+ sel_asignacion.split(' - ')[0] +')')
@@ -177,13 +238,41 @@ function datosAsignacion(data,nombre,projection,mymap,asignaciones) {
 
 
 
+// Esta función se llama dentro de la fn 'cambio', tiene como objetivo simplificar la sintaxis
+// de su lógica interna.
+function localCond(d,str) {
+        return d[str.toUpperCase()] == $('.' + str + '>option:selected').text();
+};
+
+
+
 // Esta función maneja los cambios en los elementos 'select' (inserta las opciones según los filtros).
  function cambioAsignacion(data) {
- 	  $('.asignacion').html('');
- 	  var cuenca_sel = $('.cuenca>option:selected').text()
 
-      var filtro_asig = data.filter(function(d) { return d.PROVINCIA == cuenca_sel; })
-      						.map(function(d) { return d.NOMBRE; });
+      cambio(data,'ubicacion',function(d) {
+        //return d['UBICACION'] == $('.>option:selected').text();
+        return localCond(d,'cuenca');
+      });
+
+      cambio(data,'tipo',function(d) {
+        return localCond(d,'cuenca') && localCond(d,'ubicacion');
+      });
+
+
+      cambio(data,'asignacion',function(d) {
+        //return localCond(d,'cuenca')
+        return localCond(d,'cuenca') && localCond(d,'ubicacion') && localCond(d,'tipo');
+      },'NOMBRE');
+
+/*
+      $('.asignacion').html('');
+ 	    var cuenca_sel = $('.cuenca>option:selected').text();
+
+      var filtro_asig = data.filter(function(d) {
+        return d.CUENCA == cuenca_sel ;
+      })
+      .map(function(d) { return d.NOMBRE; });
+
       filtro_asig = _.uniq(filtro_asig);
 
       filtro_asig.forEach(function(d) {
@@ -191,8 +280,42 @@ function datosAsignacion(data,nombre,projection,mymap,asignaciones) {
       		$('.asignacion').append('<option>'+ d +'</option>');
       	}
       });
-
+*/
  };
+
+
+
+// Esta función cambia las opciones de selección para 'Ubicación', 'Tipo' y 'Asignacion'.
+function cambio(data,str,fn,extraParam) {
+
+    var filters, param;
+
+    var mapName = extraParam ? extraParam : str.toUpperCase();
+
+    if(str != 'asignacion') {
+
+        param = data.filter(fn)
+                    .map(function(d) { return d[mapName]; });
+
+        param = _.uniq(param);
+        param = param.map(function(d) { return '<option>' + d + '</option>'; }).join('');
+
+    } else {
+        param = data.filter(fn)
+                    .map(function(d) { return { 'nombre':d[mapName],'id':d.ID }; });
+
+        var nombres = _.uniq( param.map(function(d) { return d.nombre }) );
+
+        param = nombres.map(function(d) {
+            var id = param.filter(function(e) { return e.nombre == d; })[0].id;
+            return '<option id='+ id +'>' + d + '</option>';
+        });
+
+    };
+
+    $('.' + str).html(param);
+
+};
 
 
 
