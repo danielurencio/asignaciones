@@ -175,7 +175,7 @@ class Botones extends Component {
       <div id='botones_' style={{ width:'100%', height:'100%',display:'table' }}>
             {
               botones.map(function(d,i) {
-                let dir = 'Stroke'
+                let dir = 'Fill'
                 let glyph;
                 let imgSrc;
 
