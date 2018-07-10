@@ -67,6 +67,7 @@ function leafletMap(shapes) {
 				className:'polygonTooltip'
 			});
 
+
 			var OpenStreetMap_BlackAndWhite = L.tileLayer('http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png',{//'http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png', {
 																	maxZoom: 18,
 																	attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -93,6 +94,29 @@ function leafletMap(shapes) {
 			};
 
 			legend.addTo(mymap)
+
+
+			var legend = L.control({ position:'bottomright' });
+			var legendStr =
+				'<div id="mapLegend">' +
+						'<div style="font-weight:800;padding-bottom:5px;">Tipos de Asignación</div>' +
+						'<div style="text-align:center;">' +
+							'<span style="color:'+ polygonColor['Extracción'] +'">&block;</span>&ensp;Extracción&ensp;<br>' +
+							'<span style="color:'+ polygonColor['Exploración'] +'">&block;</span>&ensp;Exploración<br>'+
+							'<span style="color:'+ polygonColor['Resguardo'] +'">&block;</span>&ensp;Resguardo&nbsp;'
+						'</div>'
+				'</div>';
+
+			legend.onAdd = function(map) {
+				var div = L.DomUtil.create('div','info legend');
+
+				div.innerHTML = legendStr;
+
+				return div;
+			};
+
+			legend.addTo(mymap)
+
 
 			return [asignaciones,mymap];
 };
