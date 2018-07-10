@@ -115,7 +115,7 @@ function leafletMap(shapes) {
 				return div;
 			};
 
-			legend.addTo(mymap)
+			//legend.addTo(mymap)
 
 
 			return [asignaciones,mymap];

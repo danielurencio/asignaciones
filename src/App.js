@@ -142,7 +142,7 @@ class Visor extends Component {
              'Compromiso Mínimo de Trabajo',
              'Aprovechamiento de gas',
              'Dictámenes',
-             'Autorizaciones'
+             'Seguimiento'
            ]}/>
         </div>
         <div style={{ width:'100%',height:'calc(100% - '+ this.props.boton_width + 'px)' }}>
@@ -162,6 +162,7 @@ class Visor extends Component {
 
 
 class Botones extends Component {
+
   render() {
 
     const botones = this.props.elements;
@@ -174,7 +175,9 @@ class Botones extends Component {
       <div id='botones_' style={{ width:'100%', height:'100%',display:'table' }}>
             {
               botones.map(function(d,i) {
+                let dir = 'Stroke'
                 let glyph;
+                let imgSrc;
 
                 if( d === 'Producción' ) {
                   glyph = 'oil';
@@ -187,13 +190,13 @@ class Botones extends Component {
                 } else if ( d === 'Compromiso Mínimo de Trabajo' ) {
                   glyph = 'tasks';
                 } else if ( d === 'Aprovechamiento de gas' ) {
-                  glyph = 'scale'
+                  glyph = 'scale';
                 } else if ( d === 'Dictámenes' ) {
                   glyph = 'list-alt'
-                } else if ( d === 'Autorizaciones' ) {
-                  glyph = 'ok'
+                } else if ( d === 'Seguimiento' ) {
+                  glyph = 'ok';
                 } else if ( d === 'Datos generales' ) {
-                  glyph = 'pushpin'
+                  glyph = 'pushpin';
                 }
 
                 let clase;
@@ -218,8 +221,9 @@ class Botones extends Component {
                                               textAlign:'center'
                                             }}>
                                             <div style={{ height:'100%',width:'100%',verticalAlign:'middle',display:'table',textAlign:'center' }}>
-                                              <div style={{ 'display':'table-cell', verticalAlign:'middle',width:'100%',textAlign:'center' }}>
-                                                <i className={ 'glyphicon glyphicon-' + glyph } style={{ width:'100%',textAlign:'center',fontSize:'2.5em',verticalAlign:'middle' }}></i>
+                                              <div style={{ 'display':'table-cell', verticalAlign:'middle',width:'100%',textAlign:'center',height:'100%' }}>
+                                                {/*<i className={ 'glyphicon glyphicon-' + glyph } style={{ width:'100%',textAlign:'center',fontSize:'2.5em',verticalAlign:'middle' }}></i>*/}
+                                                <img alt='' src={dir + '/0' + i + '.jpg'} style={{ maxHeight:'100%', maxWidth:'100%' }}></img>
                                               </div>
                                             </div>
                     </div>
