@@ -5,7 +5,8 @@ function DatosGrales() {
     "<div style='display:table;position:absolute;width:100%;height:100%;'>" +
       "<div style='display:table-cell;width:100%;vertical-align:middle;text-align:center;'>" + // <- 'vertical-align:middle' para centrar
 
-          "<div class='NOMBRE' style='margin:6px;fontWeight:700;fontSize:14px'></div>" +
+          "<div class='NOMBRE' style='margin:6px;font-weight:700;font-size:14px'></div>" +
+/*
             "<table style='width:100%; marginLeft:0%;paddingRight:0%;maxHeight:50%'>" +
               "<tbody style='height:70%;fontWeight:900'>" +
 
@@ -32,7 +33,7 @@ function DatosGrales() {
                 "</tr>" +
               "</tbody>" +
             "</table>" +
-
+*/
             "<div style='text-align:center;padding:0px;font-weight:800;position:relative;top:12px'>" +
                 "<div style='display:table;width:100%'>" +
 
@@ -43,7 +44,7 @@ function DatosGrales() {
                   "</div>" +
 
                   "<div style='width:50%;display:table-cell;background-color:white;vertical-align:middle;position:relative'>" +
-                    "<div style='width:70%;padding:2px;left:10%;position:relative;color:white;border-radius:2px;vertical-align:middle;background:url() rgb(13,180,190) no-repeat 20px 3px'>" +
+                    "<div style='width:70%;padding:2px;left:10%;position:relative;color:white;border-radius:2px;vertical-align:middle;background:url() gray no-repeat 20px 3px'>" +
                       "Resumen" +
                     "</div>" +
                   "</div>" +
@@ -69,47 +70,155 @@ function LineChart() {
         url: HOSTNAME + 'produccion_asig.py?ID=' + asig_id,
         //url:'aapl-c.json',
         success: function(data) {
+            console.log(data);
             var mods = _.uniq( data.map(function(d) { return d.nombre; }) );
 
-            var series = mods.map(function(d) {
-                var aceite = data.filter(function(e) { return e.nombre == d; });
-                aceite = _.sortBy(aceite,function(d) { return d.fecha })
-                          .map(function(d) { return [d.fecha,d.aceite_mbd]; });
-
-                var serie = {
-                  name:d,
-                  data:aceite,
-                  tooltip: { valueDecimals:2 }
-                };
-
-                return serie;
-            });
+            function Series (str,axis) {
+                    var hidrocarburo = str.split('_');
+                    hidrocarburo = hidrocarburo[0].toUpperCase() + ' (' + hidrocarburo[1] + ')';
 
 
-            var aceite = _.sortBy(data,function(d) { return d.fecha; })
-                          .map(function(d) { return [d.fecha,d.aceite_mbd] });
+                    var series = mods.map(function(d) {
+                        var dato = data.filter(function(e) { return e.nombre == d; });
+                        dato = _.sortBy(dato,function(d) { return d.fecha })
+                                  .map(function(d) {
+                                    var obj =  {
+                                      'x':d.fecha,
+                                      'y':d[str],
+                                      'ID':asig_id,
+                                      'hidrocarburo':hidrocarburo,
+                                      'nombre':d.nombre
+                                    };
+
+                                    return obj;
+                                  });
+
+                        var serie = {
+                          showInNavigator:true,
+                          name:hidrocarburo,
+                          data:dato,
+                          tooltip: { valueDecimals:2 }
+                        };
+
+                        if(axis) {
+                          serie['yAxis'] = 1;
+                        } else {
+                          serie['dashStyle'] = 'ShortDash';
+                        }
+
+                        return serie;
+                    });
+
+                    return series;
+            };
 
             // Create the chart
-            Highcharts.stockChart('visor', {
-
+            Highcharts.StockChart('visor', {
+                legend: {
+                  enabled:false
+                },
+                navigator: {
+                  enabled:true
+                },
+                yAxis: [
+                  {
+                    title:{
+                      text:'Aceite (mbd)'
+                    },
+                    opposite:false,
+                  },
+                  {
+                    title: {
+                      text:'Gas (mmpcd)'
+                    },
+                  }
+                ],
                 credits:false,
+
                 rangeSelector: {
+                    enabled:true,
+                    /*
                     selected: 1,
                     inputEnabled:true,
+
                     buttonTheme: {
                         visibility:'hidden'
                     },
+
                     labelStyle:{
                         visibility:'hidden'
                     }
-
+                    */
                 },
-
                 title: {
-                    text: 'Producción'
+                    text: null//$('.asignacion>option:selected').text()
+                },
+                subtitle: {
+                    text: null//'Producción'
                 },
 
-                series: series,
+                series: Series('aceite_mbd',1).concat(Series('gas_mmpcd')),
+                rangeSelector: {
+                  enabled:true,
+                  buttons: [
+                    {
+                      type:'month',
+                      count:6,
+                      text:'6m'
+                    },
+                    {
+                      type:'year',
+                      count:1,
+                      text:'12m'
+                    },
+                    {
+                      type:'all',
+                      text:'Todo'
+                    }
+                  ]
+                },
+                tooltip: {
+                  useHTML:true,
+                  shared:true,
+                  split:false,
+                  formatter: function() {
+
+                      var points = this.points.map(function(d) {
+                          return {
+                            'color':d.color,
+                            'valor':d.y,
+                            'fecha':d.x,
+                            'hidrocarburo':d.point.hidrocarburo,
+                            'ID':d.point.ID,
+                            'nombre':d.point.nombre
+                          };
+                      });
+
+                      var str =
+                        '<div class="customTooltip">' +
+                          '<div>'
+                              + points[0].nombre +
+                          '</div>' +
+                          '<div style="padding-bottom:8px;padding-left:8px;font-weight:600;font-size:11px;">'
+                              + parseDate(points[0].fecha) +
+                          '</div>' +
+                              points.map(function(d) {
+                                return '<div style="padding-left:8px;">'
+                                          + '<b style="color:'+ d.color +'">' + d.hidrocarburo + ':</b> ' + d.valor.toFixed(2) +
+                                       '</div>';
+                              }).join('');
+                        '</div>';
+
+                      return str;
+                  }
+                },
+                plotOptions: {
+                  line: {
+                    marker: {
+                      enabled:false
+                    }
+                  }
+                }
             });
         }
     });
@@ -180,4 +289,17 @@ Highcharts.chart('visor', {
     }]
 });
 
+}
+
+function enConstruccion() {
+  var str =
+  "<div class='ficha' style='position:relative;width:100%;height:100%;background-color:transparent;'>" +
+    "<div style='display:table;position:absolute;width:100%;height:100%;'>" +
+      "<div style='display:table-cell;width:100%;vertical-align:middle;text-align:center;font-size:30px;font-weight:800;'>" + // <- 'vertical-align:middle' para centrar
+        ' EN CONSTRUCCIÓN &#9874;' +
+      "</div>" +
+    "</div>" +
+  "</div>"
+
+  $('#visor').html(str);
 }

@@ -173,3 +173,31 @@ div#mapLegend>span {
   font-size:18px;
   font-weight:800;
 }
+
+div#mapLegend td:nth-child(2) {
+  font-weight:600;
+}
+
+div.customTooltip {
+  width:200px;
+  display:table;
+  table-layout:fixed;
+}
+
+div.customTooltip>div {
+  font-family:'Open Sans';
+}
+
+div.customTooltip>div:first-child {
+  font-weight:800;
+  font-size:14px;
+}
+
+.highcharts-tooltip>span {
+  width:auto;
+  border:none;
+}
+
+.highcharts-tooltip {
+  border:none;
+}

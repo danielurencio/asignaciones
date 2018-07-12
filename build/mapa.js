@@ -96,18 +96,39 @@ function leafletMap(shapes) {
 			legend.addTo(mymap)
 
 
-			var legend = L.control({ position:'bottomright' });
+			var datos_grales_ = L.control({ position:'bottomright' });
 			var legendStr =
 				'<div id="mapLegend">' +
-						'<div style="font-weight:800;padding-bottom:5px;">Tipos de Asignación</div>' +
-						'<div style="text-align:center;">' +
-							'<span style="color:'+ polygonColor['Extracción'] +'">&block;</span>&ensp;Extracción&ensp;<br>' +
-							'<span style="color:'+ polygonColor['Exploración'] +'">&block;</span>&ensp;Exploración<br>'+
-							'<span style="color:'+ polygonColor['Resguardo'] +'">&block;</span>&ensp;Resguardo&nbsp;'
-						'</div>'
+				  '<div class="NOMBRE" style="font-weight:800;text-align:center;padding:8px;"></div>' +
+					"<table style='width:100%; marginLeft:0%;paddingRight:0%;maxHeight:50%'>" +
+						"<tbody style='height:70%;fontWeight:900'>" +
+
+							"<tr>" +
+								"<td>Vigencia (años):&nbsp;</td>" +
+								"<td class='VIG_ANIOS'></td>" +
+							"</tr>" +
+
+							"<tr>" +
+								"<td>Inicio de vigencia:&nbsp;</td>" +
+								"<td class='VIG_INICIO'></td>" +
+							"</tr>" +
+							"<tr>" +
+								"<td>Fin de vigencia:&nbsp;</td>" +
+								"<td class='VIG_FIN'></td>" +
+							"</tr>" +
+							"<tr>" +
+								"<td>Superficie (km<sup>2</sup>):&nbsp;</td>"+
+								"<td class='SUPERFICIE_KM2'></td>" +
+							"</tr>" +
+							"<tr>" +
+								"<td>Tipo:&nbsp;</td>" +
+								"<td class='TIPO'></td>" +
+							"</tr>" +
+						"</tbody>" +
+					"</table>" +
 				'</div>';
 
-			legend.onAdd = function(map) {
+			datos_grales_.onAdd = function(map) {
 				var div = L.DomUtil.create('div','info legend');
 
 				div.innerHTML = legendStr;
@@ -115,7 +136,7 @@ function leafletMap(shapes) {
 				return div;
 			};
 
-			//legend.addTo(mymap)
+			datos_grales_.addTo(mymap)
 
 
 			return [asignaciones,mymap];

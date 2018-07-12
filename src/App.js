@@ -175,9 +175,8 @@ class Botones extends Component {
       <div id='botones_' style={{ width:'100%', height:'100%',display:'table' }}>
             {
               botones.map(function(d,i) {
-                let dir = 'Fill'
+                let dir = 'Stroke'
                 let glyph;
-                let imgSrc;
 
                 if( d === 'Producción' ) {
                   glyph = 'oil';
@@ -223,7 +222,7 @@ class Botones extends Component {
                                             <div style={{ height:'100%',width:'100%',verticalAlign:'middle',display:'table',textAlign:'center' }}>
                                               <div style={{ 'display':'table-cell', verticalAlign:'middle',width:'100%',textAlign:'center',height:'100%' }}>
                                                 {/*<i className={ 'glyphicon glyphicon-' + glyph } style={{ width:'100%',textAlign:'center',fontSize:'2.5em',verticalAlign:'middle' }}></i>*/}
-                                                <img alt='' src={dir + '/0' + i + '.jpg'} style={{ maxHeight:'100%', maxWidth:'100%' }}></img>
+                                                <img alt='' src={dir + '/0' + i + '.svg'} style={{ maxHeight:'100%', maxWidth:'100%' }}></img>
                                               </div>
                                             </div>
                     </div>
@@ -393,7 +392,7 @@ class Ficha extends Component {
 
 
                   <div style={{'width':'50%',display:'table-cell', backgroundColor:'white', verticalAlign:'middle',position:'relative' }}>
-                    <div style={{ width:'70%',padding:'2px',left:'10%',position:'relative', color:'white',borderRadius:'2px', verticalAlign:'middle', background:'url() rgb(13,180,190) no-repeat 20px 3px' }}>
+                    <div style={{ width:'70%',padding:'2px',left:'10%',position:'relative', color:'white',borderRadius:'2px', verticalAlign:'middle', background:'url() gray no-repeat 20px 3px' }}>
                       Resumen
                     </div>
                   </div>

@@ -14,7 +14,11 @@ var HOSTNAME = 'http://172.16.24.57/';
 /*------------------------------------------------Highcharts language settings------------------------------------------------------------------*/
 			  Highcharts.setOptions({
 			  	lang: {
-			  		shortMonths:['En','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
+			  		shortMonths:['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],
+            months:['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'],
+            rangeSelectorFrom:'De:',
+            rangeSelectorTo:'A:',
+            rangeSelectorZoom:''
 			  	}
 			  })
 
@@ -154,13 +158,15 @@ var HOSTNAME = 'http://172.16.24.57/';
                 cambio(data,'asignacion',function(d) {
                     return localCond(d,'cuenca') && localCond(d,'ubicacion') && localCond(d,'tipo');
                 },'NOMBRE');
-
                 $('.asignacion').trigger('change');
           });
 
 
 		      $('.asignacion').on('change',function() {
 		      		    datosAsignacion(data,null,null,mymap,asignaciones);
+                  console.log(mapNdataObj);
+                  $('#visor').html('');
+                  switcher($('.selectedButton').attr('id'),mapNdataObj);
 		      });
 
 
@@ -192,7 +198,11 @@ function datosAsignacion(data,nombre,projection,mymap,asignaciones) {
       	var filas = ['NOMBRE','VIG_ANIOS','VIG_INICIO','VIG_FIN','SUPERFICIE_KM2','TIPO'];
 
       	for(var i in filas) {
-      		$('.' + filas[i]).text(sel_asignacion_obj[filas[i]])
+          var texto = filas[i] == 'VIG_INICIO' || filas[i] == 'VIG_FIN' ?
+                                      parseDate(sel_asignacion_obj[filas[i]],true) : sel_asignacion_obj[filas[i]];
+          texto = '  ' + texto;
+
+      		$('.' + filas[i]).text(texto);
       	}
 
        var arr_layers = Object.keys(asignaciones._layers)
@@ -208,17 +218,17 @@ function datosAsignacion(data,nombre,projection,mymap,asignaciones) {
         })[0].layer;
 
 
-        d3.selectAll('path').transition().duration(800).style('opacity',0);
+        d3.selectAll('div#MAPA path').transition().duration(800).style('opacity',0);
         mymap.flyTo(selected_layer.getCenter(),8);
 
       	mymap.on('moveend',function(){
-      		d3.selectAll('path:not(.'+ sel_asignacion.split(' - ')[0] +')')
+      		d3.selectAll('div#MAPA path:not(.'+ sel_asignacion.split(' - ')[0] +')')
       		  .transition()
       		  .duration(500)
       		  .style('opacity',1)
       		  .style('stroke-width',0.5)
 
-      		d3.select('path.' + sel_asignacion.split(' - ')[0])
+      		d3.select('div#MAPA path.' + sel_asignacion.split(' - ')[0])
       		  .transition()
       		  .duration(300)
       		  .delay(500)
@@ -387,11 +397,30 @@ function cambio(data,str,fn,extraParam) {
 		    var nombre = $(this).text();
 		    var sel_asignacion = data.filter(function(d) { return d.NOMBRE == nombre; })[0];
 
-		    $('.cuenca').val(sel_asignacion.PROVINCIA)
-					          .trigger('change');
 
-		    $('.asignacion').val(nombre)
-						            .trigger('change');
+                      /* -- Sustituir valores de filtros sin detonar eventos --*/
+            				  $('.cuenca').val(sel_asignacion.CUENCA)
+                      cambio(data,'ubicacion',function(d) {
+                        return localCond(d,'cuenca');
+                      });
+
+                      $('.ubicacion').val(sel_asignacion.UBICACION)
+                      cambio(data,'tipo',function(d) {
+                          return localCond(d,'cuenca') && localCond(d,'ubicacion');
+                      });
+
+                      $('.tipo').val(sel_asignacion.TIPO)
+                      cambio(data,'asignacion',function(d) {
+                          return localCond(d,'cuenca') && localCond(d,'ubicacion') && localCond(d,'tipo');
+                      },'NOMBRE');
+
+            				  $('.asignacion').val(sel_asignacion.NOMBRE);
+                      /* -- Sustituir valores de filtros sin detonar eventos --*/
+
+
+                      $('.asignacion').trigger('change');
+
+
 
 	});
 
@@ -438,6 +467,7 @@ function cambio(data,str,fn,extraParam) {
 
 
     	$('div.button').on('click',function(d) {
+        console.log(this)
     		    clicker(this,mapNdataObj);
     		    d3.selectAll('div#botones_>div:not(.espacioBlanco)')
               .attr('class','button');
@@ -488,10 +518,8 @@ function switcher(id,mapNdataObj) {
 		 	switch (true) {
       case id == 'Datos generales':
         grapher(function() {
-
           DatosGrales();
           datosAsignacion(mapNdataObj.data,null,null,mapNdataObj.mymap,mapNdataObj.asignaciones);
-
         });
         break;
 
@@ -500,32 +528,82 @@ function switcher(id,mapNdataObj) {
 	 			break;
 
 	 		case id === 'Reservas':
-	 			grapher(BarChart)
+        grapher(enConstruccion)
+	 			//grapher(BarChart)
 	 			break;
 
 	 		case id === 'Pozos':
 	 			console.log(id)
+        grapher(enConstruccion)
+
 	 			break;
 
 	 		case id === 'Inversión':
 	 			console.log(id)
+        grapher(enConstruccion)
+
 	 			break;
 
 	 		case id === 'Compromiso Mínimo de Trabajo':
 	 			console.log(id)
+        grapher(enConstruccion)
+
 	 			break;
 
 	 		case id === 'Aprovechamiento de gas':
 	 			console.log(id)
+        grapher(enConstruccion)
+
 	 			break;
 
 	 		case id === 'Dictámenes':
 	 			console.log(id)
+        grapher(enConstruccion)
+
 	 			break;
 
 	 		case id === 'Autorizaciones':
 	 			console.log(id)
+        grapher(enConstruccion)
+
 	 			break;
 
 	 	}
+};
+
+
+function parseDate(ts,bool) {
+    var fecha;
+    var date = new Date(ts);
+    var month = date.getMonth() + 1;
+    var year = date.getFullYear();
+    var day = date.getDate();
+
+    function zerosBefore(input) {
+      var output = String(input).length == 1 ? '0' + input : String(input);
+      return output;
+    };
+
+    var months = {
+      '1': 'Enero',
+      '2': 'Febrero',
+      '3': 'Marzo',
+      '4': 'Abril',
+      '5': 'Mayo',
+      '6': 'Junio',
+      '7': 'Julio',
+      '8': 'Agosto',
+      '9': 'Septiembre',
+      '10': 'Octubre',
+      '11': 'Noviembre',
+      '12': 'Diciembre'
+    };
+
+    if(!bool) {
+      fecha = months[String(month)] + ' ' + year;
+    } else {
+      fecha = zerosBefore(day) + '/' + zerosBefore(month) + '/' + year;
+    }
+
+    return fecha;
 };
