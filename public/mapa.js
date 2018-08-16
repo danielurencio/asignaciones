@@ -1,6 +1,19 @@
 function leafletMap(shapes) {
 
-		//	var tiposAsig = ['Extracción','Exploración','Resguardo'];
+	   var tipos = ['Resguardo','Exploración','Extracción'];
+
+		 // Estas líneas tienen como proósito cambiar el orden en el que aparecen los shapes.
+		 var newShapesOrder = tipos.map(function(t) {
+					 var filtro = shapes.features.filter(function(d) {
+						 return d.properties.tipo == t;
+					 });
+
+					 return filtro;
+		 });
+
+		 newShapesOrder = _.flatten(newShapesOrder);
+		 shapes.features = newShapesOrder;
+		 // Estas líneas tienen como proósito cambiar el orden en el que aparecen los shapes.
 
 			var polygonColor = {
 				'Extracción':'rgb(13,180,190)',//'rgb(1,114,158)',
@@ -14,20 +27,20 @@ function leafletMap(shapes) {
 				})
 				.setView([22.0, -97.0], 5.3);
 
-			asignaciones = L.geoJSON(shapes,{
+			var asignaciones = L.geoJSON(shapes,{
 				id:function(feature) {
-					return feature.properties.ID;
+					return feature.properties.id;
 				},
 				style:function(feature) {
 
-					switch(feature.properties.TIPO) {
+					switch(feature.properties.tipo) {
 
 						case 'Resguardo': return {
 							color:'white',
 							fillColor:polygonColor['Resguardo'],
 							weight:0.5,
 							fillOpacity:0.7,
-							className:feature.properties.ID
+							className:feature.properties.id
 						};
 
 						case 'Extracción': return {
@@ -35,7 +48,8 @@ function leafletMap(shapes) {
 							fillColor:polygonColor['Extracción'],
 							weight:0.5,
 							fillOpacity:0.7,
-							className:feature.properties.ID
+							className:feature.properties.id,
+							zIndex:3
 						};
 
 						case 'Exploración': return {
@@ -43,26 +57,17 @@ function leafletMap(shapes) {
 							fillColor:polygonColor['Exploración'],
 							weight:0.5,
 							fillOpacity:0.7,
-							className:feature.properties.ID
+							className:feature.properties.id,
+							zIndex:2
 						};
 
 					}
-				}/*,
-				onEachFeature:function(feature,layer) {
-					//console.log(feature.properties.ID)
-					//console.log(d3.select('.'+feature.properties.ID).node())
-					layer.on({
-						click:function(e) {
-							//console.log(feature.properties);
-							//feature.setStyle({ fillColor:'pink' })
-						}
-					})
-				*/
+				}
+		  }).addTo(mymap);
 
-			}).addTo(mymap)
 
 			asignaciones.bindTooltip(function(layer) {
-				return layer.feature.properties.ID;
+				return layer.feature.properties.nombre;
 			},{
 				className:'polygonTooltip'
 			});
