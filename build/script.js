@@ -7,10 +7,11 @@ var HOSTNAME = 'http://172.16.24.57/';
     dataType:'JSON',
     url: HOSTNAME + 'grales_asig.py',
     success:function(datos_grales) {
-
+        datos_grales = JSON.parse(datos_grales)
    d3.csv('asignaciones_produccion.csv', function(err,produccion) {
     d3.json('file_.json',function(err,data_) {
-    	d3.json('shapes_.json',function(err,shapes) {
+    	d3.json('shapes.json',function(err,shapes) {
+
 /*------------------------------------------------Highcharts language settings------------------------------------------------------------------*/
 			  Highcharts.setOptions({
 			  	lang: {
@@ -97,11 +98,12 @@ var HOSTNAME = 'http://172.16.24.57/';
 
 			  asignaciones.on('click',function(event) {
           //event.layer.setStyle({ background:'red' });
-    				  var id_asignacion = event.layer.feature.properties.ID;
+    				  var id_asignacion = event.layer.feature.properties.id;
+
     				  var sel_asignacion = data.filter(function(d) {
-                /* Habrá que cambiar NOMBRE por ID*/
-                return d.NOMBRE.split(' - ')[0] == id_asignacion;
-                /* Habrá que cambiar NOMBRE por ID*/
+                /* Habrá que cambiar NOMBRE por ID */
+                return d.ID == id_asignacion;
+                /* Habrá que cambiar NOMBRE por ID */
               })[0];
 
 
@@ -123,7 +125,6 @@ var HOSTNAME = 'http://172.16.24.57/';
 
     				  $('.asignacion').val(sel_asignacion.NOMBRE);
               /* -- Sustituir valores de filtros sin detonar eventos --*/
-
 
               $('.asignacion').trigger('change');
 
@@ -164,9 +165,24 @@ var HOSTNAME = 'http://172.16.24.57/';
 
 		      $('.asignacion').on('change',function() {
 		      		    datosAsignacion(data,null,null,mymap,asignaciones);
-                  console.log(mapNdataObj);
+
                   $('#visor').html('');
-                  switcher($('.selectedButton').attr('id'),mapNdataObj);
+
+                  $.ajax({
+                        type:'GET',
+                        dataType:'JSON',
+                        url:HOSTNAME + 'grales_asig.py',
+                        data:{ ID: $('.asignacion>option:selected').attr('ID') },
+                        success:function(ajaxData) {
+
+                          for(var k in ajaxData) {
+                            ajaxData[k] = JSON.parse(ajaxData[k])
+                          }
+
+                          mapNdataObj['ajaxData'] = ajaxData;
+                          switcher($('.selectedButton').attr('id'),mapNdataObj);
+                        }
+                  });
 		      });
 
 
@@ -188,12 +204,12 @@ function datosAsignacion(data,nombre,projection,mymap,asignaciones) {
 		var sel_asignacion_obj;
 
 		if(!nombre) { 														// <-- ¿Esto qué?
-			sel_asignacion = $('.asignacion>option:selected').text();
+			sel_asignacion = $('.asignacion>option:selected').attr('id');
 		} else {
 			sel_asignacion = nombre.split(' - ')[0];   // <-- ¿Esto qué?
 		}
 
-      	var sel_asignacion_obj = data.filter(function(d) { return d.NOMBRE == sel_asignacion; })[0];
+      	var sel_asignacion_obj = data.filter(function(d) { return d.ID == sel_asignacion; })[0];
 
       	var filas = ['NOMBRE','VIG_ANIOS','VIG_INICIO','VIG_FIN','SUPERFICIE_KM2','TIPO'];
 
@@ -213,8 +229,9 @@ function datosAsignacion(data,nombre,projection,mymap,asignaciones) {
                       return obj;
                   });
 
+
         var selected_layer = arr_layers.filter(function(d) {
-          if(d.layer.feature.properties.ID == sel_asignacion.split(' - ')[0]) return d.key;
+          if(d.layer.feature.properties.id == sel_asignacion_obj.ID) return d.key;
         })[0].layer;
 
 
@@ -467,7 +484,7 @@ function cambio(data,str,fn,extraParam) {
 
 
     	$('div.button').on('click',function(d) {
-        console.log(this)
+
     		    clicker(this,mapNdataObj);
     		    d3.selectAll('div#botones_>div:not(.espacioBlanco)')
               .attr('class','button');
@@ -475,9 +492,18 @@ function cambio(data,str,fn,extraParam) {
     		   $(this).attr('class','selectedButton')
     	});
 
-
-    	$('#botones_>div').filter(function(i,d) { return i === 0 })
+      $.ajax({
+          type:'GET',
+          dataType:'json',
+          url: HOSTNAME + 'grales_asig.py?',
+          data: { ID:$('.asignacion>option:selected').attr('id') },
+          success: function(data) {
+               for(var k in data) { data[k] = JSON.parse(data[k])}
+               mapNdataObj['ajaxData'] = data;
+    	         $('#botones_>div').filter(function(i,d) { return i === 0 })
                         .click();
+          }
+      });
 
  };
 
@@ -499,8 +525,8 @@ function cambio(data,str,fn,extraParam) {
 
 
 
- function grapher(fn) {
- 	    fn();
+ function grapher(fn,data) {
+ 	    fn(data);
  	    window.setTimeout(function() {
  			      $('.highcharts-background').attr('fill','transparent');
  	    },300);
@@ -515,60 +541,73 @@ function openInNewTab(url) {
 
 function switcher(id,mapNdataObj) {
 
-		 	switch (true) {
-      case id == 'Datos generales':
-        grapher(function() {
-          DatosGrales();
-          datosAsignacion(mapNdataObj.data,null,null,mapNdataObj.mymap,mapNdataObj.asignaciones);
-        });
-        break;
+    		 	switch (true) {
+              case id == 'Datos generales':
+                grapher(function() {
+                  DatosGrales();
+                  try {
+                      datosAsignacion(mapNdataObj.data,null,null,mapNdataObj.mymap,mapNdataObj.asignaciones);
+                  } catch {}
+                });
+                break;
 
-	 		case id === 'Producción':
-	 			grapher(LineChart);
-	 			break;
+        	 		case id === 'Producción':
+        	 			grapher(LineChart,mapNdataObj.ajaxData.produccion);
+        	 			break;
 
-	 		case id === 'Reservas':
-        grapher(enConstruccion)
-	 			//grapher(BarChart)
-	 			break;
+        	 		case id === 'Reservas':
+                grapher(enConstruccion)
+        	 			//grapher(BarChart)
+        	 			break;
 
-	 		case id === 'Pozos':
-	 			console.log(id)
-        grapher(enConstruccion)
+        	 		case id === 'Pozos':
+                try {
+                  var pozos = mapNdataObj.ajaxData.pozos_inv.filter(function(d) {
+                    var cond =
+                      [
+                        'Perforaciones desarrollo',
+                        'Terminaciones desarrollo',
+                        'Perforaciones inyectores',
+                        'Terminaciones inyectores',
+                        'Reparaciones mayores',
+                        'Reparaciones menores',
+                        'Taponamientos',
+                        'Pozos operando'
+                      ].some(function(e) { return e == d.descriptor });
 
-	 			break;
+                      return cond;
+                });
+                grapher(BarChart,pozos)
+              } catch {}
+                //grapher(enConstruccion)
 
-	 		case id === 'Inversión':
-	 			console.log(id)
-        grapher(enConstruccion)
+        	 			break;
 
-	 			break;
+        	 		case id === 'Inversión':
+                grapher(enConstruccion)
 
-	 		case id === 'Compromiso Mínimo de Trabajo':
-	 			console.log(id)
-        grapher(enConstruccion)
+        	 			break;
 
-	 			break;
+        	 		case id === 'Compromiso Mínimo de Trabajo':
+                grapher(enConstruccion)
 
-	 		case id === 'Aprovechamiento de gas':
-	 			console.log(id)
-        grapher(enConstruccion)
+        	 			break;
 
-	 			break;
+        	 		case id === 'Aprovechamiento de gas':
+                grapher(enConstruccion)
 
-	 		case id === 'Dictámenes':
-	 			console.log(id)
-        grapher(enConstruccion)
+        	 			break;
 
-	 			break;
+        	 		case id === 'Dictámenes':
+                grapher(enConstruccion)
 
-	 		case id === 'Autorizaciones':
-	 			console.log(id)
-        grapher(enConstruccion)
+        	 			break;
 
-	 			break;
+        	 		case id === 'Autorizaciones':
+                grapher(enConstruccion)
+        	 			break;
+    	 	}
 
-	 	}
 };
 
 

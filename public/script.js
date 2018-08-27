@@ -561,53 +561,49 @@ function switcher(id,mapNdataObj) {
         	 			break;
 
         	 		case id === 'Pozos':
-        	 			console.log(id)
-                var pozos = mapNdataObj.ajaxData.pozos_inv.filter(function(d) {
-                  var cond =
-                    [
-                      'Perforaciones desarrollo',
-                      'Terminaciones desarrollo',
-                      'Perforaciones inyectores',
-                      'Terminaciones inyectores',
-                      'Reparaciones mayores',
-                      'Reparaciones menores',
-                      'Taponamientos',
-                      'Pozos operando'
-                    ].some(function(e) { return e == d.descriptor });
+                try {
+                  var pozos = mapNdataObj.ajaxData.pozos_inv.filter(function(d) {
+                    var cond =
+                      [
+                        'Perforaciones desarrollo',
+                        'Terminaciones desarrollo',
+                        'Perforaciones inyectores',
+                        'Terminaciones inyectores',
+                        'Reparaciones mayores',
+                        'Reparaciones menores',
+                        'Taponamientos',
+                        'Pozos operando'
+                      ].some(function(e) { return e == d.descriptor });
 
-                    return cond;
+                      return cond;
                 });
                 grapher(BarChart,pozos)
+              } catch {}
                 //grapher(enConstruccion)
 
         	 			break;
 
         	 		case id === 'Inversión':
-        	 			console.log(id)
                 grapher(enConstruccion)
 
         	 			break;
 
         	 		case id === 'Compromiso Mínimo de Trabajo':
-        	 			console.log(id)
                 grapher(enConstruccion)
 
         	 			break;
 
         	 		case id === 'Aprovechamiento de gas':
-        	 			console.log(id)
                 grapher(enConstruccion)
 
         	 			break;
 
         	 		case id === 'Dictámenes':
-        	 			console.log(id)
                 grapher(enConstruccion)
 
         	 			break;
 
         	 		case id === 'Autorizaciones':
-        	 			console.log(id)
                 grapher(enConstruccion)
         	 			break;
     	 	}
