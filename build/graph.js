@@ -205,114 +205,336 @@ function LineChart(data) {
 }
 
 
-function BarChart(data) {
 
-      function stacks(groups,stackName) {
+function Wrangler(config, groups_) {
 
-            var stack = groups.map(function(g) {
-              var group = data.filter(function(d) { return d.descriptor == g; })
-                              .map(function(d) {
+      this.simpleAggregationBy = function(data,key) {
+            var result = _.uniq(data.map(function(d) { return d[key]; }))
+                      .map(function(d) {
+                          return data.filter(function(f) {
+                            return f[key] == d;
+                          });
+                      });
 
-                                  var type = {
-                                    'nombre': d.nombre,
-                                    'id': d.id,
-                                    'x': d.fecha,
-                                    'y': d.valor,
-                                    'name':g,
-                                    'stack':stackName
-                                  };
-
-                                  return type;
-                              });
-
-              var obj = {};
-              obj['stack'] = stackName;
-              obj['name'] = g;
-              obj['data'] = group;
-
-              return obj;
-            });
-
-            return stack;
+            return result;
       };
 
-     var groups = [
-       { 'stackName':'Desarrollo','groups':['Perforaciones desarrollo','Terminaciones desarrollo'] },
-       { 'stackName':'Reparaciones','groups':['Reparaciones menores','Repraciones mayores'] },
-       { 'stackName':'Taponamientos','groups':['Taponamientos'] },
-       { 'stackName':'Pozos operando','groups':['Pozos operando'] }
-     ];
+      this.aggregate = function(data) {
+            var classes = _.uniq(data.map(function(d) { return d[config.aggregator]; }))
+                          .map(function(d) {
+                              return data.filter(function(f) {
+                                return f[config.aggregator] == d;
+                              })
+                          })
+                          .map(function(d) {
+                                var subClasses = _.uniq(d.map(function(a) { return a[config.subAggregator]; }));
+                                var suma_ = subClasses.map(function(a) {
 
-     var stack = groups.map(function(g) { return stacks(g.groups,g.stackName); });
+                                    var ss = d.filter(function(f) { return f[config.subAggregator] == a; })
+                                              .map(function(m) { return +m[config.valueToAggregate]; })
+                                              .reduce(function(a,b) { return a + b; });
 
-     var stack_ = [];
+                                    var obj = {};
+                                    obj['x'] = typeof(a) == 'number' ? new Date(a,0) : a;
+                                    obj['y'] = ss;
+                                    obj['nombre'] = d[0].nombre;
+                                    obj['id'] = d[0].id;
+                                    obj[config.aggregator] = d[0][config.aggregator];
 
-     for(var i in stack ) {
-       if( i == 0 ) {
-          stack_ = stack_.concat(stack[i]);
-       } else {
-          stack_ = stack_.concat(stack[i]);
-       }
-     }
+                                    return obj;
 
-     console.log(stack_)
+                            });
 
-      Highcharts.chart('visor', {
-          credits:false,
-          chart: {
-              type: 'column'
-          },
-          title: {
-              text: 'Pozos'
-          },
-          subtitle: {
-              text:''
-          },
-          xAxis: {
-            type:'datetime',
-            dateTimeLabelFormats: {
-              month:'%b \ %Y'
+                            return suma_
+            });
+
+            if(config.flatten) {
+                classes = _.flatten(classes);
+                if(config.percentage) {
+                    var total = classes.map(function(d) { return d.y; })
+                                       .reduce(function(a,b) { return a + b; });
+
+                    classes = classes.map(function(d,i) {
+                        d['name'] = d.x;
+                        delete d.x;
+                        d.y /= total;
+                        d.y = d.y*100;
+                        //d.y = +d.y.toFixed(1);
+
+                        d.mainColor = Highcharts.getOptions().colors[config.colores[d.actividad]];
+                        var brightness = 0.2 - (i / classes.length) / 5;
+
+                        d.color = Highcharts.Color(d.mainColor).brighten(brightness).get()
+
+                        return d;
+                    });
+
+                }
             }
-          },
-          tooltip: {
-              formatter: function() {
 
-                var str = "<b>" + parseDate(this.x) + '</b>:<br> ' + this.points.map(function(d) { return "  " + d.key + ': ' + d.y }).join('<br>');
-                return str;
-              },
-              shared: true,
-              useHTML: true
-          },
-          plotOptions: {
-              column: {
-                  pointPadding: 0.2,
-                  borderWidth: 0,
-                  stacking:'normal'
-              }
-          },
-          series: stack_,
-          rangeSelector: {
-            enabled:true,
-            buttons: [
-              {
-                type:'month',
-                count:6,
-                text:'6m'
-              },
-              {
-                type:'year',
-                count:1,
-                text:'12m'
-              },
-              {
-                type:'all',
-                text:'Todo'
-              }
-            ]
-          }
-      });
+            return classes;
+      };
+
+      this.stackData = function(data) {
+
+                function stacks(groups,stackName) {
+
+                      var stack = groups.map(function(g) {
+                        var group = data.filter(function(d) { return d[config.filter] == g; })
+                                        .map(function(d) {
+
+                                            var type = {
+                                                'nombre': d[config.nombre],
+                                                'id': d[config.id],
+                                                'x': String(d[config.x]).length == '4' ? new Date(d[config.x],0).getTime() : d[config.x],
+                                                'y': +d[config.y],
+                                                'name':g,
+                                                'stack':stackName
+                                            };
+
+                                            return type;
+                                        });
+
+                        var obj = {};
+                        obj['stack'] = stackName;
+                        obj['name'] = g;
+                        obj['data'] = group;
+
+                        return obj;
+                      });
+
+                      return stack;
+               };
+
+               var stack = groups_.map(function(g) { return stacks(g.groups,g.stackName); });
+
+               var stack_ = [];
+
+               for(var i in stack ) {
+                   if( i == 0 ) {
+                      stack_ = stack_.concat(stack[i]);
+                   } else {
+                      stack_ = stack_.concat(stack[i]);
+                   }
+               };
+
+               return stack_;
+    };
 
 }
+
+
+function BarChart(config) {
+
+      // Los parámetros de este prototipo pueden cambiar el título, orientación de las barras y demás.
+      this.plot = function(data,fn) {
+            var stack_ = fn(data);
+            Highcharts.chart(config.where, {
+                legend: {
+                  enabled: (function() {
+                    var legend;
+                    if(!config.hideLegend) {
+                      legend = true;
+                    } else {
+                      legend = false;
+                    }
+                    return legend;
+                  })()
+                },
+                exporting:{
+                  enabled:false
+                },
+                credits:false,
+                chart: {
+                    type: config.type
+                },
+                title: {
+                    text: config.title
+                },
+                subtitle: {
+                    text:config.subtitle
+                },
+                yAxis: {
+                    opposite:config.opposite,
+                    title:{
+                      text:config.yAxis
+                    }
+                },
+                xAxis: {
+                  type:'datetime',
+                  dateTimeLabelFormats: {
+                    month:'%b \ %Y'
+                  }
+                },
+                tooltip: {
+                    formatter: function() {
+
+                      var str = "<div><b>" +
+                                    parseDate(this.x) + '</b>:<br> ' +
+                                    this.points.map(function(d) { return "  " + d.key + ': ' + d.y }).join('<br>') +
+                                "</div>";
+
+                      return str;
+                    },
+                    shared: true,
+                    useHTML: true
+                },
+                plotOptions: {
+                    column: {
+                        pointPadding: 0.2,
+                        borderWidth: 0,
+                        stacking:'normal'
+                    }
+                },
+                series: stack_,
+                rangeSelector: {
+                  enabled:(function() {
+                    var rangeSelector;
+                    if(!config.noRange) {
+                      rangeSelector = true;
+                    } else {
+                      rangeSelector = false;
+                    }
+                    return rangeSelector;
+                  })(),
+                  buttons: (
+                    function() {
+                          var b;
+                          b = [
+                            {
+                              type:'month',
+                              count:6,
+                              text:'6m'
+                            },
+                            {
+                              type:'year',
+                              count:1,
+                              text:'12m'
+                            },
+                            {
+                              type:'all',
+                              text:'Todo'
+                            }
+                        ];
+
+                        var cond = config.timebuttons ? b : null;
+                        return cond;
+                    }
+                  )()
+                }
+            })
+    };
+}
+
+
+function pie(data_,subdata) {
+  // Create the chart
+  Highcharts.chart('one', {
+      credits:false,
+      exporting: {
+          enabled:false
+      },
+      chart: {
+          type: 'pie'
+      },
+      title: {
+          text: ''
+      },
+      subtitle: {
+          style:{
+            fontSize:'11px',
+            padding:'0px',
+            margin:'0px'
+          },
+          text: 'Inversión por actividad y sub-actividad a lo largo del proyecto'
+      },
+      yAxis: {
+          title: {
+              text: ''
+          }
+      },
+      plotOptions: {
+          pie: {
+              shadow: false,
+              center: ['50%', '50%']
+          }
+      },
+      tooltip: {
+          valueSuffix: '%'
+      },
+      series: [{
+          name: 'Actividad',
+          data: data_,
+          size: '75%',
+          innerSize:'45%',
+          dataLabels: {
+              style: {
+                textOutline:0,
+                fontWeight:600
+              },
+              /*
+              formatter: function () {
+                  return this.y > 5 ? this.point.name : null;
+              },
+              */
+              color: 'black',
+              distance: -25
+          }
+      }, {
+          name: 'Sub-actividad',
+          data: subdata,
+          size: '110%',
+          innerSize: '80%',
+          dataLabels: {
+            color:'black',
+            distance:30,
+            style:{
+              textOutline:0,
+              fontWeight:300
+            }
+            /*
+              formatter: function () {
+                  // display only if larger than 1
+                  return this.y > 1 ? '<b>' + this.point.name + ':</b> ' +
+                      this.y + '%' : null;
+              }
+              */
+          },
+          id: 'versions'
+      }],
+      responsive: {
+          rules: [{
+              condition: {
+                  maxWidth: 600
+              },
+              chartOptions: {
+                  series: [{
+                      id: 'versions',
+                      dataLabels: {
+                          enabled: false
+                      }
+                  }]
+              }
+          }]
+      }
+  });
+
+}
+
+
+function dashboard(data) {
+   var str =
+   "<div style='width:100%;height:100%;'>"+
+        "<div style='width:100%;height:50%;display:table;'>"+
+            "<div id='one' style='width:50%;height:100%;display:table-cell;'></div>" +
+            "<div id='two' style='width:50%;height:100%;display:table-cell;'></div>" +
+        "</div>" +
+        "<div id='three' style='width:100%;height:50%;'></div>" +
+   "</div>"
+
+   $('#visor').html(str);
+}
+
 
 function enConstruccion() {
   var str =
@@ -320,6 +542,23 @@ function enConstruccion() {
     "<div style='display:table;position:absolute;width:100%;height:100%;'>" +
       "<div style='display:table-cell;width:100%;vertical-align:middle;text-align:center;font-size:30px;font-weight:800;'>" + // <- 'vertical-align:middle' para centrar
         ' EN CONSTRUCCIÓN &#9874;' +
+      "</div>" +
+    "</div>" +
+  "</div>"
+
+  $('#visor').html(str);
+}
+
+
+function noDato() {
+  var asig = $('.asignacion>option:selected').val();
+  var topic = $('.selectedButton').attr('id');
+
+  var str =
+  "<div class='ficha' style='position:relative;width:100%;height:100%;background-color:transparent;'>" +
+    "<div style='display:table;position:absolute;width:100%;height:100%;'>" +
+      "<div style='display:table-cell;width:100%;vertical-align:middle;text-align:center;font-size:25px;font-weight:400;'>" + // <- 'vertical-align:middle' para centrar
+        ' Esta información aún no se encuentra disponible.' +
       "</div>" +
     "</div>" +
   "</div>"

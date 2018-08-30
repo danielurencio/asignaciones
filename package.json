@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "d3": "^3.5.17",
+    "npm": "^6.4.0",
     "react": "^16.4.0",
     "react-dom": "^16.4.0",
     "react-scripts": "1.1.4",

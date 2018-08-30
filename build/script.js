@@ -434,11 +434,7 @@ function cambio(data,str,fn,extraParam) {
             				  $('.asignacion').val(sel_asignacion.NOMBRE);
                       /* -- Sustituir valores de filtros sin detonar eventos --*/
 
-
                       $('.asignacion').trigger('change');
-
-
-
 	});
 
 
@@ -525,8 +521,8 @@ function cambio(data,str,fn,extraParam) {
 
 
 
- function grapher(fn,data) {
- 	    fn(data);
+ function grapher(fn,data,seriesProcessor) {
+ 	    fn(data,seriesProcessor);
  	    window.setTimeout(function() {
  			      $('.highcharts-background').attr('fill','transparent');
  	    },300);
@@ -543,69 +539,229 @@ function switcher(id,mapNdataObj) {
 
     		 	switch (true) {
               case id == 'Datos generales':
-                grapher(function() {
-                  DatosGrales();
-                  try {
-                      datosAsignacion(mapNdataObj.data,null,null,mapNdataObj.mymap,mapNdataObj.asignaciones);
-                  } catch {}
-                });
-                break;
+                    grapher(function() {
+                      DatosGrales();
+                      try {
+                          datosAsignacion(mapNdataObj.data,null,null,mapNdataObj.mymap,mapNdataObj.asignaciones);
+                      } catch {}
+                    });
+
+                    break;
 
         	 		case id === 'Producción':
-        	 			grapher(LineChart,mapNdataObj.ajaxData.produccion);
-        	 			break;
+                    if(mapNdataObj.ajaxData.produccion.length > 0) {
+            	 			     grapher(LineChart,mapNdataObj.ajaxData.produccion);
+                    } else {
+                        noDato();
+                    }
+
+        	 			    break;
 
         	 		case id === 'Reservas':
-                grapher(enConstruccion)
-        	 			//grapher(BarChart)
-        	 			break;
+                    grapher(enConstruccion)
+            	 			//grapher(BarChart)
+            	 			break;
 
         	 		case id === 'Pozos':
-                try {
-                  var pozos = mapNdataObj.ajaxData.pozos_inv.filter(function(d) {
-                    var cond =
-                      [
-                        'Perforaciones desarrollo',
-                        'Terminaciones desarrollo',
-                        'Perforaciones inyectores',
-                        'Terminaciones inyectores',
-                        'Reparaciones mayores',
-                        'Reparaciones menores',
-                        'Taponamientos',
-                        'Pozos operando'
-                      ].some(function(e) { return e == d.descriptor });
+                    //try {
+                      var pozos = mapNdataObj.ajaxData.pozos_inv.filter(function(d) {
+                        var cond =
+                          [
+                            'Perforaciones desarrollo',
+                            'Terminaciones desarrollo',
+                            'Perforaciones inyectores',
+                            'Terminaciones inyectores',
+                            'Reparaciones mayores',
+                            'Reparaciones menores',
+                            'Taponamientos',
+                            'Pozos operando'
+                          ].some(function(e) { return e == d.descriptor });
 
-                      return cond;
-                });
-                grapher(BarChart,pozos)
-              } catch {}
-                //grapher(enConstruccion)
+                          return cond;
+                    });
 
-        	 			break;
+                    var pozosPlot = new BarChart({
+                      title:'Actividad física',
+                      subtitle:'(En operación, perforaciones, terminaciones & taponamientos)',
+                      yAxis:'Número de pozos',
+                      where:'visor',
+                      type:'column'
+                    });
+
+                    var groups_ = [
+                      { 'stackName':'Perforaciones','groups':['Perforaciones desarrollo'] },
+                      { 'stackName':'Terminaciones', 'groups':['Terminaciones desarrollo'] },
+                      { 'stackName':'Reparaciones','groups':['Reparaciones menores','Repraciones mayores'] },
+                      { 'stackName':'Taponamientos','groups':['Taponamientos'] },
+                      { 'stackName':'Pozos operando','groups':['Pozos operando'] }
+                    ];
+
+                    var config = {
+                        filter:'descriptor',
+                        nombre:'nombre',
+                        id:'id',
+                        x:'fecha',
+                        y:'valor',
+                        timeformat: { month:'%b \ %Y' },
+                        timebuttons:true
+                    };
+
+                    var stack_pozos = new Wrangler(config, groups_);
+                    var stackedPozos = stack_pozos.stackData(pozos);
+
+                    if(pozos.length > 0) {
+                      console.log(stackedPozos)
+                        grapher(pozosPlot.plot,pozos,stack_pozos.stackData);
+                    } else {
+                        noDato();
+                    }
+
+                  //} catch {}
+
+            	 			break;
+
 
         	 		case id === 'Inversión':
-                grapher(enConstruccion)
+                    dashboard(mapNdataObj.ajaxData.inv);
 
-        	 			break;
+                    var data = mapNdataObj.ajaxData.inv;
+                    data = _.sortBy(data,function(d) { return d.anio; });
+
+
+                    if(mapNdataObj.ajaxData.inv.length > 0) {
+                          var groups = _.uniq(mapNdataObj.ajaxData.inv.map(function(d) { return d.actividad; }));
+
+                          // Declarar grupos para gráfico de barras con stacks.
+                          var groups_ = [
+                              { 'stackName':'inv','groups':groups },
+                          ];
+
+                          // La configuración para el Wrangler
+                          // En este objeto se especifica si se agregarán variables,cúales y bajo qué categorías
+                          //   ejemplo: Inversión aprobada (valueToAggregate) anual (subAggregator) por actividad (aggregator).
+                          //
+                          // También, en este objeto se especifica bajo qué filtro se crearán stacks para gráficos de barras apilados.
+                          var config = {
+                              valueToAggregate:'monto_usd',
+                              aggregator:'actividad',
+                              subAggregator:'anio',
+                              filter:'actividad',
+                              nombre:'nombre',
+                              id:'id',
+                              x:'x',
+                              y:'y',
+                              timeformat: { year:'%Y' },
+                              flatten:true,
+                          };
+
+                          var config_actividades = {
+                              'valueToAggregate':'monto_usd',
+                              'aggregator':'actividad',
+                              'subAggregator':'sub_actividad',
+                              'flatten':true,
+                              'percentage':true,
+                              'colores':{
+                                'Exploración':5,
+                                'Evaluación':7
+                              }
+                          };
+
+                          var actividadesWrangler = new Wrangler(config_actividades);
+
+                          var pie_sub = actividadesWrangler.aggregate(data);
+                          var pie_act = actividadesWrangler.simpleAggregationBy(pie_sub,'actividad')
+                                          .map(function(actividad) {
+                                              var s = actividad.map(function(d) { return d.y; })
+                                                               .reduce(function(a,b) { return a + b; });
+
+                                              var obj = {};
+                                              obj.y = s;
+                                              obj.name = actividad[0].actividad;
+                                              obj.color = actividad[0].mainColor;
+
+                                              return obj;
+                                          });
+
+
+                          var inv_wrangler = new Wrangler(config, groups_);
+                          var sumas_ = inv_wrangler.aggregate(data);
+                          var invPorAnio = inv_wrangler.stackData(sumas_);
+
+
+                          var groups_subactividades = actividadesWrangler.simpleAggregationBy(data,'actividad').map(function(d) {
+                                                          var groups = actividadesWrangler.simpleAggregationBy(d,'sub_actividad')
+                                                                    .map(function(d) {
+                                                                        return d[0].sub_actividad;
+                                                                    });
+
+                                                          var stackName = d[0].actividad;
+
+                                                          var obj = {};
+                                                          obj['stackName'] = stackName;
+                                                          obj['groups'] = groups;
+
+                                                          return obj;
+
+                          });
+
+
+                          var config_subactividades = {
+                            filter:'sub_actividad',
+                            id:'id',
+                            nombre:'nombre',
+                            x:'anio',
+                            y:'monto_usd'
+                          };
+
+                          var sub_wrangler = new Wrangler(config_subactividades,groups_subactividades);
+                          var stack_subactividad = sub_wrangler.stackData(data);
+
+                          // Gráficas
+                          var invGeneral = new BarChart({
+                                  title:'',
+                                  yAxis:'Dólares',
+                                  where: 'three',
+                                  noRange:1,
+                                  type:'column',
+                                  subtitle:'Inversión',
+                                  hideLegend:true
+                          });
+
+                          var invPlot2 = new BarChart({
+                                  title:'',
+                                  yAxis:'Dólares',
+                                  where: 'two',
+                                  noRange:1,
+                                  type:'column',
+                                  opposite:true,
+                                  subtitle:'Inversión aprobada anual por actividad'
+                          });
+
+                          pie(pie_act,pie_sub);
+                          grapher(invGeneral.plot, data, sub_wrangler.stackData);
+                          grapher(invPlot2.plot, invPorAnio, function(data) { return data; });
+
+                    } else {
+                          noDato();
+                    }
+
+            	 			break;
 
         	 		case id === 'Compromiso Mínimo de Trabajo':
-                grapher(enConstruccion)
-
-        	 			break;
+                    grapher(enConstruccion)
+            	 			break;
 
         	 		case id === 'Aprovechamiento de gas':
-                grapher(enConstruccion)
-
-        	 			break;
+                    grapher(enConstruccion)
+            	 			break;
 
         	 		case id === 'Dictámenes':
-                grapher(enConstruccion)
+                    grapher(enConstruccion)
+            	 			break;
 
-        	 			break;
-
-        	 		case id === 'Autorizaciones':
-                grapher(enConstruccion)
-        	 			break;
+        	 		case id === 'Seguimiento':
+                    grapher(enConstruccion)
+            	 			break;
     	 	}
 
 };
