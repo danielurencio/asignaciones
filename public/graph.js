@@ -325,7 +325,6 @@ function Wrangler(config, groups_) {
 
 
 function BarChart(config) {
-
       // Los parámetros de este prototipo pueden cambiar el título, orientación de las barras y demás.
       this.plot = function(data,fn) {
             var stack_ = fn(data);
@@ -345,9 +344,7 @@ function BarChart(config) {
                   enabled:false
                 },
                 credits:false,
-                chart: {
-                    type: config.type
-                },
+                chart: config.chart,
                 title: {
                     text: config.title
                 },
@@ -358,21 +355,31 @@ function BarChart(config) {
                     opposite:config.opposite,
                     title:{
                       text:config.yAxis
-                    }
+                    },
+                    gridLineWidth:0,
+                    max: config.yMax ? config.yMax : null
                 },
-                xAxis: {
+                xAxis: config.xAxis/*{
                   type:'datetime',
                   dateTimeLabelFormats: {
                     month:'%b \ %Y'
                   }
-                },
+                }*/,
                 tooltip: {
                     formatter: function() {
+                      var str;
 
-                      var str = "<div><b>" +
-                                    parseDate(this.x) + '</b>:<br> ' +
-                                    this.points.map(function(d) { return "  " + d.key + ': ' + d.y }).join('<br>') +
-                                "</div>";
+                      if(!config.tooltip) {
+                            str = "<div><b>" +
+                                          parseDate(this.x) + "</b>:<br> " +
+                                          this.points.map(function(d) {
+                                            var content = "  <span style=\"font-weight:700;color:"+d.color+"\">&nbsp;&bull;" + d.key + ": " + (d.y).toFixed(1) + "</span>";
+                                            return content;
+                                          }).join("<br>") +
+                                      "</div>";
+                      } else {
+                            str = eval(config.tooltip);
+                      }
 
                       return str;
                     },
@@ -460,7 +467,12 @@ function pie(data_,subdata) {
           }
       },
       tooltip: {
-          valueSuffix: '%'
+
+          formatter: function() {
+            var str = '<b>' + this.point.name + ': </b>' + this.y.toFixed(1) + '%';
+            return str;
+          },
+          useHTML:true
       },
       series: [{
           name: 'Actividad',
@@ -472,11 +484,11 @@ function pie(data_,subdata) {
                 textOutline:0,
                 fontWeight:600
               },
-              /*
+
               formatter: function () {
                   return this.y > 5 ? this.point.name : null;
               },
-              */
+
               color: 'black',
               distance: -25
           }
@@ -487,18 +499,18 @@ function pie(data_,subdata) {
           innerSize: '80%',
           dataLabels: {
             color:'black',
-            distance:30,
+            distance:1,
             style:{
               textOutline:0,
               fontWeight:300
-            }
-            /*
+            },
+
               formatter: function () {
                   // display only if larger than 1
-                  return this.y > 1 ? '<b>' + this.point.name + ':</b> ' +
-                      this.y + '%' : null;
+                  return this.point.name//'<b>' + this.point.name + ':</b> ' +
+                      //this.y.toFixed(1) + '%';
               }
-              */
+
           },
           id: 'versions'
       }],
@@ -522,6 +534,267 @@ function pie(data_,subdata) {
 }
 
 
+function RowPlot(data) {
+  this.data = data;
+
+  this.table = () => {
+
+      this.data = this.data.map((d) => {
+        var anio = d.anio;
+
+        var keys = Object.keys(d).map((k) => {
+            var obj = {}
+            obj['anio'] = anio;
+            obj['concepto'] = k;
+            obj['val'] = d[k];
+            return obj;
+        }).filter((f) => {
+            return typeof(f.val) != 'string';
+        });
+
+        return keys;
+      });
+
+      this.data = _.flatten(this.data);
+
+      this.data = _(this.data).chain()
+                    .sortBy(function(d) { return d.concepto; })
+                    .sortBy(function(d) { return d.anio; })
+                    .value();
+
+      this.data.forEach(function(d) {
+        if(d.concepto.match(/procesado_km2/)) d.concepto = '_procesado_km2';
+      })
+
+      var conceptos = _.uniq(this.data.map((d) => d.concepto.split('_real')[0] ));
+
+      this.data = conceptos
+                    .map((d) => {
+                        return this.data.filter((f) => {
+                            var str = f.concepto;
+                            var patt = new RegExp('^' + d);
+                            return patt.test(str);
+                        });
+                    });
+
+        this.data = this.data.filter((d) => d.some((e) => e.val));
+
+        var conceptos_dict = {
+          'electromag':'Electromagnéticos',
+          'estudios':'Estudios',
+          'inv_mmpesos':'Inversión (MM de pesos)',
+          'pozos':'Pozos',
+          'procesado_km':'Longuitud procesada (km)',
+          '_procesado_km2':'Área procesada (km<sup>2</sup>)',
+          'sis_2d':'Sísmica 2D',
+          'sis_3d':'Sísmica 3D'
+        }
+
+        var tab = '<div id="visor_table" style="width:100%;height:100%;">' +
+                    '<div id="visor_header" style="width:100%;height:15%;border-top:1px solid black;border-bottom:1px solid black;display:table;"></div>' +
+                    '<div id="visor_content" style="width:100%;height:85%;display:table;"></div>' +
+                  '</div>';
+
+        $('#visor').html(tab);
+
+        d3.select('#visor_header')
+          .selectAll('div')
+          .data(['Concepto','Compromiso Mínimo de Trabajo','Avance a la Fecha','Avance (%)'])
+          .enter()
+          .append('div')
+          .style({
+            'width':'25%',
+            'height':'100%',
+            'display':'table-cell',
+            'vertical-align':'middle',
+            'text-align':'center',
+            'font-weight':'600'
+          })
+          .html(function(d) {return d});
+
+        var visor = d3.select('#visor_content')
+
+
+        visor.selectAll('div')
+             .data(this.data)
+             .enter()
+             .append('div')
+          .style({
+            'width':'100%',
+            'height': () => 100 / this.data.length + '%',
+            'display':'table-row'
+          })
+          .each(function(d,j) {
+
+                let concepto = d[0].concepto;
+                //var hh = 100 /  this.data.length + '%';
+                var cells_style = [
+                    ['display','table-cell'],
+                    ['width','25%'],
+                    //['height',],
+                    ['border-bottom','1px solid silver'],
+                    ['vertical-align','middle'],
+                    ['font-size','11px']
+                ];
+
+
+                cells_style = cells_style.map(function(d) { return d.join(':'); }).join(';');
+
+                var cells = ['concepto','cmt','avance','avance_pct'].map((d,i) => {
+                        var cont = i == 0 ? conceptos_dict[concepto] : '';
+                        return '<div id="' + d + '_' + j + '" style="' + cells_style + '">' + cont + '</div>';
+                }).join('');
+
+                $(this).html(cells);
+
+
+                var original = d.filter(function(d) {
+                  var patt = new RegExp('real')
+                  return !patt.test(d.concepto);
+                });
+
+                var real = d.filter(function(d) {
+                  var patt = new RegExp('real')
+                  return patt.test(d.concepto);
+                });
+
+
+                var cmtPlot = new BarChart({
+                  title:'',
+                  subtitle:'',
+                  yAxis: null,
+                  where:'cmt_' + j,
+                  chart: {
+                    type:'column',
+                    margin:[5,5,5,5]
+                  },
+                  noRange:1,
+                  hideLegend:true,
+                  xAxis: {
+                    categories:original.map((d) => d.anio),
+                    labels:{
+                      enabled:false
+                    },
+                    tickWidth:0
+                  }
+                });
+
+                var avancePlot = new BarChart({
+                  title:'',
+                  subtitle:'',
+                  where:'avance_' + j,
+                  yMax: d3.max(original.map((d) => d.val)),
+                  chart: {
+                    type:'column',
+                    margin:[5,5,5,5]
+                  },
+                  noRange:1,
+                  hideLegend:true,
+                  xAxis: {
+                    categories:real.map((d) => d.anio),
+                    labels:{
+                      enabled:false
+                    },
+                    tickWidth:0
+                  }
+                });
+
+                var avanceMeter = new ProgressMeter({
+                  where:'avance_pct_' + j,
+                  data: +(( d3.sum(real.map((d) => d.val)) / d3.sum(original.map((d) => d.val)) ) * 100).toFixed(1),
+                  margin:[0,0,0,0]
+                })
+
+                cmtPlot.plot([{ data:original.map((d) => d.val) }],(data) => data);
+                avancePlot.plot([{ data:real.map((d) => d.val), color:'purple' }],(data) => data);
+                avanceMeter.plot();
+
+          });
+
+  }
+
+
+};
+
+
+var ProgressMeter = function(config) {
+        this.plot = function() {
+          Highcharts.chart(config.where,
+           {
+            credits:false,
+            exporting: {
+                 enabled:false
+            },
+            chart: {
+                type: 'solidgauge',
+                margin:config.margin
+            },
+            title: null,
+            pane: {
+                center: ['50%', '85%'],
+                size: '140%',
+                startAngle: -90,
+                endAngle: 90,
+                background: {
+                    backgroundColor: (Highcharts.theme && Highcharts.theme.background2) || '#EEE',
+                    innerRadius: '60%',
+                    outerRadius: '100%',
+                    shape: 'arc'
+                }
+            },
+            tooltip: {
+                enabled: false
+            },
+            // the value axis
+            yAxis: {
+                stops: [
+                    [0.1, '#55BF3B'], // green
+                    [0.5, '#DDDF0D'], // yellow
+                    [0.9, '#DF5353'] // red
+                ],
+                lineWidth: 0,
+                minorTickInterval: null,
+                tickAmount: 0,
+                title: {
+                    y: 110
+                },
+                labels: {
+                    enabled:false,
+                    y: null
+                }
+            },
+            plotOptions: {
+                solidgauge: {
+                    dataLabels: {
+                        y: 5,
+                        borderWidth: 0,
+                        useHTML: true
+                    }
+                }
+            },
+            yAxis: {
+                min: 0,
+                max: 100,
+            },
+            credits: {
+                enabled: false
+            },
+            series: [{
+                name: 'Avance',
+                data: [config.data],
+                dataLabels: {
+                    format: '<div style="text-align:center"><span style="font-size:1.9em;color:' +
+                        ((Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black') + '">{y}%</span><br/>'
+                },
+                tooltip: {
+                    valueSuffix: ' %'
+                }
+            }]
+      })
+    }
+};
+
+
 function dashboard(data) {
    var str =
    "<div style='width:100%;height:100%;'>"+
@@ -533,6 +806,232 @@ function dashboard(data) {
    "</div>"
 
    $('#visor').html(str);
+}
+
+
+
+function divisor(data) {
+   var anios = _.sortBy(_.uniq(data.map(function(d) { return String(d.anio); })));
+   var tipo_obs = _.uniq(data.map(function(d) { return d.tipo_observacion; }));
+   var conceptos = _.uniq(data.map(function(d) { return d.concepto }));
+
+   var conceptos_traduccion = {
+     Qo: 'Producción de aceite',
+     Qg: 'Producción de gas',
+     Perf_Des: 'Perforaciones - Desarrollo',
+     Perf_Iny: 'Perforaciones - Inyecciones',
+     Term_Des: 'Terminaciones - Desarrollo',
+     Term_Iny: 'Terminaciones - Inyecciones',
+     RMA: 'Reparaciones Mayores',
+     RME: 'Reparaciones Menores',
+     Tap: 'Taponamientos',
+     Inv: 'Inversión',
+     G_Op: 'Gastos de Operación',
+     Np: 'Producción acumulada de aceite',
+     Gp: 'Producción acumulada de gas',
+     QgHC: 'QgHC'
+   };
+
+   var c_ = conceptos.map(function(d) { return '<option style="font-size:12px" id='+d+'>' + conceptos_traduccion[d] + '</option>'; });
+
+   var str =
+   "<div style='width:100%;height:100%;'>"+
+     "<div style='width:100%;height:30px;display:table;text-align:center;'>" +
+        "<span style='font-weight:600;'>Ver seguimiento en:&ensp;</span> <select id='botonera'>"+ c_ +"</select></div>" +
+     "<div style='width:100%; height:calc(100% - 30px)'>" +
+        "<div id='one' style='width:100%;height:50%;'></div>" +
+        "<div id='two' style='width:100%;'></div>" +
+     "</div>" +
+   "</div>"
+
+   $('#visor').html(str);
+
+
+   $('#botonera').on('change',function() {
+         var op_id = $('#botonera>option:selected').attr('id');
+         var ff = tipo_obs.map(function(d) {
+             return data.filter(function(f) {
+               return f.tipo_observacion == d && f.concepto == op_id;
+             })//.filter(function(d) { return d.concepto == op_id });
+         });
+
+         chart.series[0].setData(ff[0].map(function(d) { return d.valor; }))
+         chart.series[1].setData(ff[1].map(function(d) { return d.valor; }))
+
+         chart.series[0].setName($('#botonera>option:selected').text() + ' - Plan');
+         chart.series[1].setName($('#botonera>option:selected').text() + ' - Real');
+
+         var yAxis_max = d3.max(ff[0].map(function(d) { return d.valor; })) > d3.max(ff[1].map(function(d) { return d.valor; })) ?
+                          d3.max(ff[0].map(function(d) { return d.valor; })) : d3.max(ff[1].map(function(d) { return d.valor; }));
+
+         chart.yAxis[0].setExtremes(0,yAxis_max);
+
+         var filas = ff[0].map(function(d,i) {
+           var str = '<tr width="100%;">'+
+                        '<td style="width:33.33%;">'+ d.anio +'</td>'+
+                        '<td style="width:33.33%;">'+ d.valor.toFixed(2) +'</td>'+
+                        '<td style="width:33.33%;" id=a_'+ d.anio +'>'+ ' - ' +'</td>'
+                     '</tr>'
+
+           return str;
+         }).join('');
+
+         var table_container = '<div style="height:30px;width:100%;">'+
+                                '<table style="width:calc(100% - 8px);height:100%;table-layout:fixed;">'+
+                                  '<tbody style="width:100%;">'+
+                                    '<tr style="width:100%;font-weight:600;text-align:center;border-bottom:1px solid gray;border-top:1px solid gray;">' +
+                                      '<td>AÑO</td>' +
+                                      '<td>PLAN</td>' +
+                                      '<td>REAL</td>' +
+                                    '</tr>' +
+                                  '</tbody>' +
+                                '</table>';
+                               '</div>';
+
+         var tabla = //table_container +
+          '<div id="scroll_table_" style="width:100%;height:calc(' + $('#one').css('height') + ' - 30px);overflow:auto;border-bottom:1px solid gray;">' +
+            '<table style="width:100%;,table-layout:fixed;">' +
+            /*'<thead>' +
+             '<tr style="font-weight:600;text-align:center;border-bottom:1px solid gray;border-top:1px solid gray;">' +
+                '<td>AÑO</td>'+
+                '<td>PLAN</td>'+
+                '<td>REAL</td>' +
+             '</tr>' +
+            '</thead>' +
+            */
+              '<tbody id="filas_" style="text-align:center;">' +
+              filas +
+              '</tbody>'
+            '</table>'+
+          '</div>';
+
+         var div_table = '<div style="width:100%;height:100%;">'+
+                            table_container +
+                            tabla +
+                         '</div>'
+
+         $('#two').html(div_table);
+
+         ff[1].forEach(function(d) {
+           $('#a_' + d.anio).text(d.valor.toFixed(2))
+         });
+   });
+
+
+   var op_id = $('#botonera>option:selected').attr('id');
+
+   var ff = tipo_obs.map(function(d) {
+       return data.filter(function(f) {
+         return f.tipo_observacion == d && f.concepto == op_id;
+       })//.filter(function(d) { return d.concepto == op_id });
+   });
+
+   var filas = ff[0].map(function(d,i) {
+     var str = '<tr style="width:100%">'+
+                  '<td style="width:33.33%;">'+ d.anio +'</td>'+
+                  '<td style="width:33.33%;">'+ d.valor +'</td>'+
+                  '<td style="width:33.33%;" id="a_'+ d.anio +'">'+ ' - ' +'</td>'
+               '</tr>'
+
+     return str;
+   }).join('');
+
+//   var tbody = '<tbody style="text-align:center;">' + filas + '</tbody>';
+
+   var table_container = '<div style="height:30px;width:100%;">'+
+                          '<table style="width:calc(100% - 8px);height:100%;table-layout:fixed;">'+
+                            '<tbody style="width:100%;">'+
+                              '<tr style="width:100%;font-weight:600;text-align:center;border-bottom:1px solid gray;border-top:1px solid gray;">' +
+                                '<td>AÑO</td>' +
+                                '<td>PLAN</td>' +
+                                '<td>REAL</td>' +
+                              '</tr>' +
+                            '</tbody>' +
+                          '</table>';
+                         '</div>';
+
+   var tabla = //table_container +
+    '<div id="scroll_table_" style="width:100%;height:calc(' + $('#one').css('height') + ' - 30px);overflow:auto;border-bottom:1px solid gray;">' +
+      '<table style="width:100%;,table-layout:fixed;">' +
+      /*'<thead>' +
+       '<tr style="font-weight:600;text-align:center;border-bottom:1px solid gray;border-top:1px solid gray;">' +
+          '<td>AÑO</td>'+
+          '<td>PLAN</td>'+
+          '<td>REAL</td>' +
+       '</tr>' +
+      '</thead>' +
+      */
+        '<tbody id="filas_" style="text-align:center;">' +
+        filas +
+        '</tbody>'
+      '</table>'+
+    '</div>';
+
+   var div_table = '<div style="width:100%;height:100%;">'+
+                      table_container +
+                      tabla +
+                   '</div>'
+
+   $('#two').html(div_table);
+
+   ff[1].forEach(function(d) {
+     $('#a_' + d.anio).text(d.valor.toFixed(2))
+   });
+
+   //var ref = ff[0].length > ff[1].length ? ff[0] : ff[1];
+
+   //var anios = _.uniq(ref.map(function(d) { return String(d.anio); }));
+
+   var chart = Highcharts.chart('one', {
+    chart: {
+        type: 'column'
+    },
+    credits: { enabled:false },
+    title: {
+        text: ''
+    },
+    subtitle:{
+      text:'Actividad Planeada vs Real'
+    },
+    xAxis: {
+        categories: anios//['1998','1999','2000']
+    },
+    yAxis: {
+        tickInterval:2,
+        min: 0,
+        title: {
+            text: ''
+        },
+        max: d3.max(ff[0].map(function(d) { return d.valor; })) > d3.max(ff[1].map(function(d) { return d.valor; })) ?
+          d3.max(ff[0].map(function(d) { return d.valor; })) : d3.max(ff[1].map(function(d) { return d.valor; }))
+    },
+    legend: {
+        shadow: false
+    },
+    tooltip: {
+        shared: true
+    },
+    plotOptions: {
+        column: {
+            grouping: false,
+            shadow: false,
+            borderWidth: 0
+        }
+    },
+    series: [{
+        name: $('#botonera>option:selected').text() + ' - Plan',
+        color: 'rgba(13,180,190,0.6)',
+        data: ff[0].map(function(d) { return d.valor; }),
+        pointPadding: 0.3,
+        pointPlacement: -0.2
+    }, {
+        name: $('#botonera>option:selected').text() + ' - Real',
+        color: 'rgba(126,86,134,.9)',
+        data: ff[1].map(function(d) { return d.valor; }),
+        pointPadding: 0.4,
+        pointPlacement: -0.2
+    }]
+});
 }
 
 

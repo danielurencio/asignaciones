@@ -201,3 +201,44 @@ div.customTooltip>div:first-child {
 .highcharts-tooltip {
   border:none;
 }
+
+#visor_table .highcharts-minor-tick, #visor_table .highcharts-tick {
+	display: none;
+}
+
+#visor_table .highcharts-axis-labels, #visor_table .highcharts-yaxis-labels {
+  display:none;
+}
+
+/*
+ *  STYLE 2
+ */
+
+ #scroll_table_::-webkit-scrollbar-track, .resultadosDesplegables::-webkit-scrollbar-track
+ {
+ 	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+ 	border-radius: 10px;
+ 	background-color: #F5F5F5;
+ }
+
+ #scroll_table_::-webkit-scrollbar, .resultadosDesplegables::-webkit-scrollbar
+ {
+ 	width: 8px;
+ 	background-color: #F5F5F5;
+ }
+
+ #scroll_table_::-webkit-scrollbar-thumb, .resultadosDesplegables::-webkit-scrollbar-thumb
+ {
+ 	border-radius: 10px;
+ 	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+ 	background-color: #555;
+ }
+
+#filas_>tr:hover {
+  background-color:rgba(13,180,190,0.4);
+}
+
+select#botonera {
+  border:none;
+  border-bottom: 1px solid lightgray;
+}

@@ -12,12 +12,50 @@ class Service():
     def __init__(self):
 	self.params = cgi.FieldStorage()
         self.ID = self.params.getvalue('ID')
+        self.CUENCA = self.params.getvalue('CUENCA')
+        self.UBICACION = self.params.getvalue('UBICACION')
+        self.TIPO = self.params.getvalue('TIPO')
         self.response = None
         self.rows = [
             "Content-Type: application/json; charset=UTF-8",
             "Access-Control-Allow-Origin:*",
             ''
         ]
+        self.queries = {
+            'produccion': "SELECT FECHA,SUM(ACEITE_MBD) AS ACEITE_MBD,SUM(GAS_MMPCD) AS GAS_MMPCD FROM ( " +\
+                            "SELECT A.*,B.TIPO,B.CUENCA,B.UBICACION FROM CMDE_PUBLIC.ASIGNACIONES_PRODUCCION A " +\
+                            "LEFT JOIN CMDE_RAW.DATOS_ASIGNACIONES_GRALES B " +\
+                            "ON A.ID = B.ID " +\
+                           ") " + self.conditionalQuery() +\
+                           "GROUP BY FECHA",
+
+            'pozos_inv': "SELECT FECHA,DESCRIPTOR,SUM(VALOR) AS VALOR FROM ( " +\
+                            "SELECT A.*,B.CUENCA,B.UBICACION,B.TIPO FROM DATOS_ASIGNACIONES_INVPOZOS A " +\
+                            "LEFT JOIN DATOS_ASIGNACIONES_GRALES B " +\
+                            "ON A.ID = B.ID " +\
+                            "ORDER BY FECHA " +\
+                          ") " + self.conditionalQuery() +\
+                          "GROUP BY FECHA,DESCRIPTOR",
+
+            'inv': "SELECT ANIO,ACTIVIDAD,SUB_ACTIVIDAD,SUM(MONTO_USD) AS MONTO_USD FROM ( "
+                     "SELECT A.ID,A.NOMBRE,A.ACTIVIDAD,A.SUB_ACTIVIDAD,A.ANIO,A.MONTO_USD,B.UBICACION,B.CUENCA,B.TIPO " +\
+                     "FROM DATOS_ASIGNACIONES_INV A " +\
+                     "LEFT JOIN DATOS_ASIGNACIONES_GRALES B " +\
+                     "ON A.ID = B.ID " +\
+                   ") " + self.conditionalQuery() +\
+                   "GROUP BY ANIO,ACTIVIDAD,SUB_ACTIVIDAD",
+
+            'reservas': "SELECT FECHA,TIPO_RESERVAS AS TIPO, SUM(RR_PCE_MMBPCE) AS RR_PCE_MMBPCE from ( " +\
+                           "SELECT A.*, B.CUENCA, B.TIPO, B.UBICACION FROM ( " +\
+                             "SELECT FECHA,NOMBRE_ASIG AS NOMBRE,ID_ASIG AS ID, TIPO AS TIPO_RESERVAS, SUM(RR_PCE_MMBPCE) AS RR_PCE_MMBPCE " +\
+                             "FROM CMDE_PUBLIC.RESERVAS_ASIG_CONT_TEST GROUP BY FECHA,TIPO,NOMBRE_ASIG,ID_ASIG " +\
+                             "ORDER BY FECHA,NOMBRE_ASIG,TIPO " +\
+                           ") A LEFT JOIN CMDE_RAW.DATOS_ASIGNACIONES_GRALES B " +\
+                           "ON A.ID = B.ID " +\
+                         ") " + self.conditionalQuery() +\
+                         "GROUP BY FECHA,TIPO_RESERVAS",
+            'cmt':''
+        }
         self.bd_service = 'cnih';
 
 
@@ -63,10 +101,21 @@ class Service():
 	return result
 
 
+    def conditionalQuery(self):
+        keys = self.params.keys()
+        items = [ (k,"'" + self.params.getvalue(k) + "'") for k in keys ]
+        filtro = filter(lambda x:x[1][1:4] != 'Tod',items)
+        query = ' AND '.join(map(lambda x:'='.join(x),filtro))
+        return 'WHERE ' + query + ' ' if query else query
+
 
     def produccion(self):
-        query = "SELECT * FROM ASIGNACIONES_PRODUCCION WHERE ID='" + self.ID + "'"
-	conn_str = "oracle://cmde_public:public17@172.16.120.3:1521/" + self.bd_service
+        if(self.ID != 'Todas'):
+            query = "SELECT * FROM CMDE_PUBLIC.ASIGNACIONES_PRODUCCION WHERE ID='" + self.ID + "'"
+        else:
+            query = self.queries['produccion'] 
+
+	conn_str = "oracle://durencio:daniel2017@172.16.120.3:1521/" + self.bd_service
 	df = self.connectionResult(query,conn_str)
 	df = df.to_json(orient='records')
         return df
@@ -74,39 +123,48 @@ class Service():
 
 
     def pozos_inv(self):
-        query = "SELECT * FROM DATOS_ASIGNACIONES_INVPOZOS WHERE ID='" + self.ID +"' "+\
-                "ORDER BY FECHA"
+        if(self.ID != 'Todas'):
+            query = "SELECT * FROM DATOS_ASIGNACIONES_INVPOZOS WHERE ID='" + self.ID +"' "+\
+                    "ORDER BY FECHA"
+        else:
+            query = self.queries['pozos_inv']
 
         conn_str = 'oracle://cmde_raw:raw17@172.16.120.3:1521/' + self.bd_service
         df = self.connectionResult(query,conn_str)
 
-        for i in ['descriptor','nombre','id']:
-            df[i] = df[i].str.decode('latin1').str.encode('utf-8')
+        #for i in ['descriptor','nombre','id']:
+        #    df[i] = df[i].str.decode('latin1').str.encode('utf-8')
 
         result = df.to_json(orient='records')
         return result
 
 
     def inv(self):
-	query = "SELECT * FROM DATOS_ASIGNACIONES_INV WHERE ID='" + self.ID + "' " +\
-                "ORDER BY ANIO"
+        if(self.ID != 'Todas'):
+	    query = "SELECT * FROM DATOS_ASIGNACIONES_INV WHERE ID='" + self.ID + "' " +\
+                    "ORDER BY ANIO"
+        else:
+            query = self.queries['inv']
 
 	conn_str = 'oracle://cmde_raw:raw17@172.16.120.3:1521/' + self.bd_service
 	df = self.connectionResult(query,conn_str)
 
-	for i in ['nombre','actividad','sub_actividad','tarea','tipo','escenario','tipo_aprobacion']:
-	    df[i] = df[i].str.decode('latin1').str.encode('utf-8')
+	#for i in ['nombre','actividad','sub_actividad','tarea','tipo','escenario','tipo_aprobacion']:
+	#    df[i] = df[i].str.decode('latin1').str.encode('utf-8')
 
 	df = df.to_json(orient='records')
 	return df
 
 
     def reservas(self):
-        query = "SELECT FECHA,NOMBRE_ASIG AS NOMBRE,ID_ASIG AS ID,TIPO,SUM(RR_PCE_MMBPCE) AS RR_PCE_MMBPCE FROM RESERVAS_ASIG_CONT_TEST " +\
-                "WHERE ID_ASIG='" + self.ID + "' " +\
-                "GROUP BY FECHA,TIPO,NOMBRE_ASIG,ID_ASIG ORDER BY FECHA,NOMBRE_ASIG,TIPO"
+        if(self.ID != 'Todas'):
+            query = "SELECT FECHA,NOMBRE_ASIG AS NOMBRE,ID_ASIG AS ID,TIPO,SUM(RR_PCE_MMBPCE) AS RR_PCE_MMBPCE FROM CMDE_PUBLIC.RESERVAS_ASIG_CONT_TEST " +\
+                    "WHERE ID_ASIG='" + self.ID + "' " +\
+                    "GROUP BY FECHA,TIPO,NOMBRE_ASIG,ID_ASIG ORDER BY FECHA,NOMBRE_ASIG,TIPO"
+        else:
+            query = self.queries['reservas']
 
-        conn_str = 'oracle://cmde_public:public17@172.16.120.3:1521/' + self.bd_service
+        conn_str = 'oracle://durencio:daniel2017@172.16.120.3:1521/' + self.bd_service
 
         def transform_reserves(x):
             fechas = x.fecha.unique().tolist()
@@ -125,7 +183,8 @@ class Service():
                 else:
                     result = result.append(c)
 
-            result = result.reset_index()[['fecha','tipo_','nombre','id','rr']]
+            cols = ['fecha','tipo_','nombre','id','rr'] if self.ID != 'Todas' else ['fecha','tipo_','rr']
+            result = result.reset_index()[cols]
             result = result.rename(columns={ 'tipo_':'tipo', 'rr':'rr_pce_mmbpce' })
             return result
 
@@ -135,7 +194,7 @@ class Service():
 
         return df
 
-
+    # Pendiente: Habilitar condicional para cuando se buscan cifras agregadas.
     def cmt(self):
        tipo = 'A' if len(self.ID.split('-')[0]) == 1 else 'AE'
 
@@ -153,6 +212,14 @@ class Service():
        return df
 
 
+    def seguimiento(self):
+        query = "SELECT * FROM ASIGNACIONES_SEGUIMIENTO_EXT WHERE ID='" + self.ID + "'"
+        conn_str = "oracle://cmde_raw:raw17@172.16.120.3:1521/cnih"
+        df = self.connectionResult(query,conn_str)
+        df = df.to_json(orient='records')
+        return df
+
+
     def assembler(self):
         obj = {}
         obj['pozos_inv'] = self.pozos_inv()
@@ -160,14 +227,19 @@ class Service():
 	obj['inv'] = self.inv()
         obj['reservas'] = self.reservas()
         obj['cmt'] = self.cmt()
+        obj['seguimiento'] = self.seguimiento()
         return obj
 
 
     def responder(self):
-        if 'ID' in self.params.keys():
-            self.response = self.assembler()
-        else:
+        if self.ID is None:
             self.response = self.catalogo_general()
+        else:
+            self.response = self.assembler()
+            #if self.ID != 'Todas':
+            #    self.response = self.assembler()
+            #else:
+            #    self.response = self.conditionalQuery()#self.reservas()
 
         self.printer()
         sys.stdout.write(json.dumps(self.response))

@@ -1,4 +1,4 @@
-var HOSTNAME = 'http://172.16.24.57/';
+var HOSTNAME = 'http://172.16.24.57:5000/';
 
  $(document).ready(function() {
 
@@ -8,6 +8,7 @@ var HOSTNAME = 'http://172.16.24.57/';
     url: HOSTNAME + 'grales_asig.py',
     success:function(datos_grales) {
         datos_grales = JSON.parse(datos_grales)
+
    d3.csv('asignaciones_produccion.csv', function(err,produccion) {
     d3.json('file_.json',function(err,data_) {
     	d3.json('shapes.json',function(err,shapes) {
@@ -84,17 +85,118 @@ var HOSTNAME = 'http://172.16.24.57/';
 
           var data = datos_grales;
 
+          //var exp = new Expandir(data,'CUENCA')
+          //console.log(exp.unicos());
+
 		      var cuencas = data.map(function(d) {
 		      		return d.CUENCA;
 		      });
 
-		      cuencas = _.uniq(cuencas);
+
+          var tipos = _.uniq(data.map((d) => d.TIPO));
+          tipos = ['Todos'].concat(tipos);
+
+          var ubicaciones = _.uniq(data.map((d) => d.UBICACION));
+          //ubicaciones = ['Todas'].concat(ubicaciones)
+
+          var tipos_extras = tipos.map((d,i) => {
+            var obj = {};
+            obj['CUENCA'] = 'Todas';
+            obj['TIPO'] = d;
+            obj['UBICACION'] = 'Todas',
+            obj['NOMBRE'] = 'Todas';
+            obj['ID'] = 'Todas';
+            return obj;
+          });
+
+          var ubicaciones_extras = ubicaciones.map((d) => {
+            var obj = {};
+            obj['CUENCA'] = 'Todas';
+            obj['UBICACION'] = d;
+            obj['TIPO'] = 'Todas';
+            obj['NOMBRE'] = 'Todas';
+            obj['ID'] = 'Todas';
+            return obj;
+          });
+
+          //ubicaciones.slice(1,ubicaciones.length)
+          var ubicaciones_extras_2 = ubicaciones.map(function(d) {
+            var resultados = _.uniq(data.filter(function(e) {
+              return e.UBICACION == d; }).map( function(m) {
+                var obj = {};
+                obj['NOMBRE'] = 'Todas';
+                obj['ID'] = 'Todas';
+                obj['CUENCA'] = 'Todas';
+                obj['UBICACION'] = d;
+                obj['TIPO'] = m.TIPO;
+
+                return JSON.stringify(obj);
+              })
+            );
+
+            return resultados.map((d) => JSON.parse(d));
+          });
+
+          ubicaciones_extras_2 = _.flatten(ubicaciones_extras_2);
+
+          function extras_(arr,st,params,special) {
+              let resultado = arr.map(function(d)  {
+                  return data.filter(function(f) {
+                      return f[st] == d;
+                  }).map(function(m) {
+                      var obj = {};
+
+                      for(var p in params) {
+                        if(params[p] == special) {
+                          obj[special] = m[special]
+                        } else {
+                          obj[params[p]] = 'Todas';
+                        }
+                      }
+
+                      obj[st] = m[st];
+                      obj['ID'] = m['ID'];
+                      obj['NOMBRE'] = m['NOMBRE'];
+
+                      return obj;
+                  });
+              });
+
+              resultado = _.flatten(resultado);
+              return resultado;
+          };
+
+          var test_0 = extras_(tipos.slice(1,tipos.length), 'TIPO',['CUENCA','UBICACION']);
+          var test_1 = extras_(ubicaciones,'UBICACION',['CUENCA','TIPO'],'TIPO');
+
+          cuencas = _.uniq(cuencas);
+
+          var cuencas_extras = cuencas.map((d) => {
+            var obj = {};
+            obj['CUENCA'] = d;
+            obj['ID'] = 'Todas';
+            obj['UBICACION'] = 'Todas';
+            obj['TIPO'] = 'Todos';
+            obj['NOMBRE'] = 'Todas';
+            return obj;
+          });
+
+          cuencas = ['Todas'].concat(cuencas);
+
+          var ex_0 = new Expandir(data,'CUENCA').packaged_ops(['UBICACION','TIPO']);
+          var ex_1 = new Expandir(data,'UBICACION').packaged_ops(['TIPO']);
+          var ex_2 = new Expandir(data,'TIPO').packaged_ops();
+          data = data.concat(ex_0,ex_1,ex_2,data)
+console.log(data)
+          //data = data.concat(cuencas_extras,tipos_extras,ubicaciones_extras,ubicaciones_extras_2,test_0,test_1);
+
 
 		      cuencas.forEach(function(d) {
 		      	if(d) {
 		      		$('.cuenca').append('<option>'+ d +'</option>');
 		      	}
 		      });
+
 
 			  asignaciones.on('click',function(event) {
           //event.layer.setStyle({ background:'red' });
@@ -136,30 +238,92 @@ var HOSTNAME = 'http://172.16.24.57/';
             'mymap':mymap
           };
 
+          function AjaxCall(data,mymap,asignaciones) {
+            datosAsignacion(data,null,null,mymap,asignaciones);
+
+            $('#visor').html('');
+
+            var ID, TIPO, UBICACION, CUENCA;
+            ID = $('.asignacion>option:selected').attr('id');
+            TIPO = $('.tipo>option:selected').text();
+            UBICACION = $('.ubicacion>option:selected').text();
+            CUENCA = $('.cuenca>option:selected').text();
+
+            $.ajax({
+                  type:'GET',
+                  dataType:'JSON',
+                  url:HOSTNAME + 'grales_asig.py',
+                  data:{
+                    ID:ID,
+                    TIPO:TIPO,
+                    UBICACION:UBICACION,
+                    CUENCA:CUENCA
+                  },
+                  success:function(ajaxData) {
+                    var noms = [CUENCA,TIPO,UBICACION];
+
+                    for(var k in ajaxData) {
+                      ajaxData[k] = JSON.parse(ajaxData[k]).map(function(d) {
+                            d['nombre'] = noms.filter((d) => d.slice(0,3) != 'Tod').join(' - ')// ? 'Todas' : noms.join(' - ')
+                            return d;
+                      })
+                    }
+
+                    mapNdataObj['ajaxData'] = ajaxData;
+
+                    switcher($('.selectedButton').attr('id'),mapNdataObj);
+
+                  }
+            });
+          };
+
 
           cambioAsignacion(data);
           speechBubbles(mapNdataObj);
 
 		      $('.cuenca').on('change',function() {
-		      		cambioAsignacion(data);
-		      		datosAsignacion(data,null,null,mymap,asignaciones);
+              if( $('.asignacion>option:selected').attr('ID') != 'Todas' ) {
+		      		    cambioAsignacion(data);
+		      		    datosAsignacion(data,null,null,mymap,asignaciones);
+              } else {
+                  AjaxCall(data,mymap,asignaciones);
+                  cambioAsignacion(data);
+		      		    datosAsignacion(data,null,null,mymap,asignaciones);
+              }
 		      });
 
 
           $('.ubicacion').on('change',function() {
-                cambio(data,'tipo',function(d) {
-                  return localCond(d,'cuenca') && localCond(d,'ubicacion');
-                });
+              if( $('.asignacion>option:selected').attr('ID') != 'Todas' ) {
+                  cambio(data,'tipo',function(d) {
+                    return localCond(d,'cuenca') && localCond(d,'ubicacion');
+                  });
 
-                $('.tipo').trigger('change');
+                  $('.tipo').trigger('change');
+              } else {
+                    AjaxCall(data,mymap,asignaciones);
+                    cambio(data,'tipo',function(d) {
+                      return localCond(d,'cuenca') && localCond(d,'ubicacion');
+                    });
+
+                    //$('.tipo').trigger('change');
+              }
           });
 
 
           $('.tipo').on('change',function() {
-                cambio(data,'asignacion',function(d) {
-                    return localCond(d,'cuenca') && localCond(d,'ubicacion') && localCond(d,'tipo');
-                },'NOMBRE');
-                $('.asignacion').trigger('change');
+                if( $('.asignacion>option:selected').attr('ID') != 'Todas' ) {
+                    cambio(data,'asignacion',function(d) {
+                        return localCond(d,'cuenca') && localCond(d,'ubicacion') && localCond(d,'tipo');
+                    },'NOMBRE');
+                    $('.asignacion').trigger('change');
+                } else {
+                    AjaxCall(data,mymap,asignaciones);
+                    cambio(data,'asignacion',function(d) {
+                        return localCond(d,'cuenca') && localCond(d,'ubicacion') && localCond(d,'tipo');
+                    },'NOMBRE');
+                    //$('.asignacion').trigger('change');
+                }
           });
 
 
@@ -180,7 +344,9 @@ var HOSTNAME = 'http://172.16.24.57/';
                           }
 
                           mapNdataObj['ajaxData'] = ajaxData;
+                          console.log(ajaxData)
                           switcher($('.selectedButton').attr('id'),mapNdataObj);
+
                         }
                   });
 		      });
@@ -200,7 +366,7 @@ var HOSTNAME = 'http://172.16.24.57/';
 
 
 function datosAsignacion(data,nombre,projection,mymap,asignaciones) {
-
+try {
 		var sel_asignacion_obj;
 
 		if(!nombre) { 														// <-- ¿Esto qué?
@@ -260,7 +426,7 @@ function datosAsignacion(data,nombre,projection,mymap,asignaciones) {
       	var fnString = 'openInNewTab("' + tituloLink + '");';
       	$('#titulo').attr('onclick',fnString)
 /*------------------------AGRAGAR URL DE DESCARGA DE TITULO--------------------------------------------*/
-
+} catch (err) {}
 };
 
 
@@ -492,9 +658,16 @@ function cambio(data,str,fn,extraParam) {
           type:'GET',
           dataType:'json',
           url: HOSTNAME + 'grales_asig.py?',
-          data: { ID:$('.asignacion>option:selected').attr('id') },
+          data: {
+            ID:$('.asignacion>option:selected').attr('id'),
+            TIPO:$('.tipo>option:selected').text(),
+            UBICACION:$('.ubicacion>option:selected').text(),
+            CUENCA:$('.cuenca>option:selected').text()
+          },
           success: function(data) {
-               for(var k in data) { data[k] = JSON.parse(data[k])}
+              console.log('ajax')
+              //console.log(JSON.parse(data)
+               for(var k in data) { data[k] = JSON.parse(data[k]); }
                mapNdataObj['ajaxData'] = data;
     	         $('#botones_>div').filter(function(i,d) { return i === 0 })
                         .click();
@@ -558,59 +731,120 @@ function switcher(id,mapNdataObj) {
         	 			    break;
 
         	 		case id === 'Reservas':
-                    grapher(enConstruccion)
-            	 			//grapher(BarChart)
+
+                    var reservas = mapNdataObj.ajaxData.reservas;
+
+                    if(reservas.length > 0) {
+                          var groups_ = [
+                            { 'stackName':'PP','groups':['probadas','probables','posibles'] }
+                            //{ 'stackName':'PP','groups':['1P','2P','3P'] }
+                          ];
+
+                          var config = {
+                            filter:'tipo',
+                            nombre:'nombre',
+                            id:'id',
+                            x:'fecha',
+                            y:'rr_pce_mmbpce',
+                            timeformat: { year:'%Y' }
+                          }
+
+                          var stack_reservas = new Wrangler(config,groups_);
+                          var reservasStacked = stack_reservas.stackData(reservas);
+                          var colores = ['rgb(13,180,190)','rgb(46,112,138)','rgb(20,50,90)'];
+
+                          reservasStacked = reservasStacked.map(function(d,i) {
+                            d.color = colores[i];
+                            return d;
+                          });
+
+
+                          var reservasPlot = new BarChart({
+                            title:'Reservas',
+                            subtitle:'Millones de barriles de petróleo crudo equivalente',
+                            yAxis:'MMBPCE',
+                            where:'visor',
+                            chart: {
+                              type:'column'
+                            },
+                            noRange:1,
+                            xAxis: {
+                              type:'datetime',
+                              dateTimeLabelFormats: {
+                                month:'%b \ %Y'
+                              }
+                            },
+                            //tooltip:'"<div><b>" +' +
+                            //              'parseDate(this.x) + "</b>:<br> " +' +
+                            //              'this.points.map(function(d) { return "  " + d.key + ": " + d.y }).join("<br>") +' +
+                            //          '"</div>";'
+                          });
+
+                  	 			grapher(reservasPlot.plot,reservasStacked,(d) => d);//stack_reservas.stackData);
+
+                    } else {
+                          noDato();
+                    }
+
             	 			break;
 
         	 		case id === 'Pozos':
-                    //try {
-                      var pozos = mapNdataObj.ajaxData.pozos_inv.filter(function(d) {
-                        var cond =
-                          [
-                            'Perforaciones desarrollo',
-                            'Terminaciones desarrollo',
-                            'Perforaciones inyectores',
-                            'Terminaciones inyectores',
-                            'Reparaciones mayores',
-                            'Reparaciones menores',
-                            'Taponamientos',
-                            'Pozos operando'
-                          ].some(function(e) { return e == d.descriptor });
+                    if( mapNdataObj.ajaxData.pozos_inv.length > 0) {
 
-                          return cond;
-                    });
+                          var pozos = mapNdataObj.ajaxData.pozos_inv.filter(function(d) {
+                            var cond =
+                              [
+                                'Perforaciones desarrollo',
+                                'Terminaciones desarrollo',
+                                'Perforaciones inyectores',
+                                'Terminaciones inyectores',
+                                'Reparaciones mayores',
+                                'Reparaciones menores',
+                                'Taponamientos',
+                                'Pozos operando'
+                              ].some(function(e) { return e == d.descriptor });
 
-                    var pozosPlot = new BarChart({
-                      title:'Actividad física',
-                      subtitle:'(En operación, perforaciones, terminaciones & taponamientos)',
-                      yAxis:'Número de pozos',
-                      where:'visor',
-                      type:'column'
-                    });
+                              return cond;
+                        });
 
-                    var groups_ = [
-                      { 'stackName':'Perforaciones','groups':['Perforaciones desarrollo'] },
-                      { 'stackName':'Terminaciones', 'groups':['Terminaciones desarrollo'] },
-                      { 'stackName':'Reparaciones','groups':['Reparaciones menores','Repraciones mayores'] },
-                      { 'stackName':'Taponamientos','groups':['Taponamientos'] },
-                      { 'stackName':'Pozos operando','groups':['Pozos operando'] }
-                    ];
+                        var pozosPlot = new BarChart({
+                          title:'Actividad física',
+                          subtitle:'(En operación, perforaciones, terminaciones & taponamientos)',
+                          yAxis:'Número de pozos',
+                          where:'visor',
+                          chart: {
+                            type:'column'
+                          },
+                          xAxis: {
+                            type:'datetime',
+                            dateTimeLabelFormats: {
+                              month:'%b \ %Y'
+                            }
+                          }
+                        });
 
-                    var config = {
-                        filter:'descriptor',
-                        nombre:'nombre',
-                        id:'id',
-                        x:'fecha',
-                        y:'valor',
-                        timeformat: { month:'%b \ %Y' },
-                        timebuttons:true
-                    };
+                        var groups_ = [
+                          { 'stackName':'Perforaciones','groups':['Perforaciones desarrollo'] },
+                          { 'stackName':'Terminaciones', 'groups':['Terminaciones desarrollo'] },
+                          { 'stackName':'Reparaciones','groups':['Reparaciones menores','Repraciones mayores'] },
+                          { 'stackName':'Taponamientos','groups':['Taponamientos'] },
+                          { 'stackName':'Pozos operando','groups':['Pozos operando'] }
+                        ];
 
-                    var stack_pozos = new Wrangler(config, groups_);
-                    var stackedPozos = stack_pozos.stackData(pozos);
+                        var config = {
+                            filter:'descriptor',
+                            nombre:'nombre',
+                            id:'id',
+                            x:'fecha',
+                            y:'valor',
+                            timeformat: { month:'%b \ %Y' },
+                            timebuttons:true
+                        };
 
-                    if(pozos.length > 0) {
-                      console.log(stackedPozos)
+                        var stack_pozos = new Wrangler(config, groups_);
+                        var stackedPozos = stack_pozos.stackData(pozos);
+
+                    //if(pozos.length > 0) {
                         grapher(pozosPlot.plot,pozos,stack_pozos.stackData);
                     } else {
                         noDato();
@@ -719,22 +953,38 @@ function switcher(id,mapNdataObj) {
                           // Gráficas
                           var invGeneral = new BarChart({
                                   title:'',
-                                  yAxis:'Dólares',
+                                  yAxis:'Pesos',
                                   where: 'three',
                                   noRange:1,
-                                  type:'column',
+                                  chart: {
+                                    type:'column'
+                                  },
                                   subtitle:'Inversión',
-                                  hideLegend:true
+                                  hideLegend:true,
+                                  xAxis: {
+                                    type:'datetime',
+                                    dateTimeLabelFormats: {
+                                      month:'%b \ %Y'
+                                    }
+                                  }
                           });
 
                           var invPlot2 = new BarChart({
                                   title:'',
-                                  yAxis:'Dólares',
+                                  yAxis:'Pesos',
                                   where: 'two',
                                   noRange:1,
-                                  type:'column',
+                                  chart: {
+                                    type:'column'
+                                  },
                                   opposite:true,
-                                  subtitle:'Inversión aprobada anual por actividad'
+                                  subtitle:'Inversión aprobada anual por actividad',
+                                  xAxis: {
+                                    type:'datetime',
+                                    dateTimeLabelFormats: {
+                                      month:'%b \ %Y'
+                                    }
+                                  }
                           });
 
                           pie(pie_act,pie_sub);
@@ -748,19 +998,29 @@ function switcher(id,mapNdataObj) {
             	 			break;
 
         	 		case id === 'Compromiso Mínimo de Trabajo':
-                    grapher(enConstruccion)
+                    var cmt = mapNdataObj.ajaxData.cmt;
+
+                    if(cmt.length > 0) {
+                      var cmtRowPlot = new RowPlot(cmt);
+                      grapher(cmtRowPlot.table,cmt,function(data) { return data; });
+                    } else {
+                      noDato();
+                    }
+
             	 			break;
 
         	 		case id === 'Aprovechamiento de gas':
                     grapher(enConstruccion)
             	 			break;
 
-        	 		case id === 'Dictámenes':
+        	 		case id === 'Documentos':
                     grapher(enConstruccion)
             	 			break;
 
         	 		case id === 'Seguimiento':
-                    grapher(enConstruccion)
+                    var seg = mapNdataObj.ajaxData.seguimiento;
+                    divisor(seg);
+                    //grapher(enConstruccion)
             	 			break;
     	 	}
 

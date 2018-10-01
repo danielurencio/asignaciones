@@ -93,32 +93,17 @@ class Header extends Component {
     }
 
     //const dropdowns = ['Cuenca','Ubicación','Tipo','Asignacion'];
-    const dropdowns = ['Cuenca','Ubicación','Tipo','Asignación'];
-    const childrenWidth = ( 100 / (dropdowns.length + 1) ) + '%';
+    const dropdowns = ['Nivel','Cuenca/Ubicación','Tipo/Asignación','Buscar'];
+    const childrenWidth = '20%';// ( 100 / (dropdowns.length + 1) ) + '%';
 
     return (
         <div className='header' style={headerStyle}>
           <div style={{backgroundColor:'rgb(50,50,50)',height:'30px', position:'fixed', width:'100%', textAlign:'center'}}>
             <img alt='' src='cnh-logo-white.svg' width='30px' height='30px'></img>
           </div>
-          <div style={{width:'100%',top:'35px',position:'fixed',zIndex:2 }}>
+          <div style={{width:'100%',top:'30px',position:'relative',zIndex:2,height:'calc(100% - 30px)' }}>
               <DropDownMenu title={ ['Cuenca','Ubicación'] } w_={childrenWidth}/>
               <DropDownMenu title={ ['Tipo','Asignación'] } w_={childrenWidth}/>
-              {/*
-                dropdowns.map(function(d,i) {
-                  return (
-                    <DropDownMenu w_={childrenWidth} key={i} name={d} tag={
-                                                        d.toLowerCase()
-                                                         .replace(/á/g,'a')
-                                                         .replace(/é/g,'e')
-                                                         .replace(/í/g,'i')
-                                                         .replace(/ó/g,'o')
-                                                         .replace(/ú/g,'u')
-                                                      }/>
-                  )
-                })
-              }*/}
-
               <TextBox w_={childrenWidth}/>
           </div>
       </div>
@@ -141,7 +126,7 @@ class Visor extends Component {
              'Inversión',
              'Compromiso Mínimo de Trabajo',
              'Aprovechamiento de gas',
-             'Dictámenes',
+             'Documentos',
              'Seguimiento'
            ]}/>
         </div>
@@ -219,10 +204,12 @@ class Botones extends Component {
                                               verticalAlign:'middle',
                                               textAlign:'center'
                                             }}>
-                                            <div style={{ height:'100%',width:'100%',verticalAlign:'middle',display:'table',textAlign:'center' }}>
-                                              <div style={{ 'display':'table-cell', verticalAlign:'middle',width:'100%',textAlign:'center',height:'100%' }}>
+                                            <div style={{ height:'100%',width:'100%',verticalAlign:'middle',display:'table',textAlign:'center',position:'relative' }}>
+                                              <div style={{ 'display':'table-cell', verticalAlign:'middle',width:'100%',textAlign:'center',height:'100%',position:'relative' }}>
                                                 {/*<i className={ 'glyphicon glyphicon-' + glyph } style={{ width:'100%',textAlign:'center',fontSize:'2.5em',verticalAlign:'middle' }}></i>*/}
-                                                <img alt='' src={dir + '/0' + i + '.svg'} style={{ maxHeight:'100%', maxWidth:'100%' }}></img>
+                                                {
+                                                    <img alt='' src={ i < botones.length - 1 ? dir + '/0' + i + '.svg' : null } style={{ maxWidth:'80%' }}></img>
+                                                }
                                               </div>
                                             </div>
                     </div>
@@ -254,7 +241,8 @@ class DropDownMenu extends Component {
     display:'table-cell',
     width:'30%',
     fontWeight:'800',
-    textAlign:'right'
+    textAlign:'right',
+    fontSize:'.9em'
   };
 
   selectContStyle = {
@@ -263,7 +251,8 @@ class DropDownMenu extends Component {
   };
 
   selectStyle = {
-    width:'100%',
+    width:'90%',
+    left:'10%'
     //minWidth:'70%',
     //maxWidth:'70%'
   };
@@ -281,13 +270,13 @@ class DropDownMenu extends Component {
 
   render() {
     return (
-      <div className='header_child' style={{display:'table-cell',textAlign:'center',width:this.props.w_}}>
+      <div className='header_child' style={{position:'relative',top:'5px',display:'table-cell',textAlign:'center',width:this.props.w_,height:'100%'}}>
         <div style={{display:'table',position:'absoulte',height:'100%', width:'100%', textAlign:'center' }}>
            <div style={{display:'table-cell',verticalAlign:'middle',textAlign:'center'}}>
               <div style={{ position:'relative',top:'-2px' }}>
                 <div style={ this.tableStyle }>
                   <div style={ this.titleStyle }>
-                  { this.props.title[0] } <span>&nbsp;</span>
+                  { this.props.title[0] }
                   </div>
                   <div style={ this.selectContStyle }>
                     <select className={ this.replaceChars(this.props.title[0]) } style={ this.selectStyle }/>
@@ -295,7 +284,7 @@ class DropDownMenu extends Component {
                 </div>
                 <div style={ this.tableStyle }>
                   <div style={ this.titleStyle }>
-                  { this.props.title[1] } <span>&nbsp;</span>
+                  { this.props.title[1] }
                   </div>
                   <div style={ this.selectContStyle }>
                     <select className={ this.replaceChars(this.props.title[1]) } style={ this.selectStyle }/>
