@@ -54,7 +54,14 @@ class Service():
                            "ON A.ID = B.ID " +\
                          ") " + self.conditionalQuery() +\
                          "GROUP BY FECHA,TIPO_RESERVAS",
-            'cmt':''
+            'cmt':'',
+            'seguimiento': "SELECT ANIO,TIPO_OBSERVACION,CONCEPTO,SUM(VALOR) AS VALOR FROM ( " +\
+                                "SELECT A.*, B.CUENCA, B.UBICACION, B.TIPO FROM ASIGNACIONES_SEGUIMIENTO_EXT A " +\
+                                "LEFT JOIN DATOS_ASIGNACIONES_GRALES B " +\
+                                "ON A.ID = B.ID " +\
+                            ") " + self.conditionalQuery() +\
+                            "GROUP BY ANIO,TIPO_OBSERVACION,CONCEPTO " +\
+                            "ORDER BY ANIO,TIPO_OBSERVACION,CONCEPTO"
         }
         self.bd_service = 'cnih';
 
@@ -75,7 +82,7 @@ class Service():
 
 
     def catalogo_general(self):
-        query = "SELECT * FROM DATOS_ASIGNACIONES_GRALES"
+        query = "SELECT * FROM DATOS_ASIGNACIONES_GRALES WHERE VIGENTE = 1"
 	conn_str = "oracle://cmde_raw:raw17@172.16.120.3:1521/" + self.bd_service
 	df = self.connectionResult(query,conn_str)
 
@@ -213,7 +220,11 @@ class Service():
 
 
     def seguimiento(self):
-        query = "SELECT * FROM ASIGNACIONES_SEGUIMIENTO_EXT WHERE ID='" + self.ID + "'"
+        if(self.ID != 'Todas'):
+            query = "SELECT * FROM ASIGNACIONES_SEGUIMIENTO_EXT WHERE ID='" + self.ID + "'"
+        else:
+            query = self.queries['seguimiento']
+
         conn_str = "oracle://cmde_raw:raw17@172.16.120.3:1521/cnih"
         df = self.connectionResult(query,conn_str)
         df = df.to_json(orient='records')

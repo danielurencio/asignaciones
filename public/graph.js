@@ -1,4 +1,236 @@
-function DatosGrales() {
+
+function DatosGrales(data)  {
+  var grales = JSON.parse(JSON.stringify(data.grales));
+
+  var params = ['cuenca','ubicacion','tipo','asignacion'].map((d) => [d.toUpperCase(),$('.' + d + '>option:selected').text()])
+
+  params = params.filter((f) => f[1].slice(0,3) != 'Tod');
+
+  params.forEach(function(p) {
+    grales = grales.filter((d) => d[p[0]] == p[1])
+  })
+
+  console.log(data)
+
+  var div = new DOMParser().parseFromString('<div></div>','text/html')
+                           .querySelector('body>div');
+
+
+
+  d3.select(div).append('div')
+    .style({
+      'table-layout':'fixed',
+      'width':'100%',
+      'height':'100%',
+      'display':'table',
+      'position':'relative'
+    })
+    .selectAll('div')
+    .data(['a','b']).enter()
+    .append('div')
+    .attr('id',function(d) {
+      return 'row_' + d;
+    })
+    .style({
+      'display':'table',
+      'table-layout':'fixed',
+      'width':'100%',
+      'height':'50%',
+      'position':'relative',
+      'padding-bottom': function(d,i) {
+          var p = '0px';
+          if( d == 'a') p = '10px';
+          return p;
+      }
+    }).each(function(d,i) {
+      var cells = i == 0 ? [1,2,3] : [1,2];
+
+      d3.select(this).selectAll('div')
+        .data(cells).enter()
+        .append('div')
+        .attr('id',function(d) { return 'col_' + d; })
+        .style({
+            width:(100 / cells.length).toFixed(2) + '%',
+            height:'50%',
+            //'background-color':'purple',
+            //border:'1px solid white',
+            display:'table-cell'
+        })
+        .append('div')
+    })
+
+
+  $('#visor').html(div.innerHTML)
+  var colors_ = ['rgb(115,194,251)','rgb(87,160,211)','rgb(129,216,208)','rgb(79,151,163)','rgb(70,130,180)','rgb(0,128,129)']
+
+  d3.select('div#row_a>div#col_1')
+  .html(function(d) {
+    return "<div style='width:100%;height:100%;background-color:white;position:relative;display:table;table-layout:fixed;'>" +
+              "<div style='display:table-row;width:100%;height:50%;text-align:center;table-layout:fixed;position:relative;'>" +
+                  "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
+                      "<div style='width:100%;height:100%;border-right:1px solid gray;display:table;'>" +
+                          "<div style='display:table-cell;vertical-align:middle;'>" +
+                              "<div style='font-size:5em;font-weight:800;color:rgb(13,180,190);'>" + grales.length + "</div>" +
+                              "<div style='position:relative:;top:-10px;font-size:1em;font-weight:600;'>ASIGNACIONES</div>" +
+                          "</div>" +
+                      "</div>" +
+                  "</div>" +
+              "</div>" +
+              "<div style='display:table-row;width:100%;height:50%;text-align:center;table-layout:fixed;position:relative;'>" +
+                  "<div style='display:table-cell;position:relative;vertical-align:middle;text-align:center;border-right:1px solid gray;'>" +
+                      "<div style='font-weight:700;color:rgb(13,180,190);'>"+ grales.filter((d) => new RegExp('^A-').test(d.NOMBRE)).length +" Extracción</div>"+
+                      "<div style='font-weight:700;color:rgb(46,112,138);'>"+ grales.filter((d) => new RegExp('^AE-').test(d.NOMBRE)).length +" Exploración</div>"+
+                      "<div style='font-weight:700;color:rgb(20,50,90);'>"+ grales.filter((d) => new RegExp('^AR-').test(d.NOMBRE)).length +" Resguardo</div>"+
+                  "</div>" +
+              "</div>" +
+          "</div>"
+  });
+
+  d3.select('div#row_a>div#col_2')
+  .html(function(d) {
+    return "<div style='width:100%;height:100%;background-color:white;position:relative;display:table;table-layout:fixed;'>" +
+              "<div style='display:table-row;width:100%;height:50%;text-align:center;table-layout:fixed;position:relative;'>" +
+                  "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
+                      "<div style='display:table;width:100%;height:100%;'>" +
+                          "<div style='display:table-cell;vertical-align:middle;color:white;color:"+colors_[0]+"'>" +
+                              "<div style='font-size:3em;font-weight:700;'>"+ d3.sum(grales.map((d) => d.N_CAMPOS_RESERVAS)) +"</div>" +
+                              "<div style='position:relative:;top:-10px;font-size:0.85em;font-weight:600;color:black;'>CAMPOS CON RESERVAS</div>" +
+                          "</div>" +
+                      "</div>" +
+                  "</div>" +
+              "</div>" +
+              "<div style='display:table-row;width:100%;height:50%;text-align:center;table-layout:fixed;position:relative;'>" +
+                  "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
+                      "<div style='display:table;width:100%;height:100%;'>" +
+                          "<div style='display:table-cell;vertical-align:middle;color:white;color:"+colors_[1]+"'>" +
+                              "<div style='font-size:3em;font-weight:700;'>"+ (d3.sum(grales.map((d) => d.SUPERFICIE_KM2))/1000).toFixed(1) +"</div>" +
+                              "<div style='position:relative:;top:-10px;font-size:0.85em;font-weight:600;color:black'>MILES DE KM<sup>2</sup></div>" +
+                          "</div>" +
+                      "</div>" +
+                  "</div>" +
+              "</div>" +
+          "</div>"
+  })
+
+  d3.select('div#row_a>div#col_3')
+  .html(function(d) {
+    var seg = _.sortBy(data.ajaxData.seguimiento,function(d) { return d.anio; }).filter((f) => f.tipo_observacion == 'Real');
+    var gop = d3.sum(seg.filter((f) => f.concepto == 'G_Op').map((d) => d.valor))/1000;
+    var inv = d3.sum(seg.filter((f) => f.concepto == 'Inv').map((d) => d.valor))/1000;
+
+    return "<div style='width:100%;height:100%;background-color:white;position:relative;display:table;table-layout:fixed;'>" +
+              "<div style='display:table-row;width:100%;height:50%;text-align:center;table-layout:fixed;position:relative;'>" +
+                  "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
+                      "<div style='display:table;width:100%;height:100%;'>" +
+                          "<div style='display:table-cell;vertical-align:middle;color:white;color:"+colors_[2]+"'>" +
+                              "<div style='font-size:3em;font-weight:700;'>"+ gop.toFixed(1) +"</div>" +
+                              "<div style='position:relative:;top:-10px;font-size:0.85em;font-weight:600;color:black;'>GASTOS DE OPERACIÓN<br>(miles de millones de pesos)</div>" +
+                          "</div>" +
+                      "</div>" +
+                  "</div>" +
+              "</div>" +
+              "<div style='display:table-row;width:100%;height:50%;text-align:center;table-layout:fixed;position:relative;'>" +
+                  "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
+                      "<div style='display:table;width:100%;height:100%;'>" +
+                          "<div style='display:table-cell;vertical-align:middle;color:white;color:"+colors_[3]+"'>" +
+                              "<div style='font-size:3em;font-weight:700;'>"+ inv.toFixed(1) +"</div>" +
+                              "<div style='position:relative:;top:-10px;font-size:0.85em;font-weight:600;color:black;'>INVERSIÓN<br>(miles de millones de pesos)</div>" +
+                          "</div>" +
+                      "</div>" +
+                  "</div>" +
+              "</div>" +
+          "</div>"
+  });
+
+  var meses = {
+    '1':'Enero',
+    '2':'Febrero',
+    '3':'Marzo',
+    '4':'Abril',
+    '5':'Mayo',
+    '6':'Junio',
+    '7':'Julio',
+    '8':'Agosto',
+    '9':'Septiembre',
+    '10':'Octubre',
+    '11':'Noviembre',
+    '12':'Diciembre',
+  };
+
+  d3.select('div#row_b>div#col_1')
+    .style({
+      'background-color':colors_[4],
+      'color':'white'
+    })
+    .html(function(d) {
+      var prod = _.sortBy(data.ajaxData.produccion,function (d) { return d.fecha; });
+      var prod = prod[prod.length -1 ];
+
+      function fechA(ts) {
+        var f = new Date(ts)
+        var mes = String(f.getMonth() + 1);
+        var anio = f.getFullYear(ts)
+        return meses[mes] + ' - ' + anio;
+      }
+
+      return "<div style='width:100%;height:100%;position:relative;display:table;table-layout:fixed;'>" +
+                "<div style='display:table-row;width:100%;height:50%;text-align:center;table-layout:fixed;position:relative;'>" +
+                    "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
+                        "<div style='display:table;width:100%;height:100%;'>" +
+                            "<div style='display:table-cell;vertical-align:middle;'>" +
+                                "<div style='position:relative:;top:-10px;font-size:1em;font-weight:700;color:"+colors_[0]+"'>PRODUCCIÓN</div>" +
+                                "<div style='font-size:2em;font-weight:800;'>"+ (+prod.aceite_mbd.toFixed(1)).toLocaleString('es-MX')
+                                            +"<span style='font-weight:400;font-size:0.4em'> MBD</span></div>" +
+                                "<div style='font-size:2em;font-weight:800;'>&ensp;"+ (+prod.gas_mmpcd.toFixed(1)).toLocaleString('es-MX')
+                                            +"<span style='font-weight:400;font-size:0.4em'> MMPCD</span></div>" +
+                                "<div style='position:relative:;top:-10px;font-size:1em;font-weight:700;color:"+colors_[0]+"'>"+ fechA(prod.fecha) +"</div>" +
+                            "</div>" +
+                        "</div>" +
+                    "</div>" +
+                "</div>" +
+              "</div>"
+    });
+
+
+    d3.select('div#row_b>div#col_2')
+      .style({
+        'background-color':colors_[5],
+        'color':'white'
+      })
+      .html(function(d) {
+        var resv_ = _.sortBy(data.ajaxData.reservas,function (d) { return d.fecha; });
+        var resv = resv_[resv_.length -1 ];
+
+        var resv_ = resv_.filter((f) => f.fecha == resv.fecha);
+
+        return "<div style='width:100%;height:100%;position:relative;display:table;table-layout:fixed;'>" +
+                  "<div style='display:table-row;width:100%;height:50%;text-align:center;table-layout:fixed;position:relative;'>" +
+                      "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
+                          "<div style='display:table;width:100%;height:100%;'>" +
+                              "<div style='display:table-cell;vertical-align:middle;'>" +
+                                  "<div style='position:relative:;top:-10px;font-size:1em;font-weight:700;color:"+colors_[2]+"'>RESERVAS DE PCE</div>" +
+                                  "<div style='font-size:1.5em;font-weight:800;'>"+
+                                              (+resv_.filter((f) => f.tipo == 'probadas')[0].rr_pce_mmbpce.toFixed(1)).toLocaleString('es-MX')
+                                              +"<span style='font-weight:400;font-size:0.5em'> PROBADAS</span></div>" +
+                                  "<div style='font-size:1.5em;font-weight:800;'>"+
+                                              (+resv_.filter((f) => f.tipo == 'probables')[0].rr_pce_mmbpce.toFixed(1)).toLocaleString('es-MX')
+                                              +"<span style='font-weight:400;font-size:0.5em'> PROBABLES</span></div>" +
+                                  "<div style='font-size:1.5em;font-weight:800;'>"+
+                                              (+resv_.filter((f) => f.tipo == 'posibles')[0].rr_pce_mmbpce.toFixed(1)).toLocaleString('es-MX')
+                                              +"<span style='font-weight:400;font-size:0.5em'> POSIBLES</span></div>" +
+                                  "<div style='position:relative:;top:-10px;font-size:1em;font-weight:700;color:"+colors_[2]+"'>Millones de barriles - "
+                                              + new Date(resv.fecha).getFullYear() +"</div>" +
+                              "</div>" +
+                          "</div>" +
+                      "</div>" +
+                  "</div>" +
+                "</div>"
+      });
+
+}
+
+
+function DatosGrales_() {
 
   var str =
   "<div class='ficha' style='position:relative;width:100%;height:100%;background-color:transparent;'>" +
@@ -116,13 +348,13 @@ function LineChart(data) {
                 yAxis: [
                   {
                     title:{
-                      text:'Aceite (mbd)'
+                      text:'Gas (mmpcd)'
                     },
                     opposite:false,
                   },
                   {
                     title: {
-                      text:'Gas (mmpcd)'
+                      text:'Aceite (mbd)'
                     },
                   }
                 ],
@@ -814,6 +1046,13 @@ function divisor(data) {
    var anios = _.sortBy(_.uniq(data.map(function(d) { return String(d.anio); })));
    var tipo_obs = _.uniq(data.map(function(d) { return d.tipo_observacion; }));
    var conceptos = _.uniq(data.map(function(d) { return d.concepto }));
+//console.log(conceptos,data,tipo_obs)
+
+
+   // Esto filtra los conceptos que no tienen valores igual a cero.
+   conceptos = conceptos.map((d) => data.filter((f) => f.concepto == d).some((e) => e.valor))
+                                        .map((m,i) => m ? conceptos[i] : m)
+                                        .filter((f) => f)
 
    var conceptos_traduccion = {
      Qo: 'Producción de aceite',
@@ -855,7 +1094,7 @@ function divisor(data) {
              })//.filter(function(d) { return d.concepto == op_id });
          });
 
-         chart.series[0].setData(ff[0].map(function(d) { return d.valor; }))
+         chart.series[0].setData(ff[0].map(function(d) { return d.valor; }).filter((f) => f))
          chart.series[1].setData(ff[1].map(function(d) { return d.valor; }))
 
          chart.series[0].setName($('#botonera>option:selected').text() + ' - Plan');
@@ -925,7 +1164,7 @@ function divisor(data) {
          return f.tipo_observacion == d && f.concepto == op_id;
        })//.filter(function(d) { return d.concepto == op_id });
    });
-
+console.log(ff)
    var filas = ff[0].map(function(d,i) {
      var str = '<tr style="width:100%">'+
                   '<td style="width:33.33%;">'+ d.anio +'</td>'+

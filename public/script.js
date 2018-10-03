@@ -187,7 +187,7 @@ var HOSTNAME = 'http://172.16.24.57:5000/';
           var ex_1 = new Expandir(data,'UBICACION').packaged_ops(['TIPO']);
           var ex_2 = new Expandir(data,'TIPO').packaged_ops();
           data = data.concat(ex_0,ex_1,ex_2,data)
-console.log(data)
+
           //data = data.concat(cuencas_extras,tipos_extras,ubicaciones_extras,ubicaciones_extras_2,test_0,test_1);
 
 
@@ -233,6 +233,7 @@ console.log(data)
 			  });
 
           var mapNdataObj = {
+            'grales':datos_grales,
             'data':data,
             'asignaciones':asignaciones,
             'mymap':mymap
@@ -264,7 +265,8 @@ console.log(data)
 
                     for(var k in ajaxData) {
                       ajaxData[k] = JSON.parse(ajaxData[k]).map(function(d) {
-                            d['nombre'] = noms.filter((d) => d.slice(0,3) != 'Tod').join(' - ')// ? 'Todas' : noms.join(' - ')
+                            var name = noms.filter((d) => d.slice(0,3) != 'Tod').join(' - ')// ? 'Todas' : noms.join(' - ')
+                            d['nombre'] = name ? name : 'Nacional'
                             return d;
                       })
                     }
@@ -286,6 +288,7 @@ console.log(data)
 		      		    cambioAsignacion(data);
 		      		    datosAsignacion(data,null,null,mymap,asignaciones);
               } else {
+
                   AjaxCall(data,mymap,asignaciones);
                   cambioAsignacion(data);
 		      		    datosAsignacion(data,null,null,mymap,asignaciones);
@@ -339,12 +342,19 @@ console.log(data)
                         data:{ ID: $('.asignacion>option:selected').attr('ID') },
                         success:function(ajaxData) {
 
+                          var noms = ['cuenca','ubicacion','tipo','asignacion'].map((d) => [d.toUpperCase(),$('.' + d + '>option:selected').text()])
+
                           for(var k in ajaxData) {
-                            ajaxData[k] = JSON.parse(ajaxData[k])
+
+                            ajaxData[k] = JSON.parse(ajaxData[k]).map(function(d) {
+                                  var name = noms.filter((d) => d.slice(0,3) != 'Tod').join(' - ')// ? 'Todas' : noms.join(' - ')
+                                  d['nombre'] = name ? name : 'Nacional'
+                                  return d;
+                            })
+
                           }
 
                           mapNdataObj['ajaxData'] = ajaxData;
-                          console.log(ajaxData)
                           switcher($('.selectedButton').attr('id'),mapNdataObj);
 
                         }
@@ -491,6 +501,7 @@ function cambio(data,str,fn,extraParam) {
                     .map(function(d) { return d[mapName]; });
 
         param = _.uniq(param);
+        param = param.filter((f) => f.slice(0,3) == 'Tod').concat(param.filter((f) => f.slice(0,3) != 'Tod'))
         param = param.map(function(d) { return '<option>' + d + '</option>'; }).join('');
 
     } else {
@@ -628,7 +639,7 @@ function cambio(data,str,fn,extraParam) {
          		var width = +$(this).css('width').split('px')[0];
          		var left = width*pos;
 
-         		var p = '<div id="bubble" style="left:'+ left +'px">'+ text +'</div>'
+         		var p = '<div id="bubble" style="z-index:1000;left:'+ left +'px">'+ text +'</div>'
          		$('div#bubbles').append(p)
 
          		var offset = Math.abs($('#bubble')[0].getBoundingClientRect().width - width) / 2;
@@ -665,7 +676,7 @@ function cambio(data,str,fn,extraParam) {
             CUENCA:$('.cuenca>option:selected').text()
           },
           success: function(data) {
-              console.log('ajax')
+
               //console.log(JSON.parse(data)
                for(var k in data) { data[k] = JSON.parse(data[k]); }
                mapNdataObj['ajaxData'] = data;
@@ -713,7 +724,7 @@ function switcher(id,mapNdataObj) {
     		 	switch (true) {
               case id == 'Datos generales':
                     grapher(function() {
-                      DatosGrales();
+                      DatosGrales(mapNdataObj);
                       try {
                           datosAsignacion(mapNdataObj.data,null,null,mapNdataObj.mymap,mapNdataObj.asignaciones);
                       } catch {}
@@ -1018,7 +1029,9 @@ function switcher(id,mapNdataObj) {
             	 			break;
 
         	 		case id === 'Seguimiento':
+              console.log(mapNdataObj)
                     var seg = mapNdataObj.ajaxData.seguimiento;
+                    console.log(mapNdataObj)
                     divisor(seg);
                     //grapher(enConstruccion)
             	 			break;

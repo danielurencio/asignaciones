@@ -132,8 +132,8 @@ class Visor extends Component {
         </div>
         <div style={{ width:'100%',height:'calc(100% - '+ this.props.boton_width + 'px)' }}>
             <div id='bubbles' style={{ width:'100%',height:'0px',backgroundColor:'transparent',zIndex:'20' }}></div>
-            <div id='controles' style={{ width:'100%',height:'20px',backgroundColor:'transparent' }}></div>
-            <div id='visor_holder' style={{ position:'relative',margin:'20px',width:'calc(100% - 20px)',height:'calc(100% - 40px - 0px - 20px)' }}>
+            {/*<div id='controles' style={{ width:'100%',height:'20px',backgroundColor:'transparent' }}></div>*/}
+            <div id='visor_holder' style={{ position:'relative',margin:'10px',width:'calc(100% - 0px)',height:'calc(100% - 0px - 0px - 0px)' }}>
               <div style={{ width:'calc(100% - 20px)',height:'calc(100% - 20px)' }}>
                     <div id='visor' style={{ width:'100%', height:'100%' }}></div>
               </div>
