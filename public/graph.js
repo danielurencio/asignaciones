@@ -765,6 +765,10 @@ function pie(data_,subdata) {
 
 }
 
+function CMT(data) {
+  console.log(data);
+}
+
 
 function RowPlot(data) {
   this.data = data;
@@ -1068,7 +1072,7 @@ function divisor(data) {
      G_Op: 'Gastos de Operación',
      Np: 'Producción acumulada de aceite',
      Gp: 'Producción acumulada de gas',
-     QgHC: 'QgHC'
+     QgHC: 'Producción de gas hidrocarburo'
    };
 
    var c_ = conceptos.map(function(d) { return '<option style="font-size:12px" id='+d+'>' + conceptos_traduccion[d] + '</option>'; });

@@ -962,6 +962,7 @@ function switcher(id,mapNdataObj) {
                           var stack_subactividad = sub_wrangler.stackData(data);
 
                           // Gráficas
+/*
                           var invGeneral = new BarChart({
                                   title:'',
                                   yAxis:'Pesos',
@@ -979,7 +980,7 @@ function switcher(id,mapNdataObj) {
                                     }
                                   }
                           });
-
+*/
                           var invPlot2 = new BarChart({
                                   title:'',
                                   yAxis:'Pesos',
@@ -997,9 +998,9 @@ function switcher(id,mapNdataObj) {
                                     }
                                   }
                           });
-
+//console.log(data)
                           pie(pie_act,pie_sub);
-                          grapher(invGeneral.plot, data, sub_wrangler.stackData);
+                          //grapher(invGeneral.plot, data, sub_wrangler.stackData);
                           grapher(invPlot2.plot, invPorAnio, function(data) { return data; });
 
                     } else {
@@ -1012,8 +1013,9 @@ function switcher(id,mapNdataObj) {
                     var cmt = mapNdataObj.ajaxData.cmt;
 
                     if(cmt.length > 0) {
-                      var cmtRowPlot = new RowPlot(cmt);
-                      grapher(cmtRowPlot.table,cmt,function(data) { return data; });
+                      CMT(cmt);
+                      //var cmtRowPlot = new RowPlot(cmt);
+                      //grapher(cmtRowPlot.table,cmt,function(data) { return data; });
                     } else {
                       noDato();
                     }
