@@ -1031,10 +1031,9 @@ function switcher(id,mapNdataObj) {
             	 			break;
 
         	 		case id === 'Seguimiento':
-              console.log(mapNdataObj)
+
                     var seg = mapNdataObj.ajaxData.seguimiento;
-                    console.log(mapNdataObj)
-                    divisor(seg);
+                    seguimiento(seg);
                     //grapher(enConstruccion)
             	 			break;
     	 	}
