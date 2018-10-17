@@ -765,8 +765,68 @@ function pie(data_,subdata) {
 }
 
 function CMT(data) {
-  console.log(data);
-}
+
+  var agregados = Object.keys(data).every((d) => !+d) ? true : false;
+
+  if(agregados) {
+    var division = '<div style="width:100%;height:100%;display:table;">' +
+                      '<div id="exp" style="width:100%;height:50%;border-bottom:1px solid gray;"></div>' +
+                      '<div id="ext" style="width:100%;height:50%;"></div>' +
+                   '</div>';
+
+    $('#visor').html(division)
+
+    var config = [
+      {
+        'titulo':'Extracción',
+        'color':'rgb(70,130,180)',
+        'id':'ext',
+        'data':data['ext']
+      },
+      {
+        'titulo':'Exploración',
+        'color':'rgb(0,128,129)',
+        'id':'exp',
+        'data':data['exp']
+      }
+    ]
+
+    function apartado(config) {
+
+        var data = JSON.parse(config.data);
+        console.log(data)
+        var conceptos = _.uniq(data.map((d) => d.concepto));
+        var anios = _.uniq(data.map((d) => d.anio));
+
+        var rows = '';
+
+        var str_ = '<div style="width:100%;height:100%;display:table;">'+
+                    '<div style="height:10%;width:100%;font-weight:800;color:' + config.color + ';">' + config.titulo + '</div>' +
+                    '<div style="height:10%;width:100%;font-size:13px;font-weight:300;">Compromiso mínimo en:'+
+                      '<select id="botonera" style="color:red;">' + conceptos.map((d) => '<option>'+ d +'</option>') + '</select>'+
+                    '</div>' +
+                    '<div style="width:100%;height:80%;display:table;">'+
+                      '<div style="display:table-cell;width:50%;height:95%;">'+
+                        '<div style="display:table;">' +
+                          rows +
+                        '</div>' +
+                      '</div>' +
+                      '<div style="display:table-cell;width:50%;height:95%;"></div>' +
+                    '</div>' +
+                   '</div>'
+
+        return str_;
+    };
+
+    config.forEach((d) => $('#visor #' + d.id).html(apartado(d)))
+    //$('#visor #ext').html(apartado(config[0]))
+
+
+  } else {
+
+  }
+
+};
 
 
 function RowPlot(data) {

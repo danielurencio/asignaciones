@@ -90,7 +90,7 @@ class Header extends Component {
     const headerStyle = {
       height: heightHeaderInPixels+'px',
       borderBottom:'1px solid lightGray'
-    }
+    };
 
     //const dropdowns = ['Cuenca','Ubicación','Tipo','Asignacion'];
     const dropdowns = ['Nivel','Cuenca/Ubicación','Tipo/Asignación','Buscar'];

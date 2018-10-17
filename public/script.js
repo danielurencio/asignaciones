@@ -36,6 +36,7 @@ var HOSTNAME = 'http://172.16.24.57:5000/';
 		      var rtime;
 		      var timeout = false;
 		      var delta = 200;
+          var mapNdataObj;
 
         // Esta función comprueba si el usuario ya terminó de redimensionar la ventana.
 				function resizeend() {
@@ -44,7 +45,7 @@ var HOSTNAME = 'http://172.16.24.57:5000/';
 				    } else {
 				        timeout = false;
 				        var id_ = $('.selectedButton').attr('id');
-				        switcher(id_);
+				        switcher(id_,mapNdataObj);
 				    }
 				}
 
@@ -232,7 +233,7 @@ var HOSTNAME = 'http://172.16.24.57:5000/';
 
 			  });
 
-          var mapNdataObj = {
+          mapNdataObj = {
             'grales':datos_grales,
             'data':data,
             'asignaciones':asignaciones,
@@ -676,7 +677,6 @@ function cambio(data,str,fn,extraParam) {
             CUENCA:$('.cuenca>option:selected').text()
           },
           success: function(data) {
-
               //console.log(JSON.parse(data)
                for(var k in data) { data[k] = JSON.parse(data[k]); }
                mapNdataObj['ajaxData'] = data;
@@ -800,6 +800,9 @@ function switcher(id,mapNdataObj) {
             	 			break;
 
         	 		case id === 'Pozos':
+              //===========================================================================================================
+              // OJO: Highcharts error #15: www.highcharts.com/errors/15
+              //===========================================================================================================
                     if( mapNdataObj.ajaxData.pozos_inv.length > 0) {
 
                           var pozos = mapNdataObj.ajaxData.pozos_inv.filter(function(d) {
@@ -1012,7 +1015,7 @@ function switcher(id,mapNdataObj) {
         	 		case id === 'Compromiso Mínimo de Trabajo':
                     var cmt = mapNdataObj.ajaxData.cmt;
 
-                    if(cmt.length > 0) {
+                    if(Object.keys(cmt).length) {
                       CMT(cmt);
                       //var cmtRowPlot = new RowPlot(cmt);
                       //grapher(cmtRowPlot.table,cmt,function(data) { return data; });
