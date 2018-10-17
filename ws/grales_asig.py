@@ -249,9 +249,10 @@ class Service():
             query_exp = self.queries['cmt_ext']
             query_ext = self.queries['cmt_exp']
             conn_str = 'oracle://cmde_raw:raw17@172.16.120.3:1521/cnih'
-            df_exp = self.connectionResult(query_exp,conn_str).to_json(orient='results')
-            df_ext = self.connectionResult(query_ext,conn_str).to_json(orient='results')
-            df = { 'exp':df_exp, 'ext':df_ext }
+            df_exp = self.connectionResult(query_exp,conn_str).to_json(orient='records')
+            df_ext = self.connectionResult(query_ext,conn_str).to_json(orient='records')
+            #df = [df_exp,df_ext]
+            df = json.dumps({ "exp":df_exp, "ext":df_ext })
 
         return df
 
