@@ -1023,7 +1023,15 @@ function switcher(id,mapNdataObj) {
             	 			break;
 
         	 		case id === 'Aprovechamiento de gas':
-                    grapher(enConstruccion)
+                    var aprov = mapNdataObj.ajaxData//.aprovechamiento;
+
+                    if(aprov.aprovechamiento.length) {
+                      aprovechamiento(aprov)
+                    } else {
+                      noDato();
+                    }
+
+
             	 			break;
 
         	 		case id === 'Documentos':

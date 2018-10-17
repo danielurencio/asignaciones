@@ -1309,6 +1309,93 @@ function seguimiento(data) {
     });
 }
 
+function aprovechamiento(data) {
+    var obj_data = {}
+
+    obj_data['produccion'] = data.produccion.map((d) => {
+       var obj = [d.fecha,+d.gas_mmpcd.toFixed(1)];
+       return obj;
+    });
+
+    obj_data['aprovechamiento'] = data.aprovechamiento.map((d) => {
+      var obj = [d.fecha,+d.valor.toFixed(1)];
+      return obj;
+    });
+
+    obj_data['produccion'] = obj_data['produccion'].filter((d) => {
+      return obj_data.aprovechamiento.map((e) => e[0]).some((s) => s == d[0])
+    });
+
+    Highcharts.chart('visor', {
+        credits:{ enabled:false },
+        chart: {
+            zoomType: 'x'
+        },
+        title: {
+            text: 'Aprovechamiento de gas'
+        },
+        subtitle: {
+            text: null//document.ontouchstart === undefined ?
+                    //'Click and drag in the plot area to zoom in' : 'Pinch the chart to zoom in'
+        },
+        xAxis: {
+            type: 'datetime'
+        },
+        yAxis: {
+            title: {
+                text: 'MMPCD'
+            }
+        },
+        legend: {
+            enabled: true
+        },
+        tooltip: {
+          //useHTML:true,
+          shared:true,
+          split:false,
+       },
+        series: [{
+            type: 'area',
+            name: 'Gas producido (MMPCD)',
+            data: _.sortBy(obj_data.produccion,function(d) { return d[0] }),
+            lineWidth: 1,
+            //lineColor: 'rgba(46, 112, 138, 1)',
+            color:'rgba(13, 180, 190, 1)',
+            marker: {
+              enabled:false
+            },
+            fillColor: {
+                linearGradient: {x1: 0, y1: 0, x2: 0, y2: 1},
+                stops: [
+                    [0, 'rgba(13, 180, 190, 1)'],
+                    [1, 'rgba(13, 180, 190, .25)']
+                ]
+            },
+        },
+        {
+            type: 'area',
+            name: 'Gas no aprovechado (MMPCD)',
+            data: _.sortBy(obj_data.aprovechamiento,function(d) { return d[0] }),
+            lineWidth: 2,
+            lineColor: 'white',
+            color:'rgba(46, 112, 138, 1)',
+            marker: {
+              enabled:false
+            },
+            fillColor: {
+                linearGradient: {x1: 0, y1: 0, x2: 0, y2: 1},
+                stops: [
+                    [0, 'rgba(46, 112, 138, 1)'],
+                    [1, 'rgba(46, 112, 138, .7)']
+                ]
+            }
+        }
+
+      ]
+});
+
+};
+
 
 function enConstruccion() {
   var str =

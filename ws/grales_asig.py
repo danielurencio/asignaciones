@@ -54,14 +54,36 @@ class Service():
                            "ON A.ID = B.ID " +\
                          ") " + self.conditionalQuery() +\
                          "GROUP BY FECHA,TIPO_RESERVAS",
-            'cmt':'',
+            'cmt_ext': "SELECT ANIO,CONCEPTO,SUM(VALORES) AS VALOR FROM ( " +\
+                            "SELECT A.*, B.CUENCA, B.UBICACION, B.TIPO FROM ASIGNACIONES_CMT_EXTRACCION A " +\
+                            "LEFT JOIN DATOS_ASIGNACIONES_GRALES B " +\
+                            "ON A.ID = B.ID " +\
+                        ") " + self.conditionalQuery() +\
+                        "GROUP BY ANIO,CONCEPTO " +\
+                        "ORDER BY ANIO,CONCEPTO",
+            'cmt_exp': "SELECT ANIO,CONCEPTO,SUM(VALOR) AS VALOR FROM ( " +\
+                            "SELECT A.*, B.CUENCA, B.UBICACION, B.TIPO FROM ASIGNACIONES_CMT_EXPLORACION A " +\
+                            "LEFT JOIN DATOS_ASIGNACIONES_GRALES B " +\
+                            "ON A.ID = B.ID " +\
+                       ") " + self.conditionalQuery() +\
+                       "GROUP BY ANIO,CONCEPTO " +\
+                       "ORDER BY ANIO,CONCEPTO",
             'seguimiento': "SELECT ANIO,TIPO_OBSERVACION,CONCEPTO,SUM(VALOR) AS VALOR FROM ( " +\
                                 "SELECT A.*, B.CUENCA, B.UBICACION, B.TIPO FROM ASIGNACIONES_SEGUIMIENTO_EXT A " +\
                                 "LEFT JOIN DATOS_ASIGNACIONES_GRALES B " +\
                                 "ON A.ID = B.ID " +\
                             ") " + self.conditionalQuery() +\
                             "GROUP BY ANIO,TIPO_OBSERVACION,CONCEPTO " +\
-                            "ORDER BY ANIO,TIPO_OBSERVACION,CONCEPTO"
+                            "ORDER BY ANIO,TIPO_OBSERVACION,CONCEPTO",
+            'aprovechamiento': "SELECT FECHA,VALOR FROM ( " +\
+                                   "SELECT FECHA,CONCEPTO,SUM(VALOR) AS VALOR FROM ( " +\
+                                        "SELECT A.*, B.CUENCA,B.TIPO,B.UBICACION FROM ASIGNACIONES_APROVECHAMIENTO A " +\
+                                        "LEFT JOIN DATOS_ASIGNACIONES_GRALES B " +\
+                                        "ON A.ID = B.ID " +\
+                                   ") " + self.conditionalQuery() +\
+                                   "GROUP BY FECHA,CONCEPTO " +\
+                                   "ORDER BY FECHA,CONCEPTO " +\
+                               ") WHERE CONCEPTO = 'Gas natural No aprovechado  (mmpcd)'"
         }
         self.bd_service = 'cnih';
 
@@ -203,20 +225,35 @@ class Service():
 
     # Pendiente: Habilitar condicional para cuando se buscan cifras agregadas.
     def cmt(self):
-       tipo = 'A' if len(self.ID.split('-')[0]) == 1 else 'AE'
 
-       if(tipo == 'AE'):
-           query = "SELECT * FROM DATOS_ASIGNACIONES_CMT_EXP WHERE ID='" + self.ID + "'"
-           conn_str = 'oracle://cmde_raw:raw18@172.16.120.3:1521/xe'# + self.bd_service
-           df = self.connectionResult(query,conn_str)
+        if(self.ID != 'Todas'):
+            tipo = 'A' if len(self.ID.split('-')[0]) == 1 else 'AE'
 
-           for i in ['nombre','estatus']:
-	       df[i] = df[i].str.decode('latin1').str.encode('utf-8')
+            if(tipo == 'AE'):
+                query = "SELECT ANIO,CONCEPTO,VALOR FROM ASIGNACIONES_CMT_EXPLORACION WHERE ID='" + self.ID + "'"
+                conn_str = 'oracle://cmde_raw:raw17@172.16.120.3:1521/' + self.bd_service
+                df = self.connectionResult(query,conn_str)
 
-           df = df.to_json(orient='records')
-       else:
-           df = '[]'
-       return df
+                for i in ['nombre','estatus']:
+                    df[i] = df[i].str.decode('latin1').str.encode('utf-8')
+
+                df = df.to_json(orient='records')
+
+            elif(tipo == 'A'):
+                query = "SELECT ANIO,CONCEPTO,VALORES FROM ASIGNACIONES_CMT_EXTRACCION WHERE ID='" + self.ID + "'"
+                conn_str = 'oracle://cmde_raw:raw17@172.16.120.3:1521/cnih'
+                df = self.connectionResult(query,conn_str)
+                df = df.to_json(orient='records')
+
+        else:
+            query_exp = self.queries['cmt_ext']
+            query_ext = self.queries['cmt_exp']
+            conn_str = 'oracle://cmde_raw:raw17@172.16.120.3:1521/cnih'
+            df_exp = self.connectionResult(query_exp,conn_str).to_json(orient='results')
+            df_ext = self.connectionResult(query_ext,conn_str).to_json(orient='results')
+            df = { 'exp':df_exp, 'ext':df_ext }
+
+        return df
 
 
     def seguimiento(self):
@@ -224,6 +261,18 @@ class Service():
             query = "SELECT * FROM ASIGNACIONES_SEGUIMIENTO_EXT WHERE ID='" + self.ID + "'"
         else:
             query = self.queries['seguimiento']
+
+        conn_str = "oracle://cmde_raw:raw17@172.16.120.3:1521/cnih"
+        df = self.connectionResult(query,conn_str)
+        df = df.to_json(orient='records')
+        return df
+
+
+    def aprovechamiento(self):
+        if(self.ID != 'Todas'):
+            query = "SELECT * FROM ASIGNACIONES_APROVECHAMIENTO WHERE ID='" + self.ID + "' AND CONCEPTO = 'Gas natural No aprovechado  (mmpcd)'"
+        else:
+            query = self.queries['aprovechamiento']
 
         conn_str = "oracle://cmde_raw:raw17@172.16.120.3:1521/cnih"
         df = self.connectionResult(query,conn_str)
@@ -239,6 +288,7 @@ class Service():
         obj['reservas'] = self.reservas()
         obj['cmt'] = self.cmt()
         obj['seguimiento'] = self.seguimiento()
+        obj['aprovechamiento'] = self.aprovechamiento()
         return obj
 
 
