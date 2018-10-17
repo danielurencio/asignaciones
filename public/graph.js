@@ -803,7 +803,7 @@ function CMT(data) {
         var str_ = '<div style="width:100%;height:100%;display:table;">'+
                     '<div style="height:10%;width:100%;font-weight:800;color:' + config.color + ';">' + config.titulo + '</div>' +
                     '<div style="height:10%;width:100%;font-size:13px;font-weight:300;">Compromiso mínimo en:'+
-                      '<select id="botonera" style="color:red;">' + conceptos.map((d) => '<option>'+ d +'</option>') + '</select>'+
+                      '<select id="botonera" style="color:;">' + conceptos.map((d) => '<option>'+ d +'</option>') + '</select>'+
                     '</div>' +
                     '<div style="width:100%;height:80%;display:table;">'+
                       '<div style="display:table-cell;width:50%;height:95%;">'+
