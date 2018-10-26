@@ -242,3 +242,16 @@ select#botonera {
   border:none;
   border-bottom: 1px solid lightgray;
 }
+
+div.cmt_table table td {
+  text-align:center;
+}
+
+div#CMT_exp thead {
+  border-bottom: 1px solid gray;
+}
+
+span.hover_hand:hover {
+  font-weight:700;
+  cursor:pointer;
+}

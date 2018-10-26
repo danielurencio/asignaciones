@@ -764,8 +764,47 @@ function pie(data_,subdata) {
 
 }
 
-function CMT(data) {
+function documentos(data) {
+  var filas = data.map(function(d,i) {
+    var str = '<tr width="100%;">'+
+                 '<td style="padding:3px;width:50%;">'+ d.NOMBRE +'</td>'+
+                 '<td style="padding:3px;width:50%;"><span class="hover_hand">Título</span></td>' +
+              '</tr>'
 
+    return str;
+  }).join('');
+
+  var table_container = '<div style="height:30px;width:100%;">'+
+                         '<table style="width:calc(100% - 8px);height:100%;table-layout:fixed;">'+
+                           '<tbody style="width:100%;">'+
+                             '<tr style="width:100%;font-weight:600;text-align:center;border-bottom:1px solid gray;border-top:1px solid gray;">' +
+                               '<td style="width:50%;vertical-align:middle;">Asignacion</td>' +
+                               '<td style="width:50%;vertical-align:middle;">Documentos</td>'+
+                             '</tr>' +
+                           '</tbody>' +
+                         '</table>';
+                        '</div>';
+
+  var tabla = //table_container +
+   '<div id="scroll_table_" style="width:100%;height:calc(' + $('#visor').css('height') + ' - 30px);overflow:auto;border-bottom:1px solid gray;">' +
+     '<table style="width:100%;,table-layout:fixed;">' +
+       '<tbody id="" style="text-align:center;">' +
+       filas +
+       '</tbody>'
+     '</table>'+
+   '</div>';
+
+  var div_table = '<div style="width:100%;height:100%;">'+
+                     table_container +
+                     tabla +
+                  '</div>'
+
+  $('#visor').html(div_table)
+}
+
+
+function CMT(data) {
+  console.log(data)
   var agregados = Object.keys(data).every((d) => !+d) ? true : false;
 
   if(agregados) {
@@ -791,37 +830,148 @@ function CMT(data) {
       }
     ]
 
+    var nombres = {
+      'G_Op': { 'nombre':'Gastos de operación', 'unidades':'Millones de pesos' },
+      'Perf':{ 'nombre':'Perforaciones', 'unidades':'Número' },
+      'Qg': { 'nombre':'Producción de gas', 'unidades':'MMPCD' },
+      'Qo':{ 'nombre':'Producción de aceite', 'unidades':'MBD' },
+      'RMA':{ 'nombre':'Reparaciones mayores', 'unidades':'Número' },
+      'Term': { 'nombre':'Terminaciones', 'unidades':'Número' },
+      'Inv': { 'nombre':'Inversión', 'unidades':'Millones de pesos'},
+      'AD_SIS_2D_KM': { 'nombre':'Adquisición sísmica 2D', 'unidades':'KM' },
+      'AD_SIS_3D_KM2': { 'nombre':'Adquisición sísmica 3D', 'unidades':'KM<sup>2</sup>' },
+      'ELECTROMAG': { 'nombre':'Electromagneticos', 'unidades':'Número' },
+      'ESTUDIOS': { 'nombre':'Estudios', 'unidades':'Número' },
+      'INV_MMPESOS': { 'nombre':'Inversión', 'unidades':'Millones de pesos' },
+      'POZOS': { 'nombre':'Pozos', 'unidades':'Número' },
+      'PROCESADO_KM': { 'nombre':'Procesado (km)', 'unidades':'KM' },
+      'PROCESADO_KM2': { 'nombre':'Procesado (km<sup>2</sup>)', 'unidades':'KM<sup>2</sup>' }
+    }
+
+
+    function table_(config) {
+        var data = JSON.parse(config.data);
+        var sel = $('#botonera_' + config.id + ">option:selected").attr('id');
+        var sel_data = data.filter((d) => d.concepto == sel);
+
+        sel_data = _.sortBy(sel_data,(d) => d.concepto).filter((d) => d.valor);
+
+        var rows = sel_data.map((d) => {
+          var str_ = '<tr style="width:100%;">'+
+                        '<td style="width:50%;padding:0px;">'+ d.anio +'</td>'+
+                        '<td style="width:50%;padding:0px;">'+ d.valor.toLocaleString('es-MX') +'</td>'+
+                     '</tr>'
+          return str_;
+        }).join('');
+
+        var t = '<div style="width:100%;">' +
+                  '<table style="width:100%;table-layout:fixed;" align="center">' +
+                    '<tbody>'+
+                      '<tr style="border-bottom:1px solid '+ config.color +';color:'+ config.color +'">' +
+                        '<td>Año</td><td>'+ nombres[sel].unidades +'</td>' +
+                      '</tr>' +
+                    '</tbody>' +
+                  //'<tbody>' + rows + '</tbody>'
+                 '</table>' +
+                '</div>' +
+                '<div style="width:100%;overlfow:auto;">' +
+                  '<table style="width:100%;table-layout:fixed;">' +
+                    '<tbody>' +
+                      rows +
+                    '</tbody>' +
+                  '</tbody>' +
+                '</div>'
+
+        $('#CMT_' + config.id).html(t)
+        //$('#CMT_' + config.id).html('a')
+    };
+
+
     function apartado(config) {
 
         var data = JSON.parse(config.data);
-        console.log(data)
+
         var conceptos = _.uniq(data.map((d) => d.concepto));
         var anios = _.uniq(data.map((d) => d.anio));
 
-        var rows = '';
-
-        var str_ = '<div style="width:100%;height:100%;display:table;">'+
-                    '<div style="height:10%;width:100%;font-weight:800;color:' + config.color + ';">' + config.titulo + '</div>' +
-                    '<div style="height:10%;width:100%;font-size:13px;font-weight:300;">Compromiso mínimo en:'+
-                      '<select id="botonera" style="color:;">' + conceptos.map((d) => '<option>'+ d +'</option>') + '</select>'+
-                    '</div>' +
-                    '<div style="width:100%;height:80%;display:table;">'+
-                      '<div style="display:table-cell;width:50%;height:95%;">'+
-                        '<div style="display:table;">' +
-                          rows +
-                        '</div>' +
+        var str__ = '<div style="width:100%; height:100%; display:table; table-layout:fixed">' +
+                      '<div style="width:100%;height:20%; ">'+
+                          '<div style="height:50%;width:100%;font-weight:800;color:' + config.color + ';">' + config.titulo + '</div>' +
+                          '<div style="height:10%;width:100%;font-size:13px;font-weight:300;">Compromiso mínimo en:&emsp;'+
+                            '<select id="botonera_'+ config.id +'" style="font-weight:700;color:'+ config.color +';">'
+                                + conceptos.map((d) => '<option id="'+ d +'">'+ nombres[d]['nombre'] +'</option>') +
+                            '</select>'+
+                          '</div>' +
                       '</div>' +
-                      '<div style="display:table-cell;width:50%;height:95%;"></div>' +
-                    '</div>' +
-                   '</div>'
+                      '<div style="width:100%;height:80%;">'+
 
-        return str_;
+                          '<div style="width:100%;height:100%;display:table;">' +
+                            '<div style="width:50%;height:100%;display:table-cell;vertical-align:top;">'+
+                                '<div style="display:table;width:100%;height:100%;">'+
+                                  '<div style="width:100%;height:100%;" class="cmt_table" id="CMT_'+ config.id +'"></div>' +
+                                '</div>'+
+                            '</div>' +
+                            '<div style="width:50%;height:100%;display:table-cell;">'+
+                                '<div style="width:100%;height:100%;display:table;">'+
+                                  '<div style="width:100%;height:100%;" id="barcmt_'+ config.id +'"></div>' +
+                                '</div>'
+                            '</div>' +
+                          '</div>' +
+
+                      '</div>' +
+
+                    '</div>';
+
+        return str__;
     };
 
-    config.forEach((d) => $('#visor #' + d.id).html(apartado(d)))
-    //$('#visor #ext').html(apartado(config[0]))
+    function barplot_cmt(config) {
+       var data = JSON.parse(config.data);
+       var sel = $('select#botonera_'+ config.id +'>option:selected').attr('id');
+
+       data = data.filter((f) => f.concepto == sel)
+                  .map((d) => [d.anio,d.valor])
+                  .filter((f) => f[1]);
+
+       data = [
+         {
+           data:data,
+           color:config.color
+         }
+       ];
 
 
+       var plot = new BarChart({
+         where:'barcmt_' + config.id,
+         chart: { type:'column' },
+         noRange:1,
+         opposite:true,
+         title:'',
+         xAxis: {
+           categories: data[0].data.map((d) => String(d[0]))
+         },
+         hideLegend:true
+         //tooltip: '<div></div>'
+       });
+
+       grapher(plot.plot,data,(d) => d)
+    }
+
+    config.forEach((d) => {
+      $('#visor #' + d.id).html(apartado(d));
+      table_(d);
+      barplot_cmt(d);
+
+
+    })
+
+
+    $('#botonera_ext,#botonera_exp').on('change',function() {
+      var id = $(this).attr('id').split('_')[1];
+      var conf = config.filter(function(d) { return d.id == id })
+      table_(conf[0])
+      barplot_cmt(conf[0])
+    })
   } else {
 
   }

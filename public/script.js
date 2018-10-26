@@ -1002,10 +1002,10 @@ function switcher(id,mapNdataObj) {
                                   }
                           });
 //console.log(data)
-                          pie(pie_act,pie_sub);
+                          //pie(pie_act,pie_sub);
                           //grapher(invGeneral.plot, data, sub_wrangler.stackData);
-                          grapher(invPlot2.plot, invPorAnio, function(data) { return data; });
-
+                          //grapher(invPlot2.plot, invPorAnio, function(data) { return data; });
+                          grapher(enConstruccion)
                     } else {
                           noDato();
                     }
@@ -1038,7 +1038,7 @@ function switcher(id,mapNdataObj) {
             	 			break;
 
         	 		case id === 'Documentos':
-                    grapher(enConstruccion)
+                    documentos(mapNdataObj.grales);
             	 			break;
 
         	 		case id === 'Seguimiento':
