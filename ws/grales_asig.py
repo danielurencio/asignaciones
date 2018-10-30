@@ -246,8 +246,8 @@ class Service():
                 df = df.to_json(orient='records')
 
         else:
-            query_exp = self.queries['cmt_ext']
-            query_ext = self.queries['cmt_exp']
+            query_exp = self.queries['cmt_exp']
+            query_ext = self.queries['cmt_ext']
             conn_str = 'oracle://cmde_raw:raw17@172.16.120.3:1521/cnih'
             df_exp = self.connectionResult(query_exp,conn_str).to_json(orient='records')
             df_ext = self.connectionResult(query_ext,conn_str).to_json(orient='records')
