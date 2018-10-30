@@ -557,12 +557,13 @@ function cambio(data,str,fn,extraParam) {
              '</div>';
 		});
 
+    matches = _.uniq(matches)
+
 		if(matches.length > 0) {
 			matches = matches.reduce(function(a,b) { return a + b; });
 		} else {
 			matches = '<div style="font-size:12px;z-index:2;background-color:transparent;font-weight:700;color:rgb(13,180,190)">No hay coincidencias</div>'
 		}
-
 
 	 	var papaDelBuscador = $('input.buscador').parent();
 	 	var resultadosProps = resultadosDesplegablesProperties();
@@ -724,6 +725,7 @@ function switcher(id,mapNdataObj) {
     		 	switch (true) {
               case id == 'Datos generales':
                     grapher(function() {
+
                       DatosGrales(mapNdataObj);
                       try {
                           datosAsignacion(mapNdataObj.data,null,null,mapNdataObj.mymap,mapNdataObj.asignaciones);

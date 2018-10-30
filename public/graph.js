@@ -1,7 +1,6 @@
 
 function DatosGrales(data)  {
-  var grales = JSON.parse(JSON.stringify(data.grales));
-
+  var grales = data.grales;//JSON.parse(JSON.stringify(data.grales));
   var params = ['cuenca','ubicacion','tipo','asignacion'].map((d) => [d.toUpperCase(),$('.' + d + '>option:selected').text()])
 
   params = params.filter((f) => f[1].slice(0,3) != 'Tod');
@@ -62,24 +61,54 @@ function DatosGrales(data)  {
   $('#visor').html(div.innerHTML)
   var colors_ = ['rgb(115,194,251)','rgb(87,160,211)','rgb(129,216,208)','rgb(79,151,163)','rgb(70,130,180)','rgb(0,128,129)']
 
+  var ASIG_ = $('.asignacion>option:selected').text()
+  var numOnom = ASIG_ != 'Todas' ? ASIG_.split(' - ')[0] : grales.length;
+  var numOnomSize = ASIG_ != 'Todas' ? 2 : 5;
+  var subtNumOnom = ASIG_ != 'Todas' ? ASIG_.split(' - ')[1] : 'ASIGNACIONES';
+
   d3.select('div#row_a>div#col_1')
   .html(function(d) {
+
+    var tipos_asigs =
+      "<div style='font-weight:700;color:rgb(13,180,190);'>"+ grales.filter((d) => new RegExp('^A-').test(d.NOMBRE)).length +" Extracción</div>"+
+      "<div style='font-weight:700;color:rgb(46,112,138);'>"+ grales.filter((d) => new RegExp('^AE-').test(d.NOMBRE)).length +" Exploración</div>"+
+      "<div style='font-weight:700;color:rgb(20,50,90);'>"+ grales.filter((d) => new RegExp('^AR-').test(d.NOMBRE)).length +" Resguardo</div>"
+
+    var _tipo_ = "";
+    var color = "";
+    var un_tipoAsig = "<div>" + _tipo_ + "</div>";
+
+    if(ASIG_ != 'Todas') {
+        if(ASIG_.split('-')[0] == 'A') {
+          _tipo_ = 'Extracción';
+          color = 'rgb(13,180,190)';
+        } else if(ASIG_.split('-')[0] == 'AE') {
+          _tipo_ = 'Exploración';
+          color = 'rgb(46,112,138)';
+        } else {
+          _tipo_ = 'Resguardo';
+          color = 'rgb(20,50,90)';
+        }
+        un_tipoAsig = '<div style="color:'+color+';font-size:2em;font-weight:700;">' + _tipo_ + '</div>'
+    } else {
+        un_tipoAsig = tipos_asigs;
+    }
+
+
     return "<div style='width:100%;height:100%;background-color:white;position:relative;display:table;table-layout:fixed;'>" +
               "<div style='display:table-row;width:100%;height:50%;text-align:center;table-layout:fixed;position:relative;'>" +
                   "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
                       "<div style='width:100%;height:100%;border-right:1px solid gray;display:table;'>" +
                           "<div style='display:table-cell;vertical-align:middle;'>" +
-                              "<div style='font-size:5em;font-weight:800;color:rgb(13,180,190);'>" + grales.length + "</div>" +
-                              "<div style='position:relative:;top:-10px;font-size:1em;font-weight:600;'>ASIGNACIONES</div>" +
+                              "<div style='font-size:"+ numOnomSize +"em;font-weight:800;color:rgb(13,180,190);'>" + numOnom + "</div>" +
+                              "<div style='position:relative:;top:-10px;font-size:1em;font-weight:600;'>"+ subtNumOnom +"</div>" +
                           "</div>" +
                       "</div>" +
                   "</div>" +
               "</div>" +
               "<div style='display:table-row;width:100%;height:50%;text-align:center;table-layout:fixed;position:relative;'>" +
                   "<div style='display:table-cell;position:relative;vertical-align:middle;text-align:center;border-right:1px solid gray;'>" +
-                      "<div style='font-weight:700;color:rgb(13,180,190);'>"+ grales.filter((d) => new RegExp('^A-').test(d.NOMBRE)).length +" Extracción</div>"+
-                      "<div style='font-weight:700;color:rgb(46,112,138);'>"+ grales.filter((d) => new RegExp('^AE-').test(d.NOMBRE)).length +" Exploración</div>"+
-                      "<div style='font-weight:700;color:rgb(20,50,90);'>"+ grales.filter((d) => new RegExp('^AR-').test(d.NOMBRE)).length +" Resguardo</div>"+
+                    un_tipoAsig +
                   "</div>" +
               "</div>" +
           "</div>"
@@ -87,12 +116,14 @@ function DatosGrales(data)  {
 
   d3.select('div#row_a>div#col_2')
   .html(function(d) {
+    var grales_ = ASIG_ != 'Todas' ? data.grales.filter((d) => d.NOMBRE == ASIG_) : data.grales;
+
     return "<div style='width:100%;height:100%;background-color:white;position:relative;display:table;table-layout:fixed;'>" +
               "<div style='display:table-row;width:100%;height:50%;text-align:center;table-layout:fixed;position:relative;'>" +
                   "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
                       "<div style='display:table;width:100%;height:100%;'>" +
                           "<div style='display:table-cell;vertical-align:middle;color:white;color:"+colors_[0]+"'>" +
-                              "<div style='font-size:3em;font-weight:700;'>"+ d3.sum(grales.map((d) => d.N_CAMPOS_RESERVAS)) +"</div>" +
+                              "<div style='font-size:3em;font-weight:700;'>"+ d3.sum(grales_.map((d) => d.N_CAMPOS_RESERVAS)) +"</div>" +
                               "<div style='position:relative:;top:-10px;font-size:0.85em;font-weight:600;color:black;'>CAMPOS CON RESERVAS</div>" +
                           "</div>" +
                       "</div>" +
@@ -102,7 +133,7 @@ function DatosGrales(data)  {
                   "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
                       "<div style='display:table;width:100%;height:100%;'>" +
                           "<div style='display:table-cell;vertical-align:middle;color:white;color:"+colors_[1]+"'>" +
-                              "<div style='font-size:3em;font-weight:700;'>"+ (d3.sum(grales.map((d) => d.SUPERFICIE_KM2))/1000).toFixed(1) +"</div>" +
+                              "<div style='font-size:3em;font-weight:700;'>"+ (d3.sum(grales_.map((d) => d.SUPERFICIE_KM2))/1000).toFixed(1) +"</div>" +
                               "<div style='position:relative:;top:-10px;font-size:0.85em;font-weight:600;color:black'>MILES DE KM<sup>2</sup></div>" +
                           "</div>" +
                       "</div>" +
@@ -113,7 +144,10 @@ function DatosGrales(data)  {
 
   d3.select('div#row_a>div#col_3')
   .html(function(d) {
+
     var seg = _.sortBy(data.ajaxData.seguimiento,function(d) { return d.anio; }).filter((f) => f.tipo_observacion == 'Real');
+    //seg = ASIG_ != 'Todas' ? seg.filter((f) => new RegExp(ASIG_,f)) : '';
+
     var gop = d3.sum(seg.filter((f) => f.concepto == 'G_Op').map((d) => d.valor))/1000;
     var inv = d3.sum(seg.filter((f) => f.concepto == 'Inv').map((d) => d.valor))/1000;
 
@@ -765,10 +799,11 @@ function pie(data_,subdata) {
 }
 
 function documentos(data) {
+  data = _.sortBy(data,(d) => d.NOMBRE)
   var filas = data.map(function(d,i) {
     var str = '<tr width="100%;">'+
                  '<td style="padding:3px;width:50%;">'+ d.NOMBRE +'</td>'+
-                 '<td style="padding:3px;width:50%;"><span class="hover_hand">Título</span></td>' +
+                 '<td style="padding:3px;width:50%;"><a href="http://localhost:8081/'+d.NOMBRE.split(' - ')[0]+'.pdf" target="_blank" class="hover_hand">Título</a></td>' +
               '</tr>'
 
     return str;
@@ -807,6 +842,163 @@ function CMT(data) {
   console.log(data)
   var agregados = Object.keys(data).every((d) => !+d) ? true : false;
 
+  var nombres = {
+    'G_Op': { 'nombre':'Gastos de operación', 'unidades':'Millones de pesos' },
+    'Perf':{ 'nombre':'Perforaciones', 'unidades':'Número' },
+    'Qg': { 'nombre':'Producción de gas', 'unidades':'MMPCD' },
+    'Qo':{ 'nombre':'Producción de aceite', 'unidades':'MBD' },
+    'RMA':{ 'nombre':'Reparaciones mayores', 'unidades':'Número' },
+    'Term': { 'nombre':'Terminaciones', 'unidades':'Número' },
+    'Inv': { 'nombre':'Inversión', 'unidades':'Millones de pesos'},
+    'AD_SIS_2D_KM': { 'nombre':'Adquisición sísmica 2D', 'unidades':'KM' },
+    'AD_SIS_3D_KM2': { 'nombre':'Adquisición sísmica 3D', 'unidades':'KM<sup>2</sup>' },
+    'ELECTROMAG': { 'nombre':'Electromagneticos', 'unidades':'Número' },
+    'ESTUDIOS': { 'nombre':'Estudios', 'unidades':'Número' },
+    'INV_MMPESOS': { 'nombre':'Inversión', 'unidades':'Millones de pesos' },
+    'POZOS': { 'nombre':'Pozos', 'unidades':'Número' },
+    'PROCESADO_KM': { 'nombre':'Procesado (km)', 'unidades':'KM' },
+    'PROCESADO_KM2': { 'nombre':'Procesado (km<sup>2</sup>)', 'unidades':'KM<sup>2</sup>' }
+  }
+
+
+  function table_(config,a) {
+      var data = JSON.parse(config.data);
+      var sel = $('#botonera_' + config.id + ">option:selected").attr('id');
+      var sel_data = data.filter((d) => d.concepto == sel);
+
+      if(a) {
+        sel_data = _.sortBy(sel_data,(d) => d.concepto).filter((d) => d.valores);
+        var rows = sel_data.map((d) => {
+          var str_ = '<tr style="width:100%;">'+
+                        '<td style="width:50%;padding:0px;">'+ d.anio +'</td>'+
+                        '<td style="width:50%;padding:0px;">'+ d.valores.toLocaleString('es-MX') +'</td>'+
+                     '</tr>'
+          return str_;
+        }).join('');
+      }
+      else {
+        sel_data = _.sortBy(sel_data,(d) => d.concepto).filter((d) => d.valor);
+
+        var rows = sel_data.map((d) => {
+          var str_ = '<tr style="width:100%;">'+
+                        '<td style="width:50%;padding:0px;">'+ d.anio +'</td>'+
+                        '<td style="width:50%;padding:0px;">'+ d.valor.toLocaleString('es-MX') +'</td>'+
+                     '</tr>'
+          return str_;
+        }).join('');
+      }
+
+      var t = '<div style="width:100%;">' +
+                '<table style="width:100%;table-layout:fixed;" align="center">' +
+                  '<tbody>'+
+                    '<tr style="border-bottom:1px solid '+ config.color +';color:'+ config.color +'">' +
+                      '<td>Año</td><td>'+ nombres[sel].unidades +'</td>' +
+                    '</tr>' +
+                  '</tbody>' +
+                //'<tbody>' + rows + '</tbody>'
+               '</table>' +
+              '</div>' +
+              '<div style="width:100%;overlfow:auto;">' +
+                '<table style="width:100%;table-layout:fixed;">' +
+                  '<tbody>' +
+                    rows +
+                  '</tbody>' +
+                '</tbody>' +
+              '</div>'
+
+      $('#CMT_' + config.id).html(t)
+      //$('#CMT_' + config.id).html('a')
+  };
+
+
+  function apartado(config,a) {
+
+      if(a) {
+        var ww = '100'
+        var hh = '50'
+        var disp ='table-row'
+      } else {
+        var ww = '50'
+        var hh = '100'
+        var disp = 'table-cell'
+      }
+
+      var data = JSON.parse(config.data);
+
+      var conceptos = _.uniq(data.map((d) => d.concepto));
+      var anios = _.uniq(data.map((d) => d.anio));
+
+      var str__ = '<div style="width:100%; height:100%; display:table; table-layout:fixed">' +
+                    '<div style="width:100%;height:20%; ">'+
+                        '<div style="height:50%;width:100%;font-weight:800;color:' + config.color + ';">' + config.titulo + '</div>' +
+                        '<div style="height:10%;width:100%;font-size:13px;font-weight:300;">Compromiso mínimo en:&emsp;'+
+                          '<select id="botonera_'+ config.id +'" style="font-weight:700;color:'+ config.color +';">'
+                              + conceptos.map((d) => '<option id="'+ d +'">'+ nombres[d]['nombre'] +'</option>') +
+                          '</select>'+
+                        '</div>' +
+                    '</div>' +
+                    '<div style="width:100%;height:80%;">'+
+
+                        '<div style="width:100%;height:100%;display:table;">' +
+                          '<div style="width:'+ww+'%;height:'+hh+'%;display:'+disp+';vertical-align:top;">'+
+                              '<div style="display:table;width:100%;height:100%;">'+
+                                '<div style="width:100%;height:100%;" class="cmt_table" id="CMT_'+ config.id +'"></div>' +
+                              '</div>'+
+                          '</div>' +
+                          '<div style="width:'+ww+'%;height:'+hh+'%;display:'+disp+';">'+
+                              '<div style="width:100%;height:100%;display:table;">'+
+                                '<div style="width:100%;height:100%;" id="barcmt_'+ config.id +'"></div>' +
+                              '</div>'
+                          '</div>' +
+                        '</div>' +
+
+                    '</div>' +
+
+                  '</div>';
+
+      return str__;
+  };
+
+  function barplot_cmt(config,a) {
+     var data = JSON.parse(config.data);
+     var sel = $('select#botonera_'+ config.id +'>option:selected').attr('id');
+
+     if(a) {
+       data = data.filter((f) => f.concepto == sel)
+                  .map((d) => [d.anio,d.valores])
+                  .filter((f) => f[1]);
+     }
+     else {
+       data = data.filter((f) => f.concepto == sel)
+                  .map((d) => [d.anio,d.valor])
+                  .filter((f) => f[1]);
+     }
+
+
+     data = [
+       {
+         data:data,
+         color:config.color
+       }
+     ];
+
+
+     var plot = new BarChart({
+       where:'barcmt_' + config.id,
+       chart: { type:'column' },
+       noRange:1,
+       opposite:true,
+       title:'',
+       xAxis: {
+         categories: data[0].data.map((d) => String(d[0]))
+       },
+       hideLegend:true
+       //tooltip: '<div></div>'
+     });
+
+     grapher(plot.plot,data,(d) => d)
+  }
+
   if(agregados) {
     var division = '<div style="width:100%;height:100%;display:table;">' +
                       '<div id="exp" style="width:100%;height:50%;border-bottom:1px solid gray;"></div>' +
@@ -830,133 +1022,6 @@ function CMT(data) {
       }
     ]
 
-    var nombres = {
-      'G_Op': { 'nombre':'Gastos de operación', 'unidades':'Millones de pesos' },
-      'Perf':{ 'nombre':'Perforaciones', 'unidades':'Número' },
-      'Qg': { 'nombre':'Producción de gas', 'unidades':'MMPCD' },
-      'Qo':{ 'nombre':'Producción de aceite', 'unidades':'MBD' },
-      'RMA':{ 'nombre':'Reparaciones mayores', 'unidades':'Número' },
-      'Term': { 'nombre':'Terminaciones', 'unidades':'Número' },
-      'Inv': { 'nombre':'Inversión', 'unidades':'Millones de pesos'},
-      'AD_SIS_2D_KM': { 'nombre':'Adquisición sísmica 2D', 'unidades':'KM' },
-      'AD_SIS_3D_KM2': { 'nombre':'Adquisición sísmica 3D', 'unidades':'KM<sup>2</sup>' },
-      'ELECTROMAG': { 'nombre':'Electromagneticos', 'unidades':'Número' },
-      'ESTUDIOS': { 'nombre':'Estudios', 'unidades':'Número' },
-      'INV_MMPESOS': { 'nombre':'Inversión', 'unidades':'Millones de pesos' },
-      'POZOS': { 'nombre':'Pozos', 'unidades':'Número' },
-      'PROCESADO_KM': { 'nombre':'Procesado (km)', 'unidades':'KM' },
-      'PROCESADO_KM2': { 'nombre':'Procesado (km<sup>2</sup>)', 'unidades':'KM<sup>2</sup>' }
-    }
-
-
-    function table_(config) {
-        var data = JSON.parse(config.data);
-        var sel = $('#botonera_' + config.id + ">option:selected").attr('id');
-        var sel_data = data.filter((d) => d.concepto == sel);
-
-        sel_data = _.sortBy(sel_data,(d) => d.concepto).filter((d) => d.valor);
-
-        var rows = sel_data.map((d) => {
-          var str_ = '<tr style="width:100%;">'+
-                        '<td style="width:50%;padding:0px;">'+ d.anio +'</td>'+
-                        '<td style="width:50%;padding:0px;">'+ d.valor.toLocaleString('es-MX') +'</td>'+
-                     '</tr>'
-          return str_;
-        }).join('');
-
-        var t = '<div style="width:100%;">' +
-                  '<table style="width:100%;table-layout:fixed;" align="center">' +
-                    '<tbody>'+
-                      '<tr style="border-bottom:1px solid '+ config.color +';color:'+ config.color +'">' +
-                        '<td>Año</td><td>'+ nombres[sel].unidades +'</td>' +
-                      '</tr>' +
-                    '</tbody>' +
-                  //'<tbody>' + rows + '</tbody>'
-                 '</table>' +
-                '</div>' +
-                '<div style="width:100%;overlfow:auto;">' +
-                  '<table style="width:100%;table-layout:fixed;">' +
-                    '<tbody>' +
-                      rows +
-                    '</tbody>' +
-                  '</tbody>' +
-                '</div>'
-
-        $('#CMT_' + config.id).html(t)
-        //$('#CMT_' + config.id).html('a')
-    };
-
-
-    function apartado(config) {
-
-        var data = JSON.parse(config.data);
-
-        var conceptos = _.uniq(data.map((d) => d.concepto));
-        var anios = _.uniq(data.map((d) => d.anio));
-
-        var str__ = '<div style="width:100%; height:100%; display:table; table-layout:fixed">' +
-                      '<div style="width:100%;height:20%; ">'+
-                          '<div style="height:50%;width:100%;font-weight:800;color:' + config.color + ';">' + config.titulo + '</div>' +
-                          '<div style="height:10%;width:100%;font-size:13px;font-weight:300;">Compromiso mínimo en:&emsp;'+
-                            '<select id="botonera_'+ config.id +'" style="font-weight:700;color:'+ config.color +';">'
-                                + conceptos.map((d) => '<option id="'+ d +'">'+ nombres[d]['nombre'] +'</option>') +
-                            '</select>'+
-                          '</div>' +
-                      '</div>' +
-                      '<div style="width:100%;height:80%;">'+
-
-                          '<div style="width:100%;height:100%;display:table;">' +
-                            '<div style="width:50%;height:100%;display:table-cell;vertical-align:top;">'+
-                                '<div style="display:table;width:100%;height:100%;">'+
-                                  '<div style="width:100%;height:100%;" class="cmt_table" id="CMT_'+ config.id +'"></div>' +
-                                '</div>'+
-                            '</div>' +
-                            '<div style="width:50%;height:100%;display:table-cell;">'+
-                                '<div style="width:100%;height:100%;display:table;">'+
-                                  '<div style="width:100%;height:100%;" id="barcmt_'+ config.id +'"></div>' +
-                                '</div>'
-                            '</div>' +
-                          '</div>' +
-
-                      '</div>' +
-
-                    '</div>';
-
-        return str__;
-    };
-
-    function barplot_cmt(config) {
-       var data = JSON.parse(config.data);
-       var sel = $('select#botonera_'+ config.id +'>option:selected').attr('id');
-
-       data = data.filter((f) => f.concepto == sel)
-                  .map((d) => [d.anio,d.valor])
-                  .filter((f) => f[1]);
-
-       data = [
-         {
-           data:data,
-           color:config.color
-         }
-       ];
-
-
-       var plot = new BarChart({
-         where:'barcmt_' + config.id,
-         chart: { type:'column' },
-         noRange:1,
-         opposite:true,
-         title:'',
-         xAxis: {
-           categories: data[0].data.map((d) => String(d[0]))
-         },
-         hideLegend:true
-         //tooltip: '<div></div>'
-       });
-
-       grapher(plot.plot,data,(d) => d)
-    }
-
     config.forEach((d) => {
       $('#visor #' + d.id).html(apartado(d));
       table_(d);
@@ -973,7 +1038,27 @@ function CMT(data) {
       barplot_cmt(conf[0])
     })
   } else {
+    var division = '<div style="width:100%;height:100%;display:table;">' +
+                      '<div id="x_asig" style="width:100%;height:100%;"></div>' +
+                   '</div>';
+    var config = {
+      'titulo': 'Compromiso mínimo',//_.uniq(data.map((d) => d.nombre))[0].split(',')[0].split(' - ')[0],
+      'id':'x_asig',
+      'color':'purple',
+      'data':JSON.stringify(data)
+    }
+    $('#visor').html(division)
+    $('#visor #x_asig').html(apartado(config,true))
+    table_(config,true)
+    barplot_cmt(config,true)
 
+    $('#botonera_x_asig').on('change',function() {
+      var id = $(this).attr('id')//.split('_')[1];
+      console.log(id)
+      //var conf = config.filter(function(d) { return d.id == id })
+      table_(config,true)
+      barplot_cmt(config,true)
+    })
   }
 
 };
@@ -1414,6 +1499,8 @@ function seguimiento(data) {
                })
            });
 
+           ff[0] = _.sortBy(ff[0], (d) => d.anio).filter((d) => d.valor)
+
            return ff;
     };
 
@@ -1520,6 +1607,7 @@ function seguimiento(data) {
 }
 
 function aprovechamiento(data) {
+    console.log(data.aprovechamiento)
     var obj_data = {}
 
     obj_data['produccion'] = data.produccion.map((d) => {
