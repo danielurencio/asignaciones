@@ -117,6 +117,9 @@ function DatosGrales(data)  {
   d3.select('div#row_a>div#col_2')
   .html(function(d) {
     var grales_ = ASIG_ != 'Todas' ? data.grales.filter((d) => d.NOMBRE == ASIG_) : data.grales;
+    var seg = _.sortBy(data.ajaxData.seguimiento,function(d) { return d.anio; }).filter((f) => f.tipo_observacion == 'Real');
+    var gop = d3.sum(seg.filter((f) => f.concepto == 'G_Op').map((d) => d.valor))/1000;
+
 
     return "<div style='width:100%;height:100%;background-color:white;position:relative;display:table;table-layout:fixed;'>" +
               "<div style='display:table-row;width:100%;height:50%;text-align:center;table-layout:fixed;position:relative;'>" +
@@ -133,8 +136,8 @@ function DatosGrales(data)  {
                   "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
                       "<div style='display:table;width:100%;height:100%;'>" +
                           "<div style='display:table-cell;vertical-align:middle;color:white;color:"+colors_[1]+"'>" +
-                              "<div style='font-size:3em;font-weight:700;'>"+ (d3.sum(grales_.map((d) => d.SUPERFICIE_KM2))/1000).toFixed(1) +"</div>" +
-                              "<div style='position:relative:;top:-10px;font-size:0.85em;font-weight:600;color:black'>MILES DE KM<sup>2</sup></div>" +
+                              "<div style='font-size:3em;font-weight:700;'>"+ gop.toFixed(1) +"</div>" +
+                              "<div style='position:relative:;top:-10px;font-size:0.85em;font-weight:600;color:black'>GASTOS DE OPERACIÓN<br>(miles de millones de pesos)</div>" +
                           "</div>" +
                       "</div>" +
                   "</div>" +
@@ -144,11 +147,10 @@ function DatosGrales(data)  {
 
   d3.select('div#row_a>div#col_3')
   .html(function(d) {
-
+    var grales_ = ASIG_ != 'Todas' ? data.grales.filter((d) => d.NOMBRE == ASIG_) : data.grales;
     var seg = _.sortBy(data.ajaxData.seguimiento,function(d) { return d.anio; }).filter((f) => f.tipo_observacion == 'Real');
     //seg = ASIG_ != 'Todas' ? seg.filter((f) => new RegExp(ASIG_,f)) : '';
 
-    var gop = d3.sum(seg.filter((f) => f.concepto == 'G_Op').map((d) => d.valor))/1000;
     var inv = d3.sum(seg.filter((f) => f.concepto == 'Inv').map((d) => d.valor))/1000;
 
     return "<div style='width:100%;height:100%;background-color:white;position:relative;display:table;table-layout:fixed;'>" +
@@ -156,8 +158,8 @@ function DatosGrales(data)  {
                   "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
                       "<div style='display:table;width:100%;height:100%;'>" +
                           "<div style='display:table-cell;vertical-align:middle;color:white;color:"+colors_[2]+"'>" +
-                              "<div style='font-size:3em;font-weight:700;'>"+ gop.toFixed(1) +"</div>" +
-                              "<div style='position:relative:;top:-10px;font-size:0.85em;font-weight:600;color:black;'>GASTOS DE OPERACIÓN<br>(miles de millones de pesos)</div>" +
+                              "<div style='font-size:3em;font-weight:700;'>"+ (d3.sum(grales_.map((d) => d.SUPERFICIE_KM2))/1000).toFixed(1) +"</div>" +
+                              "<div style='position:relative:;top:-10px;font-size:0.85em;font-weight:600;color:black;'>MILES DE KM<sup>2</sup></div>" +
                           "</div>" +
                       "</div>" +
                   "</div>" +
@@ -211,12 +213,28 @@ function DatosGrales(data)  {
                     "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
                         "<div style='display:table;width:100%;height:100%;'>" +
                             "<div style='display:table-cell;vertical-align:middle;'>" +
-                                "<div style='position:relative:;top:-10px;font-size:1em;font-weight:700;color:"+colors_[0]+"'>PRODUCCIÓN</div>" +
-                                "<div style='font-size:2em;font-weight:800;'>"+ (+prod.aceite_mbd.toFixed(1)).toLocaleString('es-MX')
-                                            +"<span style='font-weight:400;font-size:0.4em'> MBD</span></div>" +
-                                "<div style='font-size:2em;font-weight:800;'>&ensp;"+ (+prod.gas_mmpcd.toFixed(1)).toLocaleString('es-MX')
-                                            +"<span style='font-weight:400;font-size:0.4em'> MMPCD</span></div>" +
-                                "<div style='position:relative:;top:-10px;font-size:1em;font-weight:700;color:"+colors_[0]+"'>"+ fechA(prod.fecha) +"</div>" +
+                                "<div style='position:relative:;top:-10px;font-size:1.5em;font-weight:700;color:"+colors_[0]+"'>PRODUCCIÓN</div>" +
+
+                                "<div style='text-align:center;'>" +
+                                  "<div style='display:inline-block;'>" +
+
+                                      "<div style='display:table;font-weight:800;font-size:2.5em;'>" +
+                                          "<div style='display:table-row;'>" +
+                                              "<div style='display:table-cell;text-align:right;'><span style='font-weight:400;font-size:0.4em;'>ACEITE&nbsp;</span></div>" +
+                                              "<div style='display:table-cell;text-align:center;'>"+ (+prod.aceite_mbd.toFixed(1)).toLocaleString('es-MX') +"</div>" +
+                                              "<div style='display:table-cell;text-align:left;'><span style='font-weight:400;font-size:0.4em;'>&nbsp;MBD</span></div>" +
+                                          "</div>" +
+                                          "<div style='display:table-row;'>" +
+                                              "<div style='display:table-cell;text-align:right;'><span style='font-weight:400;font-size:0.4em;'>GAS&nbsp;</span></div>" +
+                                              "<div style='display:table-cell;text-align:center;'>"+ (+prod.gas_mmpcd.toFixed(1)).toLocaleString('es-MX') +"</div>" +
+                                              "<div style='display:table-cell;text-align:left;'><span style='font-weight:400;font-size:0.4em;'>&nbsp;MMPCD</span></div>" +
+                                          "</div>" +
+                                      "</div>" +
+
+                                   "</div>" +
+                                "</div>" +
+
+                                "<div style='position:relative:;top:-10px;font-size:1.5em;font-weight:700;color:"+colors_[0]+"'>"+ fechA(prod.fecha) +"</div>" +
                             "</div>" +
                         "</div>" +
                     "</div>" +
@@ -236,23 +254,63 @@ function DatosGrales(data)  {
 
         var resv_ = resv_.filter((f) => f.fecha == resv.fecha);
 
+        function filas(str_) {
+          var style = "display:table-cell;text-align:center;padding:5px;"
+          var ff =
+          "<div style='"+ style +"border-right:1px solid rgba(255,255,255,.3);'>"+
+            (+resv_.filter((f) => f.tipo == str_)[0].rr_pce_mmbpce.toFixed(1)).toLocaleString('es-MX') +
+          "</div>" +
+          "<div style='"+ style +"border-right:1px solid rgba(255,255,255,.3);'>"+
+            (+resv_.filter((f) => f.tipo == str_)[0].rr_aceite_mmb.toFixed(1)).toLocaleString('es-MX') +
+          "</div>" +
+          "<div style='"+ style +"border-right:1px solid rgba(255,255,255,.3);'>"+
+            (+resv_.filter((f) => f.tipo == str_)[0].rr_gas_natural_mmmpc.toFixed(1)).toLocaleString('es-MX') +
+          "</div>" +
+          "<div style='"+ style +"font-weight:400;font-size:.8em;color:"+colors_[2]+"'>"+ str_.toUpperCase() + "</div>"
+
+          return ff;
+        }
+
         return "<div style='width:100%;height:100%;position:relative;display:table;table-layout:fixed;'>" +
                   "<div style='display:table-row;width:100%;height:50%;text-align:center;table-layout:fixed;position:relative;'>" +
                       "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
                           "<div style='display:table;width:100%;height:100%;'>" +
                               "<div style='display:table-cell;vertical-align:middle;'>" +
-                                  "<div style='position:relative:;top:-10px;font-size:1em;font-weight:700;color:"+colors_[2]+"'>RESERVAS DE PCE</div>" +
-                                  "<div style='font-size:1.5em;font-weight:800;'>"+
-                                              (+resv_.filter((f) => f.tipo == 'probadas')[0].rr_pce_mmbpce.toFixed(1)).toLocaleString('es-MX')
-                                              +"<span style='font-weight:400;font-size:0.5em'> PROBADAS</span></div>" +
-                                  "<div style='font-size:1.5em;font-weight:800;'>"+
-                                              (+resv_.filter((f) => f.tipo == 'probables')[0].rr_pce_mmbpce.toFixed(1)).toLocaleString('es-MX')
-                                              +"<span style='font-weight:400;font-size:0.5em'> PROBABLES</span></div>" +
-                                  "<div style='font-size:1.5em;font-weight:800;'>"+
-                                              (+resv_.filter((f) => f.tipo == 'posibles')[0].rr_pce_mmbpce.toFixed(1)).toLocaleString('es-MX')
-                                              +"<span style='font-weight:400;font-size:0.5em'> POSIBLES</span></div>" +
-                                  "<div style='position:relative:;top:-10px;font-size:1em;font-weight:700;color:"+colors_[2]+"'>Millones de barriles - "
+                                  "<div style='position:relative:;top:-10px;font-size:1.5em;font-weight:700;color:"+colors_[2]+"'>RESERVAS</div>" +
+
+                                  "<div style='text-align:center;'>" +
+                                    "<div style='display:inline-block;'>" +
+
+                                        "<div style='display:table;font-weight:800;font-size:1em;'>" +
+                                            "<div style='display:table-row;text-align:center;font-weight:400;color:"+colors_[2]+"'>" +
+                                                "<div style='display:table-cell;text-align:center;'>"+ 'PCE' +"</div>" +
+                                                "<div style='display:table-cell;text-align:center;'>"+ 'ACEITE' +"</div>" +
+                                                "<div style='display:table-cell;text-align:center;'>"+ 'GAS' +"</div>" +
+                                                "<div style='display:table-cell;text-align:center;'>"+ '' +"</div>" +
+                                            "</div>" +
+                                            "<div style='display:table-row;'>" +
+                                                filas('probadas') +
+                                            "</div>" +
+                                            "<div style='display:table-row;'>" +
+                                                filas('probables') +
+                                            "</div>" +
+                                            "<div style='display:table-row;'>" +
+                                                filas('posibles') +
+                                            "</div>" +
+                                            "<div style='display:table-row;font-weight:400;color:"+colors_[2]+"'>" +
+                                                  "<div style='display:table-cell;text-align:center;'>"+ 'MMB' +"</div>" +
+                                                  "<div style='display:table-cell;text-align:center;'>"+ 'MMB' +"</div>" +
+                                                  "<div style='display:table-cell;text-align:center;'>"+ 'MMMPC' +"</div>" +
+                                                  "<div style='display:table-cell;text-align:center;'>"+ '' +"</div>" +
+                                            "</div>" +
+                                        "</div>" +
+
+                                     "</div>" +
+                                  "</div>" +
+
+                                  "<div style='position:relative:;top:-10px;font-size:1.5em;font-weight:700;color:"+colors_[2]+"'>"
                                               + new Date(resv.fecha).getFullYear() +"</div>" +
+
                               "</div>" +
                           "</div>" +
                       "</div>" +
@@ -331,7 +389,7 @@ function LineChart(data) {
 
             var mods = _.uniq( data.map(function(d) { return d.nombre; }) );
 
-            function Series (str,axis) {
+            function Series (str,axis,color) {
                     var hidrocarburo = str.split('_');
                     hidrocarburo = hidrocarburo[0].toUpperCase() + ' (' + hidrocarburo[1] + ')';
 
@@ -355,7 +413,13 @@ function LineChart(data) {
                           showInNavigator:true,
                           name:hidrocarburo,
                           data:dato,
-                          tooltip: { valueDecimals:2 }
+                          tooltip: { valueDecimals:2 },
+                          navigatorOptions: {
+                            lineColor:color,
+                            color:'transparent'
+                          },
+                          color:color
+                          //color:'red'
                         };
 
                         if(axis) {
@@ -371,7 +435,7 @@ function LineChart(data) {
             };
 
             // Create the chart
-            Highcharts.StockChart('visor', {
+            var chart = Highcharts.StockChart('visor', {
                 legend: {
                   enabled:false
                 },
@@ -403,7 +467,7 @@ function LineChart(data) {
                     text: null//'Producción'
                 },
 
-                series: Series('aceite_mbd',1).concat(Series('gas_mmpcd')),
+                series: Series('aceite_mbd',1,'red').concat(Series('gas_mmpcd',null,'green')),
                 rangeSelector: {
                   enabled:true,
                   buttons: [
@@ -427,6 +491,7 @@ function LineChart(data) {
                   useHTML:true,
                   shared:true,
                   split:false,
+                  borderColor:'transparent',
                   formatter: function() {
 
                       var points = this.points.map(function(d) {
@@ -442,8 +507,8 @@ function LineChart(data) {
 
                       var str =
                         '<div class="customTooltip">' +
-                          '<div>'
-                              + points[0].nombre +
+                          '<div>'+
+                              //+ points[0].nombre +
                           '</div>' +
                           '<div style="padding-bottom:8px;padding-left:8px;font-weight:600;font-size:11px;">'
                               + parseDate(points[0].fecha) +
@@ -467,6 +532,7 @@ function LineChart(data) {
                 }
             });
 
+            return chart;
 }
 
 
@@ -593,7 +659,7 @@ function BarChart(config) {
       // Los parámetros de este prototipo pueden cambiar el título, orientación de las barras y demás.
       this.plot = function(data,fn) {
             var stack_ = fn(data);
-            Highcharts.chart(config.where, {
+            var plot_ = Highcharts.chart(config.where, {
                 legend: {
                   enabled: (function() {
                     var legend;
@@ -622,7 +688,14 @@ function BarChart(config) {
                       text:config.yAxis
                     },
                     gridLineWidth:0,
-                    max: config.yMax ? config.yMax : null
+                    max: config.yMax ? config.yMax : null,
+                    stackLabels: {
+                      enabled:config.stackLabels,
+                      formatter:function() {
+                        var result = Number(this.total.toFixed(1)).toLocaleString('es-MX');
+                        return result;
+                      }
+                    }
                 },
                 xAxis: config.xAxis/*{
                   type:'datetime',
@@ -631,6 +704,7 @@ function BarChart(config) {
                   }
                 }*/,
                 tooltip: {
+                    borderColor:'transparent',
                     formatter: function() {
                       var str;
 
@@ -694,7 +768,9 @@ function BarChart(config) {
                     }
                   )()
                 }
-            })
+            });
+
+            return plot_;
     };
 }
 

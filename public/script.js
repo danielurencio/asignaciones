@@ -8,7 +8,6 @@ var HOSTNAME = 'http://172.16.24.57:5000/';
     url: HOSTNAME + 'grales_asig.py',
     success:function(datos_grales) {
         datos_grales = JSON.parse(datos_grales)
-
    d3.csv('asignaciones_produccion.csv', function(err,produccion) {
     d3.json('file_.json',function(err,data_) {
     	d3.json('shapes.json',function(err,shapes) {
@@ -736,7 +735,10 @@ function switcher(id,mapNdataObj) {
 
         	 		case id === 'Producción':
                     if(mapNdataObj.ajaxData.produccion.length > 0) {
-            	 			     grapher(LineChart,mapNdataObj.ajaxData.produccion);
+            	 			     //grapher(LineChart,mapNdataObj.ajaxData.produccion);
+                         var chart__ = LineChart(mapNdataObj.ajaxData.produccion)
+                         //chart__.series[0].update({lineColor:'red'})
+                         //console.log(chart__)
                     } else {
                         noDato();
                     }
@@ -748,35 +750,36 @@ function switcher(id,mapNdataObj) {
                     var reservas = mapNdataObj.ajaxData.reservas;
 
                     if(reservas.length > 0) {
-                          var groups_ = [
-                            { 'stackName':'PP','groups':['probadas','probables','posibles'] }
-                            //{ 'stackName':'PP','groups':['1P','2P','3P'] }
-                          ];
+                          var panel_height = 80;
+                          var visor = "<div style='width:100%;height:100%;'>" +
+                                        "<div style='width:100%;height:"+ panel_height +"px;' id='visor_panel'>"+
+                                          "<div style='text-align:center;'>" +
+                                            "<div style='display:inline-block;'>" +
+                                              "<div style='font-weight:800;font-size:2em;'>Reservas</div>" +
+                                              "<div style='display:table;'>" +
+                                                "<div style='display:table-cell;padding-right:1%;'>"+
+                                                  "<input type='radio' name='reservas' value='rr_pce_mmbpce' checked> PCE</input>" +
+                                                "</div>" +
+                                                "<div style='display:table-cell;padding-right:1%;'>"+
+                                                  "<input type='radio' name='reservas' value='rr_aceite_mmb'> Aceite</input>" +
+                                                "</div>" +
+                                                "<div style='display:table-cell;padding-left:1%;'>"+
+                                                  "<input type='radio' name='reservas' value='rr_gas_natural_mmmpc'> Gas</input>" +
+                                                "</div>" +
+                                              "</div>" +
+                                            "</div>" +
+                                          "</div>" +
+                                        "</div>" +
+                                        "<div style='width:100%;height:calc(100% - "+ panel_height +"px);' id='visor_chart'></div>" +
+                                      "</div>";
 
-                          var config = {
-                            filter:'tipo',
-                            nombre:'nombre',
-                            id:'id',
-                            x:'fecha',
-                            y:'rr_pce_mmbpce',
-                            timeformat: { year:'%Y' }
-                          }
+                          $('#visor').html(visor);
 
-                          var stack_reservas = new Wrangler(config,groups_);
-                          var reservasStacked = stack_reservas.stackData(reservas);
-                          var colores = ['rgb(13,180,190)','rgb(46,112,138)','rgb(20,50,90)'];
-
-                          reservasStacked = reservasStacked.map(function(d,i) {
-                            d.color = colores[i];
-                            return d;
-                          });
-
-
-                          var reservasPlot = new BarChart({
-                            title:'Reservas',
+                          var plot_config = {
+                            title:'',
                             subtitle:'Millones de barriles de petróleo crudo equivalente',
                             yAxis:'MMBPCE',
-                            where:'visor',
+                            where:'visor_chart',
                             chart: {
                               type:'column'
                             },
@@ -787,13 +790,69 @@ function switcher(id,mapNdataObj) {
                                 month:'%b \ %Y'
                               }
                             },
-                            //tooltip:'"<div><b>" +' +
-                            //              'parseDate(this.x) + "</b>:<br> " +' +
-                            //              'this.points.map(function(d) { return "  " + d.key + ": " + d.y }).join("<br>") +' +
-                            //          '"</div>";'
+                            stackLabels:true,
+                            tooltip:'"<div><b>" +' +
+                                          '(new Date(this.x).getFullYear() + 1) + "</b>:<br> " +' +
+                                          'this.points.map(function(d) { '+
+                                              'var key = d.key;' +
+                                              'var key = "<span style=\'font-weight:800;color:" + d.color + "\'>"+ d.key.toUpperCase() + "</span>";' +
+                                              'return "  " + key + ": " + Number(d.y.toFixed(1)).toLocaleString("es-MX") ' +
+                                          '}).join("<br>") +' +
+                                      '"</div>";'
+                          };
+
+                          var config_changes = {
+                            yAxis: {
+                              rr_pce_mmbpce:'MMBPCE',
+                              rr_aceite_mmb:'MMB',
+                              rr_gas_natural_mmmpc:'MMMPC'
+                            },
+                            subtitle: {
+                              rr_pce_mmbpce:'Millones de barriles de petróleo crudo equivalente',
+                              rr_aceite_mmb:'Millones de barriles de petróleo',
+                              rr_gas_natural_mmmpc:'Miles de millones de pies cúbicos'
+                            }
+                          };
+
+                          $('input[type=radio][name=reservas]').change(function() {
+                                plot_config.yAxis = config_changes.yAxis[this.value];
+                                plot_config.subtitle = config_changes.subtitle[this.value];
+                                new BarChart(plot_config).plot(stack_fn(this.value),(d) => d);
                           });
 
-                  	 			grapher(reservasPlot.plot,reservasStacked,(d) => d);//stack_reservas.stackData);
+
+                          function stack_fn(tipo) {
+                              var groups_ = [
+                                { 'stackName':'PP','groups':['probadas','probables','posibles'] }
+                                //{ 'stackName':'PP','groups':['1P','2P','3P'] }
+                              ];
+
+                              var config = {
+                                filter:'tipo',
+                                nombre:'nombre',
+                                id:'id',
+                                x:'fecha',
+                                y:tipo,
+                                timeformat: { year:'%Y' }
+                              }
+
+                              var stack_reservas = new Wrangler(config,groups_);
+                              var reservasStacked = stack_reservas.stackData(reservas);
+                              var colores = ['rgb(13,180,190)','rgb(46,112,138)','rgb(20,50,90)'];
+
+                              reservasStacked = reservasStacked.map(function(d,i) {
+                                d.color = colores[i];
+                                return d;
+                              });
+
+                              return reservasStacked;
+                          };
+
+
+                          var reservasPlot = new BarChart(plot_config);
+
+                          reservasPlot.plot(stack_fn('rr_pce_mmbpce'),(d) => d);
+
 
                     } else {
                           noDato();
@@ -836,7 +895,7 @@ function switcher(id,mapNdataObj) {
                             dateTimeLabelFormats: {
                               month:'%b \ %Y'
                             }
-                          }
+                          },
                         });
 
                         var groups_ = [

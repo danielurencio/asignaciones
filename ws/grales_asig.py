@@ -45,9 +45,9 @@ class Service():
                    ") " + self.conditionalQuery() +\
                    "GROUP BY ANIO,ACTIVIDAD,SUB_ACTIVIDAD",
 
-            'reservas': "SELECT FECHA,TIPO_RESERVAS AS TIPO, SUM(RR_PCE_MMBPCE) AS RR_PCE_MMBPCE from ( " +\
+            'reservas': "SELECT FECHA,TIPO_RESERVAS AS TIPO, SUM(RR_PCE_MMBPCE) AS RR_PCE_MMBPCE, SUM(RR_ACEITE_MMB) AS RR_ACEITE_MMB, SUM(RR_GAS_NATURAL_MMMPC) AS RR_GAS_NATURAL_MMMPC from ( " +\
                            "SELECT A.*, B.CUENCA, B.TIPO, B.UBICACION FROM ( " +\
-                             "SELECT FECHA,NOMBRE_ASIG AS NOMBRE,ID_ASIG AS ID, TIPO AS TIPO_RESERVAS, SUM(RR_PCE_MMBPCE) AS RR_PCE_MMBPCE " +\
+                             "SELECT FECHA,NOMBRE_ASIG AS NOMBRE,ID_ASIG AS ID, TIPO AS TIPO_RESERVAS, SUM(RR_PCE_MMBPCE) AS RR_PCE_MMBPCE, SUM(RR_ACEITE_MMB) AS RR_ACEITE_MMB, SUM(RR_GAS_NATURAL_MMMPC) AS RR_GAS_NATURAL_MMMPC " +\
                              "FROM CMDE_PUBLIC.RESERVAS_ASIG_CONT_TEST GROUP BY FECHA,TIPO,NOMBRE_ASIG,ID_ASIG " +\
                              "ORDER BY FECHA,NOMBRE_ASIG,TIPO " +\
                            ") A LEFT JOIN CMDE_RAW.DATOS_ASIGNACIONES_GRALES B " +\
@@ -187,7 +187,7 @@ class Service():
 
     def reservas(self):
         if(self.ID != 'Todas'):
-            query = "SELECT FECHA,NOMBRE_ASIG AS NOMBRE,ID_ASIG AS ID,TIPO,SUM(RR_PCE_MMBPCE) AS RR_PCE_MMBPCE FROM CMDE_PUBLIC.RESERVAS_ASIG_CONT_TEST " +\
+            query = "SELECT FECHA,TIPO,SUM(RR_PCE_MMBPCE) AS RR_PCE_MMBPCE,SUM(RR_ACEITE_MMB) AS RR_ACEITE_MMB, SUM(RR_GAS_NATURAL_MMMPC) AS RR_GAS_NATURAL_MMMPC FROM CMDE_PUBLIC.RESERVAS_ASIG_CONT_TEST " +\
                     "WHERE ID_ASIG='" + self.ID + "' " +\
                     "GROUP BY FECHA,TIPO,NOMBRE_ASIG,ID_ASIG ORDER BY FECHA,NOMBRE_ASIG,TIPO"
         else:
@@ -195,30 +195,42 @@ class Service():
 
         conn_str = 'oracle://durencio:daniel2017@172.16.120.3:1521/' + self.bd_service
 
-        def transform_reserves(x):
+        def transform_reserves(x,col):
             fechas = x.fecha.unique().tolist()
 
             for i,d in enumerate(fechas):
                 a = x[x.fecha == pd.to_datetime(d)].reset_index().copy()
-                b = a.set_index('tipo')[['rr_pce_mmbpce']].transpose().copy()
+                b = a.set_index('tipo')[[col]].transpose().copy()
                 b['probadas'] = b['1P']
                 b['probables'] = b['2P'] - b['1P']
                 b['posibles'] = b['3P'] - b['2P']
                 b = b[['probadas','probables','posibles']].transpose().reset_index()
-                b.rename(columns={'tipo':'tipo_','rr_pce_mmbpce':'rr'},inplace=True)
+                b.rename(columns={'tipo':'tipo_',col:'rr'},inplace=True)
                 c = pd.concat([a,b],axis=1)
                 if i == 0:
                     result = c
                 else:
                     result = result.append(c)
 
-            cols = ['fecha','tipo_','nombre','id','rr'] if self.ID != 'Todas' else ['fecha','tipo_','rr']
+            cols = ['fecha','tipo_','rr']#['fecha','tipo_','nombre','id','rr'] if self.ID != 'Todas' else ['fecha','tipo_','rr']
             result = result.reset_index()[cols]
-            result = result.rename(columns={ 'tipo_':'tipo', 'rr':'rr_pce_mmbpce' })
+            result = result.rename(columns={ 'tipo_':'tipo', 'rr':col })
             return result
 
+
         df = self.connectionResult(query,conn_str)
-        df = transform_reserves(df) if len(df) != 0 else df
+        #df = transform_reserves(df) if len(df) != 0 else df
+
+        def transform_All(col):
+            return transform_reserves(df,col).set_index(['fecha','tipo'])
+
+        def get_rr(df,cols):
+            results = map(transform_All,cols)
+            df_ = pd.concat(results,axis=1).reset_index()
+            return df_
+
+        
+        df = get_rr(df,['rr_pce_mmbpce','rr_aceite_mmb','rr_gas_natural_mmmpc']) if len(df) != 0 else df
         df = df.to_json(orient='records')
 
         return df
