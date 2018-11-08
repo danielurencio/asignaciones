@@ -1,4 +1,327 @@
-function DatosGrales() {
+
+function DatosGrales(data)  {
+  var grales = data.grales;//JSON.parse(JSON.stringify(data.grales));
+  var params = ['cuenca','ubicacion','tipo','asignacion'].map((d) => [d.toUpperCase(),$('.' + d + '>option:selected').text()])
+
+  params = params.filter((f) => f[1].slice(0,3) != 'Tod');
+
+  params.forEach(function(p) {
+    grales = grales.filter((d) => d[p[0]] == p[1])
+  });
+
+
+  var div = new DOMParser().parseFromString('<div></div>','text/html')
+                           .querySelector('body>div');
+
+
+
+  d3.select(div).append('div')
+    .style({
+      'table-layout':'fixed',
+      'width':'100%',
+      'height':'100%',
+      'display':'table',
+      'position':'relative'
+    })
+    .selectAll('div')
+    .data(['a','b']).enter()
+    .append('div')
+    .attr('id',function(d) {
+      return 'row_' + d;
+    })
+    .style({
+      'display':'table',
+      'table-layout':'fixed',
+      'width':'100%',
+      'height':'50%',
+      'position':'relative',
+      'padding-bottom': function(d,i) {
+          var p = '0px';
+          if( d == 'a') p = '10px';
+          return p;
+      }
+    }).each(function(d,i) {
+      var cells = i == 0 ? [1,2,3] : [1,2];
+
+      d3.select(this).selectAll('div')
+        .data(cells).enter()
+        .append('div')
+        .attr('id',function(d) { return 'col_' + d; })
+        .style({
+            width:(100 / cells.length).toFixed(2) + '%',
+            height:'50%',
+            //'background-color':'purple',
+            //border:'1px solid white',
+            display:'table-cell'
+        })
+        .append('div')
+    })
+
+
+  $('#visor').html(div.innerHTML)
+  var colors_ = ['rgb(115,194,251)','rgb(87,160,211)','rgb(129,216,208)','rgb(79,151,163)','rgb(70,130,180)','rgb(0,128,129)']
+
+  var ASIG_ = $('.asignacion>option:selected').text()
+  var numOnom = ASIG_ != 'Todas' ? ASIG_.split(' - ')[0] : grales.length;
+  var numOnomSize = ASIG_ != 'Todas' ? 2 : 5;
+  var subtNumOnom = ASIG_ != 'Todas' ? ASIG_.split(' - ')[1] : 'ASIGNACIONES';
+
+  d3.select('div#row_a>div#col_1')
+  .html(function(d) {
+
+    var tipos_asigs =
+      "<div style='font-weight:700;color:rgb(13,180,190);'>"+ grales.filter((d) => new RegExp('^A-').test(d.NOMBRE)).length +" Extracción</div>"+
+      "<div style='font-weight:700;color:rgb(46,112,138);'>"+ grales.filter((d) => new RegExp('^AE-').test(d.NOMBRE)).length +" Exploración</div>"+
+      "<div style='font-weight:700;color:rgb(20,50,90);'>"+ grales.filter((d) => new RegExp('^AR-').test(d.NOMBRE)).length +" Resguardo</div>"
+
+    var _tipo_ = "";
+    var color = "";
+    var un_tipoAsig = "<div>" + _tipo_ + "</div>";
+
+    if(ASIG_ != 'Todas') {
+        if(ASIG_.split('-')[0] == 'A') {
+          _tipo_ = 'Extracción';
+          color = 'rgb(13,180,190)';
+        } else if(ASIG_.split('-')[0] == 'AE') {
+          _tipo_ = 'Exploración';
+          color = 'rgb(46,112,138)';
+        } else {
+          _tipo_ = 'Resguardo';
+          color = 'rgb(20,50,90)';
+        }
+        un_tipoAsig = '<div style="color:'+color+';font-size:2em;font-weight:700;">' + _tipo_ + '</div>'
+    } else {
+        un_tipoAsig = tipos_asigs;
+    }
+
+
+    return "<div style='width:100%;height:100%;background-color:white;position:relative;display:table;table-layout:fixed;'>" +
+              "<div style='display:table-row;width:100%;height:50%;text-align:center;table-layout:fixed;position:relative;'>" +
+                  "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
+                      "<div style='width:100%;height:100%;border-right:1px solid gray;display:table;'>" +
+                          "<div style='display:table-cell;vertical-align:middle;'>" +
+                              "<div style='font-size:"+ numOnomSize +"em;font-weight:800;color:rgb(13,180,190);'>" + numOnom + "</div>" +
+                              "<div style='position:relative:;top:-10px;font-size:1em;font-weight:600;'>"+ subtNumOnom +"</div>" +
+                          "</div>" +
+                      "</div>" +
+                  "</div>" +
+              "</div>" +
+              "<div style='display:table-row;width:100%;height:50%;text-align:center;table-layout:fixed;position:relative;'>" +
+                  "<div style='display:table-cell;position:relative;vertical-align:middle;text-align:center;border-right:1px solid gray;'>" +
+                    un_tipoAsig +
+                  "</div>" +
+              "</div>" +
+          "</div>"
+  });
+
+  d3.select('div#row_a>div#col_2')
+  .html(function(d) {
+    var grales_ = ASIG_ != 'Todas' ? data.grales.filter((d) => d.NOMBRE == ASIG_) : data.grales;
+    var seg = _.sortBy(data.ajaxData.seguimiento,function(d) { return d.anio; }).filter((f) => f.tipo_observacion == 'Real');
+    var gop = d3.sum(seg.filter((f) => f.concepto == 'G_Op').map((d) => d.valor))/1000;
+
+
+    return "<div style='width:100%;height:100%;background-color:white;position:relative;display:table;table-layout:fixed;'>" +
+              "<div style='display:table-row;width:100%;height:50%;text-align:center;table-layout:fixed;position:relative;'>" +
+                  "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
+                      "<div style='display:table;width:100%;height:100%;'>" +
+                          "<div style='display:table-cell;vertical-align:middle;color:white;color:"+colors_[0]+"'>" +
+                              "<div style='font-size:3em;font-weight:700;'>"+ d3.sum(grales_.map((d) => d.N_CAMPOS_RESERVAS)) +"</div>" +
+                              "<div style='position:relative:;top:-10px;font-size:0.85em;font-weight:600;color:black;'>CAMPOS CON RESERVAS</div>" +
+                          "</div>" +
+                      "</div>" +
+                  "</div>" +
+              "</div>" +
+              "<div style='display:table-row;width:100%;height:50%;text-align:center;table-layout:fixed;position:relative;'>" +
+                  "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
+                      "<div style='display:table;width:100%;height:100%;'>" +
+                          "<div style='display:table-cell;vertical-align:middle;color:white;color:"+colors_[1]+"'>" +
+                              "<div style='font-size:3em;font-weight:700;'>"+ gop.toFixed(1) +"</div>" +
+                              "<div style='position:relative:;top:-10px;font-size:0.85em;font-weight:600;color:black'>GASTOS DE OPERACIÓN<br>(miles de millones de pesos)</div>" +
+                          "</div>" +
+                      "</div>" +
+                  "</div>" +
+              "</div>" +
+          "</div>"
+  })
+
+  d3.select('div#row_a>div#col_3')
+  .html(function(d) {
+    var grales_ = ASIG_ != 'Todas' ? data.grales.filter((d) => d.NOMBRE == ASIG_) : data.grales;
+    var seg = _.sortBy(data.ajaxData.seguimiento,function(d) { return d.anio; }).filter((f) => f.tipo_observacion == 'Real');
+    //seg = ASIG_ != 'Todas' ? seg.filter((f) => new RegExp(ASIG_,f)) : '';
+
+    var inv = d3.sum(seg.filter((f) => f.concepto == 'Inv').map((d) => d.valor))/1000;
+
+    return "<div style='width:100%;height:100%;background-color:white;position:relative;display:table;table-layout:fixed;'>" +
+              "<div style='display:table-row;width:100%;height:50%;text-align:center;table-layout:fixed;position:relative;'>" +
+                  "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
+                      "<div style='display:table;width:100%;height:100%;'>" +
+                          "<div style='display:table-cell;vertical-align:middle;color:white;color:"+colors_[2]+"'>" +
+                              "<div style='font-size:3em;font-weight:700;'>"+ (d3.sum(grales_.map((d) => d.SUPERFICIE_KM2))/1000).toFixed(1) +"</div>" +
+                              "<div style='position:relative:;top:-10px;font-size:0.85em;font-weight:600;color:black;'>MILES DE KM<sup>2</sup></div>" +
+                          "</div>" +
+                      "</div>" +
+                  "</div>" +
+              "</div>" +
+              "<div style='display:table-row;width:100%;height:50%;text-align:center;table-layout:fixed;position:relative;'>" +
+                  "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
+                      "<div style='display:table;width:100%;height:100%;'>" +
+                          "<div style='display:table-cell;vertical-align:middle;color:white;color:"+colors_[3]+"'>" +
+                              "<div style='font-size:3em;font-weight:700;'>"+ inv.toFixed(1) +"</div>" +
+                              "<div style='position:relative:;top:-10px;font-size:0.85em;font-weight:600;color:black;'>INVERSIÓN<br>(miles de millones de pesos)</div>" +
+                          "</div>" +
+                      "</div>" +
+                  "</div>" +
+              "</div>" +
+          "</div>"
+  });
+
+  var meses = {
+    '1':'Enero',
+    '2':'Febrero',
+    '3':'Marzo',
+    '4':'Abril',
+    '5':'Mayo',
+    '6':'Junio',
+    '7':'Julio',
+    '8':'Agosto',
+    '9':'Septiembre',
+    '10':'Octubre',
+    '11':'Noviembre',
+    '12':'Diciembre',
+  };
+
+  d3.select('div#row_b>div#col_1')
+    .style({
+      'background-color':colors_[4],
+      'color':'white'
+    })
+    .html(function(d) {
+      var prod = _.sortBy(data.ajaxData.produccion,function (d) { return d.fecha; });
+      var prod = prod[prod.length -1 ];
+
+      function fechA(ts) {
+        var f = new Date(ts)
+        var mes = String(f.getMonth() + 1);
+        var anio = f.getFullYear(ts)
+        return meses[mes] + ' - ' + anio;
+      }
+
+      return "<div style='width:100%;height:100%;position:relative;display:table;table-layout:fixed;'>" +
+                "<div style='display:table-row;width:100%;height:50%;text-align:center;table-layout:fixed;position:relative;'>" +
+                    "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
+                        "<div style='display:table;width:100%;height:100%;'>" +
+                            "<div style='display:table-cell;vertical-align:middle;'>" +
+                                "<div style='position:relative:;top:-10px;font-size:1.5em;font-weight:700;color:"+colors_[0]+"'>PRODUCCIÓN</div>" +
+
+                                "<div style='text-align:center;'>" +
+                                  "<div style='display:inline-block;'>" +
+
+                                      "<div style='display:table;font-weight:800;font-size:2.5em;'>" +
+                                          "<div style='display:table-row;'>" +
+                                              "<div style='display:table-cell;text-align:right;'><span style='font-weight:400;font-size:0.4em;'>ACEITE&nbsp;</span></div>" +
+                                              "<div style='display:table-cell;text-align:center;'>"+ (+prod.aceite_mbd.toFixed(1)).toLocaleString('es-MX') +"</div>" +
+                                              "<div style='display:table-cell;text-align:left;'><span style='font-weight:400;font-size:0.4em;'>&nbsp;MBD</span></div>" +
+                                          "</div>" +
+                                          "<div style='display:table-row;'>" +
+                                              "<div style='display:table-cell;text-align:right;'><span style='font-weight:400;font-size:0.4em;'>GAS&nbsp;</span></div>" +
+                                              "<div style='display:table-cell;text-align:center;'>"+ (+prod.gas_mmpcd.toFixed(1)).toLocaleString('es-MX') +"</div>" +
+                                              "<div style='display:table-cell;text-align:left;'><span style='font-weight:400;font-size:0.4em;'>&nbsp;MMPCD</span></div>" +
+                                          "</div>" +
+                                      "</div>" +
+
+                                   "</div>" +
+                                "</div>" +
+
+                                "<div style='position:relative:;top:-10px;font-size:1.5em;font-weight:700;color:"+colors_[0]+"'>"+ fechA(prod.fecha) +"</div>" +
+                            "</div>" +
+                        "</div>" +
+                    "</div>" +
+                "</div>" +
+              "</div>"
+    });
+
+
+    d3.select('div#row_b>div#col_2')
+      .style({
+        'background-color':colors_[5],
+        'color':'white'
+      })
+      .html(function(d) {
+        var resv_ = _.sortBy(data.ajaxData.reservas,function (d) { return d.fecha; });
+        var resv = resv_[resv_.length -1 ];
+
+        var resv_ = resv_.filter((f) => f.fecha == resv.fecha);
+
+        function filas(str_) {
+          var style = "display:table-cell;text-align:center;padding:5px;"
+          var ff =
+          "<div style='"+ style +"border-right:1px solid rgba(255,255,255,.3);'>"+
+            (+resv_.filter((f) => f.tipo == str_)[0].rr_pce_mmbpce.toFixed(1)).toLocaleString('es-MX') +
+          "</div>" +
+          "<div style='"+ style +"border-right:1px solid rgba(255,255,255,.3);'>"+
+            (+resv_.filter((f) => f.tipo == str_)[0].rr_aceite_mmb.toFixed(1)).toLocaleString('es-MX') +
+          "</div>" +
+          "<div style='"+ style +"border-right:1px solid rgba(255,255,255,.3);'>"+
+            (+resv_.filter((f) => f.tipo == str_)[0].rr_gas_natural_mmmpc.toFixed(1)).toLocaleString('es-MX') +
+          "</div>" +
+          "<div style='"+ style +"font-weight:400;font-size:.8em;color:"+colors_[2]+"'>"+ str_.toUpperCase() + "</div>"
+
+          return ff;
+        }
+
+        return "<div style='width:100%;height:100%;position:relative;display:table;table-layout:fixed;'>" +
+                  "<div style='display:table-row;width:100%;height:50%;text-align:center;table-layout:fixed;position:relative;'>" +
+                      "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
+                          "<div style='display:table;width:100%;height:100%;'>" +
+                              "<div style='display:table-cell;vertical-align:middle;'>" +
+                                  "<div style='position:relative:;top:-10px;font-size:1.5em;font-weight:700;color:"+colors_[2]+"'>RESERVAS</div>" +
+
+                                  "<div style='text-align:center;'>" +
+                                    "<div style='display:inline-block;'>" +
+
+                                        "<div style='display:table;font-weight:800;font-size:1em;'>" +
+                                            "<div style='display:table-row;text-align:center;font-weight:400;color:"+colors_[2]+"'>" +
+                                                "<div style='display:table-cell;text-align:center;'>"+ 'PCE' +"</div>" +
+                                                "<div style='display:table-cell;text-align:center;'>"+ 'ACEITE' +"</div>" +
+                                                "<div style='display:table-cell;text-align:center;'>"+ 'GAS' +"</div>" +
+                                                "<div style='display:table-cell;text-align:center;'>"+ '' +"</div>" +
+                                            "</div>" +
+                                            "<div style='display:table-row;'>" +
+                                                filas('probadas') +
+                                            "</div>" +
+                                            "<div style='display:table-row;'>" +
+                                                filas('probables') +
+                                            "</div>" +
+                                            "<div style='display:table-row;'>" +
+                                                filas('posibles') +
+                                            "</div>" +
+                                            "<div style='display:table-row;font-weight:400;color:"+colors_[2]+"'>" +
+                                                  "<div style='display:table-cell;text-align:center;'>"+ 'MMB' +"</div>" +
+                                                  "<div style='display:table-cell;text-align:center;'>"+ 'MMB' +"</div>" +
+                                                  "<div style='display:table-cell;text-align:center;'>"+ 'MMMPC' +"</div>" +
+                                                  "<div style='display:table-cell;text-align:center;'>"+ '' +"</div>" +
+                                            "</div>" +
+                                        "</div>" +
+
+                                     "</div>" +
+                                  "</div>" +
+
+                                  "<div style='position:relative:;top:-10px;font-size:1.5em;font-weight:700;color:"+colors_[2]+"'>"
+                                              + new Date(resv.fecha).getFullYear() +"</div>" +
+
+                              "</div>" +
+                          "</div>" +
+                      "</div>" +
+                  "</div>" +
+                "</div>"
+      });
+
+}
+
+
+function DatosGrales_() {
 
   var str =
   "<div class='ficha' style='position:relative;width:100%;height:100%;background-color:transparent;'>" +
@@ -66,7 +389,7 @@ function LineChart(data) {
 
             var mods = _.uniq( data.map(function(d) { return d.nombre; }) );
 
-            function Series (str,axis) {
+            function Series (str,axis,color) {
                     var hidrocarburo = str.split('_');
                     hidrocarburo = hidrocarburo[0].toUpperCase() + ' (' + hidrocarburo[1] + ')';
 
@@ -90,7 +413,13 @@ function LineChart(data) {
                           showInNavigator:true,
                           name:hidrocarburo,
                           data:dato,
-                          tooltip: { valueDecimals:2 }
+                          tooltip: { valueDecimals:2 },
+                          navigatorOptions: {
+                            lineColor:color,
+                            color:'transparent'
+                          },
+                          color:color
+                          //color:'red'
                         };
 
                         if(axis) {
@@ -106,7 +435,7 @@ function LineChart(data) {
             };
 
             // Create the chart
-            Highcharts.StockChart('visor', {
+            var chart = Highcharts.StockChart('visor', {
                 legend: {
                   enabled:false
                 },
@@ -116,13 +445,13 @@ function LineChart(data) {
                 yAxis: [
                   {
                     title:{
-                      text:'Aceite (mbd)'
+                      text:'Gas (mmpcd)'
                     },
                     opposite:false,
                   },
                   {
                     title: {
-                      text:'Gas (mmpcd)'
+                      text:'Aceite (mbd)'
                     },
                   }
                 ],
@@ -138,7 +467,7 @@ function LineChart(data) {
                     text: null//'Producción'
                 },
 
-                series: Series('aceite_mbd',1).concat(Series('gas_mmpcd')),
+                series: Series('aceite_mbd',1,'red').concat(Series('gas_mmpcd',null,'green')),
                 rangeSelector: {
                   enabled:true,
                   buttons: [
@@ -162,6 +491,7 @@ function LineChart(data) {
                   useHTML:true,
                   shared:true,
                   split:false,
+                  borderColor:'transparent',
                   formatter: function() {
 
                       var points = this.points.map(function(d) {
@@ -177,8 +507,8 @@ function LineChart(data) {
 
                       var str =
                         '<div class="customTooltip">' +
-                          '<div>'
-                              + points[0].nombre +
+                          '<div>'+
+                              //+ points[0].nombre +
                           '</div>' +
                           '<div style="padding-bottom:8px;padding-left:8px;font-weight:600;font-size:11px;">'
                               + parseDate(points[0].fecha) +
@@ -202,6 +532,7 @@ function LineChart(data) {
                 }
             });
 
+            return chart;
 }
 
 
@@ -325,11 +656,10 @@ function Wrangler(config, groups_) {
 
 
 function BarChart(config) {
-
       // Los parámetros de este prototipo pueden cambiar el título, orientación de las barras y demás.
       this.plot = function(data,fn) {
             var stack_ = fn(data);
-            Highcharts.chart(config.where, {
+            var plot_ = Highcharts.chart(config.where, {
                 legend: {
                   enabled: (function() {
                     var legend;
@@ -345,9 +675,7 @@ function BarChart(config) {
                   enabled:false
                 },
                 credits:false,
-                chart: {
-                    type: config.type
-                },
+                chart: config.chart,
                 title: {
                     text: config.title
                 },
@@ -358,21 +686,39 @@ function BarChart(config) {
                     opposite:config.opposite,
                     title:{
                       text:config.yAxis
+                    },
+                    gridLineWidth:0,
+                    max: config.yMax ? config.yMax : null,
+                    stackLabels: {
+                      enabled:config.stackLabels,
+                      formatter:function() {
+                        var result = Number(this.total.toFixed(1)).toLocaleString('es-MX');
+                        return result;
+                      }
                     }
                 },
-                xAxis: {
+                xAxis: config.xAxis/*{
                   type:'datetime',
                   dateTimeLabelFormats: {
                     month:'%b \ %Y'
                   }
-                },
+                }*/,
                 tooltip: {
+                    borderColor:'transparent',
                     formatter: function() {
+                      var str;
 
-                      var str = "<div><b>" +
-                                    parseDate(this.x) + '</b>:<br> ' +
-                                    this.points.map(function(d) { return "  " + d.key + ': ' + d.y }).join('<br>') +
-                                "</div>";
+                      if(!config.tooltip) {
+                            str = "<div><b>" +
+                                          parseDate(this.x) + "</b>:<br> " +
+                                          this.points.map(function(d) {
+                                            var content = "  <span style=\"font-weight:700;color:"+d.color+"\">&nbsp;&bull;" + d.key + ": " + (d.y).toFixed(1) + "</span>";
+                                            return content;
+                                          }).join("<br>") +
+                                      "</div>";
+                      } else {
+                            str = eval(config.tooltip);
+                      }
 
                       return str;
                     },
@@ -422,7 +768,9 @@ function BarChart(config) {
                     }
                   )()
                 }
-            })
+            });
+
+            return plot_;
     };
 }
 
@@ -460,7 +808,12 @@ function pie(data_,subdata) {
           }
       },
       tooltip: {
-          valueSuffix: '%'
+
+          formatter: function() {
+            var str = '<b>' + this.point.name + ': </b>' + this.y.toFixed(1) + '%';
+            return str;
+          },
+          useHTML:true
       },
       series: [{
           name: 'Actividad',
@@ -472,11 +825,11 @@ function pie(data_,subdata) {
                 textOutline:0,
                 fontWeight:600
               },
-              /*
+
               formatter: function () {
                   return this.y > 5 ? this.point.name : null;
               },
-              */
+
               color: 'black',
               distance: -25
           }
@@ -487,18 +840,18 @@ function pie(data_,subdata) {
           innerSize: '80%',
           dataLabels: {
             color:'black',
-            distance:30,
+            distance:1,
             style:{
               textOutline:0,
               fontWeight:300
-            }
-            /*
+            },
+
               formatter: function () {
                   // display only if larger than 1
-                  return this.y > 1 ? '<b>' + this.point.name + ':</b> ' +
-                      this.y + '%' : null;
+                  return this.point.name//'<b>' + this.point.name + ':</b> ' +
+                      //this.y.toFixed(1) + '%';
               }
-              */
+
           },
           id: 'versions'
       }],
@@ -521,6 +874,532 @@ function pie(data_,subdata) {
 
 }
 
+function documentos(data) {
+  data = _.sortBy(data,(d) => d.NOMBRE)
+  var filas = data.map(function(d,i) {
+    var str = '<tr width="100%;">'+
+                 '<td style="padding:3px;width:50%;">'+ d.NOMBRE +'</td>'+
+                 '<td style="padding:3px;width:50%;"><a href="http://localhost:8081/'+d.NOMBRE.split(' - ')[0]+'.pdf" target="_blank" class="hover_hand">Título</a></td>' +
+              '</tr>'
+
+    return str;
+  }).join('');
+
+  var table_container = '<div style="height:30px;width:100%;">'+
+                         '<table style="width:calc(100% - 8px);height:100%;table-layout:fixed;">'+
+                           '<tbody style="width:100%;">'+
+                             '<tr style="width:100%;font-weight:600;text-align:center;border-bottom:1px solid gray;border-top:1px solid gray;">' +
+                               '<td style="width:50%;vertical-align:middle;">Asignacion</td>' +
+                               '<td style="width:50%;vertical-align:middle;">Documentos</td>'+
+                             '</tr>' +
+                           '</tbody>' +
+                         '</table>';
+                        '</div>';
+
+  var tabla = //table_container +
+   '<div id="scroll_table_" style="width:100%;height:calc(' + $('#visor').css('height') + ' - 30px);overflow:auto;border-bottom:1px solid gray;">' +
+     '<table style="width:100%;,table-layout:fixed;">' +
+       '<tbody id="" style="text-align:center;">' +
+       filas +
+       '</tbody>'
+     '</table>'+
+   '</div>';
+
+  var div_table = '<div style="width:100%;height:100%;">'+
+                     table_container +
+                     tabla +
+                  '</div>'
+
+  $('#visor').html(div_table)
+}
+
+
+function CMT(data) {
+  console.log(data)
+  var agregados = Object.keys(data).every((d) => !+d) ? true : false;
+
+  var nombres = {
+    'G_Op': { 'nombre':'Gastos de operación', 'unidades':'Millones de pesos' },
+    'Perf':{ 'nombre':'Perforaciones', 'unidades':'Número' },
+    'Qg': { 'nombre':'Producción de gas', 'unidades':'MMPCD' },
+    'Qo':{ 'nombre':'Producción de aceite', 'unidades':'MBD' },
+    'RMA':{ 'nombre':'Reparaciones mayores', 'unidades':'Número' },
+    'Term': { 'nombre':'Terminaciones', 'unidades':'Número' },
+    'Inv': { 'nombre':'Inversión', 'unidades':'Millones de pesos'},
+    'AD_SIS_2D_KM': { 'nombre':'Adquisición sísmica 2D', 'unidades':'KM' },
+    'AD_SIS_3D_KM2': { 'nombre':'Adquisición sísmica 3D', 'unidades':'KM<sup>2</sup>' },
+    'ELECTROMAG': { 'nombre':'Electromagneticos', 'unidades':'Número' },
+    'ESTUDIOS': { 'nombre':'Estudios', 'unidades':'Número' },
+    'INV_MMPESOS': { 'nombre':'Inversión', 'unidades':'Millones de pesos' },
+    'POZOS': { 'nombre':'Pozos', 'unidades':'Número' },
+    'PROCESADO_KM': { 'nombre':'Procesado (km)', 'unidades':'KM' },
+    'PROCESADO_KM2': { 'nombre':'Procesado (km<sup>2</sup>)', 'unidades':'KM<sup>2</sup>' }
+  }
+
+
+  function table_(config,a) {
+      var data = JSON.parse(config.data);
+      var sel = $('#botonera_' + config.id + ">option:selected").attr('id');
+      var sel_data = data.filter((d) => d.concepto == sel);
+
+      if(a) {
+        sel_data = _.sortBy(sel_data,(d) => d.concepto).filter((d) => d.valores);
+        var rows = sel_data.map((d) => {
+          var str_ = '<tr style="width:100%;">'+
+                        '<td style="width:50%;padding:0px;">'+ d.anio +'</td>'+
+                        '<td style="width:50%;padding:0px;">'+ d.valores.toLocaleString('es-MX') +'</td>'+
+                     '</tr>'
+          return str_;
+        }).join('');
+      }
+      else {
+        sel_data = _.sortBy(sel_data,(d) => d.concepto).filter((d) => d.valor);
+
+        var rows = sel_data.map((d) => {
+          var str_ = '<tr style="width:100%;">'+
+                        '<td style="width:50%;padding:0px;">'+ d.anio +'</td>'+
+                        '<td style="width:50%;padding:0px;">'+ d.valor.toLocaleString('es-MX') +'</td>'+
+                     '</tr>'
+          return str_;
+        }).join('');
+      }
+
+      var t = '<div style="width:100%;">' +
+                '<table style="width:100%;table-layout:fixed;" align="center">' +
+                  '<tbody>'+
+                    '<tr style="border-bottom:1px solid '+ config.color +';color:'+ config.color +'">' +
+                      '<td>Año</td><td>'+ nombres[sel].unidades +'</td>' +
+                    '</tr>' +
+                  '</tbody>' +
+                //'<tbody>' + rows + '</tbody>'
+               '</table>' +
+              '</div>' +
+              '<div style="width:100%;overlfow:auto;">' +
+                '<table style="width:100%;table-layout:fixed;">' +
+                  '<tbody>' +
+                    rows +
+                  '</tbody>' +
+                '</tbody>' +
+              '</div>'
+
+      $('#CMT_' + config.id).html(t)
+      //$('#CMT_' + config.id).html('a')
+  };
+
+
+  function apartado(config,a) {
+
+      if(a) {
+        var ww = '100'
+        var hh = '50'
+        var disp ='table-row'
+      } else {
+        var ww = '50'
+        var hh = '100'
+        var disp = 'table-cell'
+      }
+
+      var data = JSON.parse(config.data);
+
+      var conceptos = _.uniq(data.map((d) => d.concepto));
+      var anios = _.uniq(data.map((d) => d.anio));
+
+      var str__ = '<div style="width:100%; height:100%; display:table; table-layout:fixed">' +
+                    '<div style="width:100%;height:20%; ">'+
+                        '<div style="height:50%;width:100%;font-weight:800;color:' + config.color + ';">' + config.titulo + '</div>' +
+                        '<div style="height:10%;width:100%;font-size:13px;font-weight:300;">Compromiso mínimo en:&emsp;'+
+                          '<select id="botonera_'+ config.id +'" style="font-weight:700;color:'+ config.color +';">'
+                              + conceptos.map((d) => '<option id="'+ d +'">'+ nombres[d]['nombre'] +'</option>') +
+                          '</select>'+
+                        '</div>' +
+                    '</div>' +
+                    '<div style="width:100%;height:80%;">'+
+
+                        '<div style="width:100%;height:100%;display:table;">' +
+                          '<div style="width:'+ww+'%;height:'+hh+'%;display:'+disp+';vertical-align:top;">'+
+                              '<div style="display:table;width:100%;height:100%;">'+
+                                '<div style="width:100%;height:100%;" class="cmt_table" id="CMT_'+ config.id +'"></div>' +
+                              '</div>'+
+                          '</div>' +
+                          '<div style="width:'+ww+'%;height:'+hh+'%;display:'+disp+';">'+
+                              '<div style="width:100%;height:100%;display:table;">'+
+                                '<div style="width:100%;height:100%;" id="barcmt_'+ config.id +'"></div>' +
+                              '</div>'
+                          '</div>' +
+                        '</div>' +
+
+                    '</div>' +
+
+                  '</div>';
+
+      return str__;
+  };
+
+  function barplot_cmt(config,a) {
+     var data = JSON.parse(config.data);
+     var sel = $('select#botonera_'+ config.id +'>option:selected').attr('id');
+
+     if(a) {
+       data = data.filter((f) => f.concepto == sel)
+                  .map((d) => [d.anio,d.valores])
+                  .filter((f) => f[1]);
+     }
+     else {
+       data = data.filter((f) => f.concepto == sel)
+                  .map((d) => [d.anio,d.valor])
+                  .filter((f) => f[1]);
+     }
+
+
+     data = [
+       {
+         data:data,
+         color:config.color
+       }
+     ];
+
+
+     var plot = new BarChart({
+       where:'barcmt_' + config.id,
+       chart: { type:'column' },
+       noRange:1,
+       opposite:true,
+       title:'',
+       xAxis: {
+         categories: data[0].data.map((d) => String(d[0]))
+       },
+       hideLegend:true
+       //tooltip: '<div></div>'
+     });
+
+     grapher(plot.plot,data,(d) => d)
+  }
+
+  if(agregados) {
+    var division = '<div style="width:100%;height:100%;display:table;">' +
+                      '<div id="exp" style="width:100%;height:50%;border-bottom:1px solid gray;"></div>' +
+                      '<div id="ext" style="width:100%;height:50%;"></div>' +
+                   '</div>';
+
+    $('#visor').html(division)
+
+    var config = [
+      {
+        'titulo':'Extracción',
+        'color':'rgb(70,130,180)',
+        'id':'ext',
+        'data':data['ext']
+      },
+      {
+        'titulo':'Exploración',
+        'color':'rgb(0,128,129)',
+        'id':'exp',
+        'data':data['exp']
+      }
+    ]
+
+    config.forEach((d) => {
+      $('#visor #' + d.id).html(apartado(d));
+      table_(d);
+      barplot_cmt(d);
+
+
+    })
+
+
+    $('#botonera_ext,#botonera_exp').on('change',function() {
+      var id = $(this).attr('id').split('_')[1];
+      var conf = config.filter(function(d) { return d.id == id })
+      table_(conf[0])
+      barplot_cmt(conf[0])
+    })
+  } else {
+    var division = '<div style="width:100%;height:100%;display:table;">' +
+                      '<div id="x_asig" style="width:100%;height:100%;"></div>' +
+                   '</div>';
+    var config = {
+      'titulo': 'Compromiso mínimo',//_.uniq(data.map((d) => d.nombre))[0].split(',')[0].split(' - ')[0],
+      'id':'x_asig',
+      'color':'purple',
+      'data':JSON.stringify(data)
+    }
+    $('#visor').html(division)
+    $('#visor #x_asig').html(apartado(config,true))
+    table_(config,true)
+    barplot_cmt(config,true)
+
+    $('#botonera_x_asig').on('change',function() {
+      var id = $(this).attr('id')//.split('_')[1];
+      console.log(id)
+      //var conf = config.filter(function(d) { return d.id == id })
+      table_(config,true)
+      barplot_cmt(config,true)
+    })
+  }
+
+};
+
+
+function RowPlot(data) {
+  this.data = data;
+
+  this.table = () => {
+
+      this.data = this.data.map((d) => {
+        var anio = d.anio;
+
+        var keys = Object.keys(d).map((k) => {
+            var obj = {}
+            obj['anio'] = anio;
+            obj['concepto'] = k;
+            obj['val'] = d[k];
+            return obj;
+        }).filter((f) => {
+            return typeof(f.val) != 'string';
+        });
+
+        return keys;
+      });
+
+      this.data = _.flatten(this.data);
+
+      this.data = _(this.data).chain()
+                    .sortBy(function(d) { return d.concepto; })
+                    .sortBy(function(d) { return d.anio; })
+                    .value();
+
+      this.data.forEach(function(d) {
+        if(d.concepto.match(/procesado_km2/)) d.concepto = '_procesado_km2';
+      })
+
+      var conceptos = _.uniq(this.data.map((d) => d.concepto.split('_real')[0] ));
+
+      this.data = conceptos
+                    .map((d) => {
+                        return this.data.filter((f) => {
+                            var str = f.concepto;
+                            var patt = new RegExp('^' + d);
+                            return patt.test(str);
+                        });
+                    });
+
+        this.data = this.data.filter((d) => d.some((e) => e.val));
+
+        var conceptos_dict = {
+          'electromag':'Electromagnéticos',
+          'estudios':'Estudios',
+          'inv_mmpesos':'Inversión (MM de pesos)',
+          'pozos':'Pozos',
+          'procesado_km':'Longuitud procesada (km)',
+          '_procesado_km2':'Área procesada (km<sup>2</sup>)',
+          'sis_2d':'Sísmica 2D',
+          'sis_3d':'Sísmica 3D'
+        }
+
+        var tab = '<div id="visor_table" style="width:100%;height:100%;">' +
+                    '<div id="visor_header" style="width:100%;height:15%;border-top:1px solid black;border-bottom:1px solid black;display:table;"></div>' +
+                    '<div id="visor_content" style="width:100%;height:85%;display:table;"></div>' +
+                  '</div>';
+
+        $('#visor').html(tab);
+
+        d3.select('#visor_header')
+          .selectAll('div')
+          .data(['Concepto','Compromiso Mínimo de Trabajo','Avance a la Fecha','Avance (%)'])
+          .enter()
+          .append('div')
+          .style({
+            'width':'25%',
+            'height':'100%',
+            'display':'table-cell',
+            'vertical-align':'middle',
+            'text-align':'center',
+            'font-weight':'600'
+          })
+          .html(function(d) {return d});
+
+        var visor = d3.select('#visor_content')
+
+
+        visor.selectAll('div')
+             .data(this.data)
+             .enter()
+             .append('div')
+          .style({
+            'width':'100%',
+            'height': () => 100 / this.data.length + '%',
+            'display':'table-row'
+          })
+          .each(function(d,j) {
+
+                let concepto = d[0].concepto;
+                //var hh = 100 /  this.data.length + '%';
+                var cells_style = [
+                    ['display','table-cell'],
+                    ['width','25%'],
+                    //['height',],
+                    ['border-bottom','1px solid silver'],
+                    ['vertical-align','middle'],
+                    ['font-size','11px']
+                ];
+
+
+                cells_style = cells_style.map(function(d) { return d.join(':'); }).join(';');
+
+                var cells = ['concepto','cmt','avance','avance_pct'].map((d,i) => {
+                        var cont = i == 0 ? conceptos_dict[concepto] : '';
+                        return '<div id="' + d + '_' + j + '" style="' + cells_style + '">' + cont + '</div>';
+                }).join('');
+
+                $(this).html(cells);
+
+
+                var original = d.filter(function(d) {
+                  var patt = new RegExp('real')
+                  return !patt.test(d.concepto);
+                });
+
+                var real = d.filter(function(d) {
+                  var patt = new RegExp('real')
+                  return patt.test(d.concepto);
+                });
+
+
+                var cmtPlot = new BarChart({
+                  title:'',
+                  subtitle:'',
+                  yAxis: null,
+                  where:'cmt_' + j,
+                  chart: {
+                    type:'column',
+                    margin:[5,5,5,5]
+                  },
+                  noRange:1,
+                  hideLegend:true,
+                  xAxis: {
+                    categories:original.map((d) => d.anio),
+                    labels:{
+                      enabled:false
+                    },
+                    tickWidth:0
+                  }
+                });
+
+                var avancePlot = new BarChart({
+                  title:'',
+                  subtitle:'',
+                  where:'avance_' + j,
+                  yMax: d3.max(original.map((d) => d.val)),
+                  chart: {
+                    type:'column',
+                    margin:[5,5,5,5]
+                  },
+                  noRange:1,
+                  hideLegend:true,
+                  xAxis: {
+                    categories:real.map((d) => d.anio),
+                    labels:{
+                      enabled:false
+                    },
+                    tickWidth:0
+                  }
+                });
+
+                var avanceMeter = new ProgressMeter({
+                  where:'avance_pct_' + j,
+                  data: +(( d3.sum(real.map((d) => d.val)) / d3.sum(original.map((d) => d.val)) ) * 100).toFixed(1),
+                  margin:[0,0,0,0]
+                })
+
+                cmtPlot.plot([{ data:original.map((d) => d.val) }],(data) => data);
+                avancePlot.plot([{ data:real.map((d) => d.val), color:'purple' }],(data) => data);
+                avanceMeter.plot();
+
+          });
+
+  }
+
+
+};
+
+
+var ProgressMeter = function(config) {
+        this.plot = function() {
+          Highcharts.chart(config.where,
+           {
+            credits:false,
+            exporting: {
+                 enabled:false
+            },
+            chart: {
+                type: 'solidgauge',
+                margin:config.margin
+            },
+            title: null,
+            pane: {
+                center: ['50%', '85%'],
+                size: '140%',
+                startAngle: -90,
+                endAngle: 90,
+                background: {
+                    backgroundColor: (Highcharts.theme && Highcharts.theme.background2) || '#EEE',
+                    innerRadius: '60%',
+                    outerRadius: '100%',
+                    shape: 'arc'
+                }
+            },
+            tooltip: {
+                enabled: false
+            },
+            // the value axis
+            yAxis: {
+                stops: [
+                    [0.1, '#55BF3B'], // green
+                    [0.5, '#DDDF0D'], // yellow
+                    [0.9, '#DF5353'] // red
+                ],
+                lineWidth: 0,
+                minorTickInterval: null,
+                tickAmount: 0,
+                title: {
+                    y: 110
+                },
+                labels: {
+                    enabled:false,
+                    y: null
+                }
+            },
+            plotOptions: {
+                solidgauge: {
+                    dataLabels: {
+                        y: 5,
+                        borderWidth: 0,
+                        useHTML: true
+                    }
+                }
+            },
+            yAxis: {
+                min: 0,
+                max: 100,
+            },
+            credits: {
+                enabled: false
+            },
+            series: [{
+                name: 'Avance',
+                data: [config.data],
+                dataLabels: {
+                    format: '<div style="text-align:center"><span style="font-size:1.9em;color:' +
+                        ((Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black') + '">{y}%</span><br/>'
+                },
+                tooltip: {
+                    valueSuffix: ' %'
+                }
+            }]
+      })
+    }
+};
+
 
 function dashboard(data) {
    var str =
@@ -534,6 +1413,362 @@ function dashboard(data) {
 
    $('#visor').html(str);
 }
+
+
+
+function seguimiento(data) {
+
+  data.forEach(function(d,i){
+      data[i].valor = +data[i].valor.toFixed(1)
+      if(d.concepto == 'QgHC') {
+          data[i].concepto = 'Qg'
+      }
+
+  })
+
+
+   var anios = _.sortBy(_.uniq(data.map(function(d) { return String(d.anio); })));
+   var tipo_obs = _.uniq(data.map(function(d) { return d.tipo_observacion; }));
+   var conceptos = _.uniq(data.map(function(d) { return d.concepto }));
+//console.log(conceptos,data,tipo_obs)
+
+
+   // Esto filtra los conceptos que no tienen valores igual a cero.
+   conceptos = conceptos.map((d) => data.filter((f) => f.concepto == d).some((e) => e.valor))
+                                        .map((m,i) => m ? conceptos[i] : m)
+                                        .filter((f) => f)
+
+   var conceptos_traduccion = {
+     Qo: 'Producción de aceite',
+     Qg: 'Producción de gas',
+     Perf_Des: 'Perforaciones - Desarrollo',
+     Perf_Iny: 'Perforaciones - Inyecciones',
+     Term_Des: 'Terminaciones - Desarrollo',
+     Term_Iny: 'Terminaciones - Inyecciones',
+     RMA: 'Reparaciones Mayores',
+     RME: 'Reparaciones Menores',
+     Tap: 'Taponamientos',
+     Inv: 'Inversión',
+     G_Op: 'Gastos de Operación',
+     Np: 'Producción acumulada de aceite',
+     Gp: 'Producción acumulada de gas',
+     QgHC: 'Producción de gas hidrocarburo'
+   };
+
+   var c_ = conceptos.map(function(d) { return '<option style="font-size:12px" id='+d+'>' + conceptos_traduccion[d] + '</option>'; });
+
+   var str =
+   "<div style='width:100%;height:100%;'>"+
+     "<div style='width:100%;height:30px;display:table;text-align:center;'>" +
+        "<span style='font-weight:600;'>Ver seguimiento en:&ensp;</span> <select id='botonera'>"
+            + c_ +"</select>&ensp;<input id='acumulado' type='checkbox'></input>&nbsp;Acumulado</div>" +
+     "<div style='width:100%; height:calc(100% - 30px)'>" +
+        "<div id='one' style='width:100%;height:50%;'></div>" +
+        "<div id='two' style='width:100%;'></div>" +
+     "</div>" +
+   "</div>"
+
+   $('#visor').html(str);
+
+
+   $('#botonera').on('change',function() {
+         ff = processedData();
+
+         chart.series[0].setName($('#botonera>option:selected').text() + ' - Plan');
+         chart.series[1].setName($('#botonera>option:selected').text() + ' - Real');
+
+         if($('#acumulado:checked')[0]) {
+             var ff_acum = JSON.parse(JSON.stringify(ff));
+
+             ff_acum.map((f) => {
+               f.forEach((d,i) => {
+                   if(i > 0) {
+                     f[i].valor = f[i-1].valor + f[i].valor
+                   }
+               });
+               return f;
+             });
+
+             var max = d3.max( ff_acum.map((d) => d3.max(d.map((d) => d.valor))) );
+             chart.yAxis[0].setExtremes(0,max);
+
+             chart.series[0].setData(ff_acum[0].map((d) => d.valor ));
+             chart.series[1].setData(ff_acum[1].map((d) => d.valor ));
+             chart.series[0].update({type:'area'});
+             chart.series[1].update({type:'area'});
+
+             updateTable(ff_acum)
+         } else {
+             chart.series[0].setData(ff[0].map(function(d) { return d.valor; }).filter((f) => f))
+             chart.series[1].setData(ff[1].map(function(d) { return d.valor; }))
+
+             var max = d3.max( ff.map((d) => d3.max(d.map((d) => d.valor))) );
+             chart.yAxis[0].setExtremes(0,max);
+             //chart.yAxis[1].setExtremes(0,yAxis_max);
+             chart.series[0].update({type:'column'});
+             chart.series[1].update({type:'column'});
+
+             updateTable(ff)
+         };
+
+   });
+
+   function updateTable(ff) {
+           var filas = ff[0].map(function(d,i) {
+             var str = '<tr width="100%;">'+
+                          '<td style="width:33.33%;">'+ d.anio +'</td>'+
+                          '<td style="width:33.33%;">'+ (+d.valor.toFixed(1)).toLocaleString('es-MX') +'</td>'+
+                          '<td style="width:33.33%;" id=a_'+ d.anio +'>'+ ' - ' +'</td>'
+                       '</tr>'
+
+             return str;
+           }).join('');
+
+           var table_container = '<div style="height:30px;width:100%;">'+
+                                  '<table style="width:calc(100% - 8px);height:100%;table-layout:fixed;">'+
+                                    '<tbody style="width:100%;">'+
+                                      '<tr style="width:100%;font-weight:600;text-align:center;border-bottom:1px solid gray;border-top:1px solid gray;">' +
+                                        '<td>AÑO</td>' +
+                                        '<td>PLAN</td>' +
+                                        '<td>REAL</td>' +
+                                      '</tr>' +
+                                    '</tbody>' +
+                                  '</table>';
+                                 '</div>';
+
+           var tabla = //table_container +
+            '<div id="scroll_table_" style="width:100%;height:calc(' + $('#one').css('height') + ' - 30px);overflow:auto;border-bottom:1px solid gray;">' +
+              '<table style="width:100%;,table-layout:fixed;">' +
+              /*'<thead>' +
+               '<tr style="font-weight:600;text-align:center;border-bottom:1px solid gray;border-top:1px solid gray;">' +
+                  '<td>AÑO</td>'+
+                  '<td>PLAN</td>'+
+                  '<td>REAL</td>' +
+               '</tr>' +
+              '</thead>' +
+              */
+                '<tbody id="filas_" style="text-align:center;">' +
+                filas +
+                '</tbody>'
+              '</table>'+
+            '</div>';
+
+           var div_table = '<div style="width:100%;height:100%;">'+
+                              table_container +
+                              tabla +
+                           '</div>'
+
+           $('#two').html(div_table);
+
+           ff[1].forEach(function(d) {
+             $('#a_' + d.anio).text((+d.valor.toFixed(1)).toLocaleString('es-MX'))
+           });
+  };
+
+
+   function processedData() {
+           var op_id = $('#botonera>option:selected').attr('id');
+
+           var ff = tipo_obs.map(function(d) {
+               return data.filter(function(f) {
+                 return f.tipo_observacion == d && f.concepto == op_id;
+               })
+           });
+
+           ff[0] = _.sortBy(ff[0], (d) => d.anio).filter((d) => d.valor)
+
+           return ff;
+    };
+
+    var ff = processedData()
+
+    updateTable(ff)
+
+   $('#acumulado').on('change',function() {
+           if(this.checked) {
+                   var ff_acum = JSON.parse(JSON.stringify(ff));
+
+                   ff_acum.map((f) => {
+                       f.forEach((d,i) => {
+                           if(i > 0) {
+                             f[i].valor = f[i-1].valor + f[i].valor
+                           }
+                       });
+                       return f;
+                   });
+
+                   console.log(ff_acum)
+
+                   var max = d3.max( ff_acum.map((d) => d3.max(d.map((d) => d.valor))) );
+                   chart.yAxis[0].setExtremes(0,max);
+
+                   chart.series[0].setData(ff_acum[0].map((d) => d.valor ));
+                   chart.series[1].setData(ff_acum[1].map((d) => d.valor ));
+                   chart.series[0].update({type:'area'});
+                   chart.series[1].update({type:'area'});
+
+                   updateTable(ff_acum)
+
+           } else {
+
+                   var max = d3.max( ff.map((d) => d3.max(d.map((d) => d.valor))) );
+                   chart.yAxis[0].setExtremes(0,max);
+
+                   chart.series[0].setData(ff[0].map((d) => d.valor ));
+                   chart.series[1].setData(ff[1].map((d) => d.valor ));
+                   chart.series[0].update({type:'column'});
+                   chart.series[1].update({type:'column'});
+
+                   updateTable(ff)
+           }
+
+   });
+
+
+   var chart = Highcharts.chart('one', {
+                    chart: {
+                        type: 'column'
+                    },
+                    credits: { enabled:false },
+                    title: {
+                        text: ''
+                    },
+                    subtitle:{
+                      text:'Actividad Planeada vs Real'
+                    },
+                    xAxis: {
+                        categories: anios//['1998','1999','2000']
+                    },
+                    yAxis: {
+                        tickInterval:2,
+                        min: 0,
+                        title: {
+                            text: ''
+                        },
+                        max: d3.max( ff.map((d) => d3.max(d.map((d) => d.valor))) ) //d3.max(ff[0].map(function(d) { return d.valor; })) > d3.max(ff[1].map(function(d) { return d.valor; })) ?
+                          //d3.max(ff[0].map(function(d) { return d.valor; })) : d3.max(ff[1].map(function(d) { return d.valor; }))
+                    },
+                    legend: {
+                        shadow: false
+                    },
+                    tooltip: {
+                        shared: true
+                    },
+                    plotOptions: {
+                        series: {
+                          marker: {
+                            enabled:false
+                          }
+                        },
+                        column: {
+                            grouping: false,
+                            shadow: false,
+                            borderWidth: 0
+                        }
+                    },
+                    series: [{
+                        name: $('#botonera>option:selected').text() + ' - Plan',
+                        color: 'rgba(13,180,190,0.6)',
+                        data: ff[0].map(function(d) { return d.valor; }),
+                        pointPadding: 0.3,
+                        pointPlacement: -0.2
+                    }, {
+                        name: $('#botonera>option:selected').text() + ' - Real',
+                        color: 'rgba(126,86,134,.9)',
+                        data: ff[1].map(function(d) { return d.valor; }),
+                        pointPadding: 0.4,
+                        pointPlacement: -0.2
+                    }]
+    });
+}
+
+function aprovechamiento(data) {
+    console.log(data.aprovechamiento)
+    var obj_data = {}
+
+    obj_data['produccion'] = data.produccion.map((d) => {
+       var obj = [d.fecha,+d.gas_mmpcd.toFixed(1)];
+       return obj;
+    });
+
+    obj_data['aprovechamiento'] = data.aprovechamiento.map((d) => {
+      var obj = [d.fecha,+d.valor.toFixed(1)];
+      return obj;
+    });
+
+    obj_data['produccion'] = obj_data['produccion'].filter((d) => {
+      return obj_data.aprovechamiento.map((e) => e[0]).some((s) => s == d[0])
+    });
+
+    Highcharts.chart('visor', {
+        credits:{ enabled:false },
+        chart: {
+            zoomType: 'x'
+        },
+        title: {
+            text: 'Aprovechamiento de gas'
+        },
+        subtitle: {
+            text: null//document.ontouchstart === undefined ?
+                    //'Click and drag in the plot area to zoom in' : 'Pinch the chart to zoom in'
+        },
+        xAxis: {
+            type: 'datetime'
+        },
+        yAxis: {
+            title: {
+                text: 'MMPCD'
+            }
+        },
+        legend: {
+            enabled: true
+        },
+        tooltip: {
+          //useHTML:true,
+          shared:true,
+          split:false,
+       },
+        series: [{
+            type: 'area',
+            name: 'Gas producido (MMPCD)',
+            data: _.sortBy(obj_data.produccion,function(d) { return d[0] }),
+            lineWidth: 1,
+            //lineColor: 'rgba(46, 112, 138, 1)',
+            color:'rgba(13, 180, 190, 1)',
+            marker: {
+              enabled:false
+            },
+            fillColor: {
+                linearGradient: {x1: 0, y1: 0, x2: 0, y2: 1},
+                stops: [
+                    [0, 'rgba(13, 180, 190, 1)'],
+                    [1, 'rgba(13, 180, 190, .25)']
+                ]
+            },
+        },
+        {
+            type: 'area',
+            name: 'Gas no aprovechado (MMPCD)',
+            data: _.sortBy(obj_data.aprovechamiento,function(d) { return d[0] }),
+            lineWidth: 2,
+            lineColor: 'white',
+            color:'rgba(46, 112, 138, 1)',
+            marker: {
+              enabled:false
+            },
+            fillColor: {
+                linearGradient: {x1: 0, y1: 0, x2: 0, y2: 1},
+                stops: [
+                    [0, 'rgba(46, 112, 138, 1)'],
+                    [1, 'rgba(46, 112, 138, .7)']
+                ]
+            }
+        }
+
+      ]
+});
+
+};
 
 
 function enConstruccion() {

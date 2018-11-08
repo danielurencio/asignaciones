@@ -141,7 +141,7 @@ function leafletMap(shapes) {
 				return div;
 			};
 
-			datos_grales_.addTo(mymap)
+			//datos_grales_.addTo(mymap)
 
 
 			return [asignaciones,mymap];
