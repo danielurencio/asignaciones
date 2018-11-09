@@ -68,13 +68,20 @@ class Service():
                        ") " + self.conditionalQuery() +\
                        "GROUP BY ANIO,CONCEPTO " +\
                        "ORDER BY ANIO,CONCEPTO",
-            'seguimiento': "SELECT ANIO,TIPO_OBSERVACION,CONCEPTO,SUM(VALOR) AS VALOR FROM ( " +\
+            'seguimiento_ext': "SELECT ANIO,TIPO_OBSERVACION,CONCEPTO,SUM(VALOR) AS VALOR FROM ( " +\
                                 "SELECT A.*, B.CUENCA, B.UBICACION, B.TIPO FROM ASIGNACIONES_SEGUIMIENTO_EXT A " +\
                                 "LEFT JOIN DATOS_ASIGNACIONES_GRALES B " +\
                                 "ON A.ID = B.ID " +\
                             ") " + self.conditionalQuery() +\
                             "GROUP BY ANIO,TIPO_OBSERVACION,CONCEPTO " +\
                             "ORDER BY ANIO,TIPO_OBSERVACION,CONCEPTO",
+            'seguimiento_exp': "SELECT PERIODO,TIPO_OBSERVACION,CONCEPTO,SUM(VALOR) AS VALOR FROM ( " +\
+                                "SELECT A.*, B.CUENCA, B.UBICACION, B.TIPO FROM ASIGNACIONES_SEGUIMIENTO_EXP A " +\
+                                "LEFT JOIN DATOS_ASIGNACIONES_GRALES B " +\
+                                "ON A.ID = B.ID " +\
+                            ") " + self.conditionalQuery() +\
+                            "GROUP BY PERIODO,TIPO_OBSERVACION,CONCEPTO " +\
+                            "ORDER BY PERIODO,TIPO_OBSERVACION,CONCEPTO",
             'aprovechamiento': "SELECT FECHA,VALOR FROM ( " +\
                                    "SELECT FECHA,CONCEPTO,SUM(VALOR) AS VALOR FROM ( " +\
                                         "SELECT A.*, B.CUENCA,B.TIPO,B.UBICACION FROM ASIGNACIONES_APROVECHAMIENTO A " +\
@@ -235,49 +242,65 @@ class Service():
 
         return df
 
-    # Pendiente: Habilitar condicional para cuando se buscan cifras agregadas.
+    
     def cmt(self):
+
+        conn_str = 'oracle://cmde_raw:raw17@172.16.120.3:1521/cnih'
 
         if(self.ID != 'Todas'):
             tipo = 'A' if len(self.ID.split('-')[0]) == 1 else 'AE'
 
             if(tipo == 'AE'):
                 query = "SELECT ANIO,CONCEPTO,VALOR FROM ASIGNACIONES_CMT_EXPLORACION WHERE ID='" + self.ID + "'"
-                conn_str = 'oracle://cmde_raw:raw17@172.16.120.3:1521/' + self.bd_service
                 df = self.connectionResult(query,conn_str)
 
                 for i in ['nombre','estatus']:
                     df[i] = df[i].str.decode('latin1').str.encode('utf-8')
 
-                df = df.to_json(orient='records')
 
             elif(tipo == 'A'):
                 query = "SELECT ANIO,CONCEPTO,VALORES FROM ASIGNACIONES_CMT_EXTRACCION WHERE ID='" + self.ID + "'"
-                conn_str = 'oracle://cmde_raw:raw17@172.16.120.3:1521/cnih'
                 df = self.connectionResult(query,conn_str)
-                df = df.to_json(orient='records')
+
+            df = df.to_json(orient='records')
 
         else:
             query_exp = self.queries['cmt_exp']
             query_ext = self.queries['cmt_ext']
-            conn_str = 'oracle://cmde_raw:raw17@172.16.120.3:1521/cnih'
+
             df_exp = self.connectionResult(query_exp,conn_str).to_json(orient='records')
             df_ext = self.connectionResult(query_ext,conn_str).to_json(orient='records')
-            #df = [df_exp,df_ext]
+
             df = json.dumps({ "exp":df_exp, "ext":df_ext })
 
         return df
 
 
     def seguimiento(self):
-        if(self.ID != 'Todas'):
-            query = "SELECT * FROM ASIGNACIONES_SEGUIMIENTO_EXT WHERE ID='" + self.ID + "'"
-        else:
-            query = self.queries['seguimiento']
-
         conn_str = "oracle://cmde_raw:raw17@172.16.120.3:1521/cnih"
-        df = self.connectionResult(query,conn_str)
-        df = df.to_json(orient='records')
+
+        if(self.ID != 'Todas'):
+            tipo = 'A' if len(self.ID.split('-')[0]) == 1 else 'AE'
+
+            if(tipo.ID == 'AE'):
+                query = "SELECT ANIO,CONCEPTO,VALOR FROM ASIGNACIONES_SEGUIMIENTO_EXP WHERE ID='" + self.ID + "'"
+                df = self.connectionResult(query,conn_str)
+
+            elif(tipo == 'A'):
+                query = "SELECT ANIO,CONCEPTO,VALOR FROM ASIGNACIONES_SEGUIMIENTO_EXT WHERE ID='" + self.ID + "'"
+                df = self.connectionResult(query,conn_str)
+            
+            df = df.to_json(orient='records')
+
+        else:
+            query_exp = self.queries['seguimiento_exp']
+            query_ext = self.queries['seguimiento_ext']
+
+            df_exp = self.connectionResult(query_exp,conn_str).to_json(orient='records')
+            df_ext = self.connectionResult(query_ext,conn_str).to_json(orient='records')
+
+            df = json.dumps({ 'exp':df_exp, 'ext':df_ext })
+
         return df
 
 
@@ -310,10 +333,6 @@ class Service():
             self.response = self.catalogo_general()
         else:
             self.response = self.assembler()
-            #if self.ID != 'Todas':
-            #    self.response = self.assembler()
-            #else:
-            #    self.response = self.conditionalQuery()#self.reservas()
 
         self.printer()
         sys.stdout.write(json.dumps(self.response))

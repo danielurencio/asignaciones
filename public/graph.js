@@ -1,5 +1,6 @@
 
 function DatosGrales(data)  {
+
   var grales = data.grales;//JSON.parse(JSON.stringify(data.grales));
   var params = ['cuenca','ubicacion','tipo','asignacion'].map((d) => [d.toUpperCase(),$('.' + d + '>option:selected').text()])
 
@@ -117,7 +118,7 @@ function DatosGrales(data)  {
   d3.select('div#row_a>div#col_2')
   .html(function(d) {
     var grales_ = ASIG_ != 'Todas' ? data.grales.filter((d) => d.NOMBRE == ASIG_) : data.grales;
-    var seg = _.sortBy(data.ajaxData.seguimiento,function(d) { return d.anio; }).filter((f) => f.tipo_observacion == 'Real');
+    var seg = _.sortBy(data.ajaxData.seguimiento.ext,function(d) { return d.anio; }).filter((f) => f.tipo_observacion == 'Real');
     var gop = d3.sum(seg.filter((f) => f.concepto == 'G_Op').map((d) => d.valor))/1000;
 
 
@@ -147,8 +148,9 @@ function DatosGrales(data)  {
 
   d3.select('div#row_a>div#col_3')
   .html(function(d) {
+
     var grales_ = ASIG_ != 'Todas' ? data.grales.filter((d) => d.NOMBRE == ASIG_) : data.grales;
-    var seg = _.sortBy(data.ajaxData.seguimiento,function(d) { return d.anio; }).filter((f) => f.tipo_observacion == 'Real');
+    var seg = _.sortBy(data.ajaxData.seguimiento.ext,function(d) { return d.anio; }).filter((f) => f.tipo_observacion == 'Real');
     //seg = ASIG_ != 'Todas' ? seg.filter((f) => new RegExp(ASIG_,f)) : '';
 
     var inv = d3.sum(seg.filter((f) => f.concepto == 'Inv').map((d) => d.valor))/1000;
@@ -1185,7 +1187,7 @@ function CMT(data) {
                 'color': !tipoDisponible.length ? 'purple' : config_ops.color[tipoDisponible[0]],
                 'data':JSON.stringify(data)
               };
-              
+
               $('#visor').html(division)
               $('#visor #x_asig').html(apartado(config,true))
               table_(config,true)
@@ -1480,24 +1482,48 @@ function dashboard(data) {
 
 
 function seguimiento(data) {
+  var agregados = Object.keys(data).every((d) => !+d) //? true : false;
+  var tipoDisponible = agregados ? Object.keys(data).map((d) => data[d].length ? d : null).filter((f) => f) : [];
 
-  data.forEach(function(d,i){
-      data[i].valor = +data[i].valor.toFixed(1)
+  console.log(data)
+
+  var visor_config = {
+    'name':'seg',
+    'title':'Seguimiento',
+    'options': [
+        { 'value':'ext', 'text':' Extracción' },
+        { 'value':'exp', 'text':' Exploración' }
+      ],
+    'height':80
+  };
+
+  var visor = frameVisor_withRadios(visor_config);
+
+  $('#visor').html(visor);
+
+  $('input[type=radio]').each(function(i,d) {
+      $(this).parent().css('padding',0)
+      if(i == 0) $(this).parent().css('padding-right','15px')
+  })
+
+  data.ext.forEach(function(d,i){
+      data.ext[i].valor = +data.ext[i].valor.toFixed(1);
+
       if(d.concepto == 'QgHC') {
-          data[i].concepto = 'Qg'
+          data.ext[i].concepto = 'Qg'
       }
 
   })
 
 
-   var anios = _.sortBy(_.uniq(data.map(function(d) { return String(d.anio); })));
-   var tipo_obs = _.uniq(data.map(function(d) { return d.tipo_observacion; }));
-   var conceptos = _.uniq(data.map(function(d) { return d.concepto }));
+   var anios = _.sortBy(_.uniq(data.ext.map(function(d) { return String(d.anio); })));
+   var tipo_obs = _.uniq(data.ext.map(function(d) { return d.tipo_observacion; }));
+   var conceptos = _.uniq(data.ext.map(function(d) { return d.concepto }));
 //console.log(conceptos,data,tipo_obs)
 
 
    // Esto filtra los conceptos que no tienen valores igual a cero.
-   conceptos = conceptos.map((d) => data.filter((f) => f.concepto == d).some((e) => e.valor))
+   conceptos = conceptos.map((d) => data.ext.filter((f) => f.concepto == d).some((e) => e.valor))
                                         .map((m,i) => m ? conceptos[i] : m)
                                         .filter((f) => f)
 
@@ -1531,7 +1557,7 @@ function seguimiento(data) {
      "</div>" +
    "</div>"
 
-   $('#visor').html(str);
+   $('#visor_chart').html(str);
 
 
    $('#botonera').on('change',function() {
@@ -1633,7 +1659,7 @@ function seguimiento(data) {
            var op_id = $('#botonera>option:selected').attr('id');
 
            var ff = tipo_obs.map(function(d) {
-               return data.filter(function(f) {
+               return data.ext.filter(function(f) {
                  return f.tipo_observacion == d && f.concepto == op_id;
                })
            });
@@ -1743,6 +1769,7 @@ function seguimiento(data) {
                         pointPlacement: -0.2
                     }]
     });
+
 }
 
 function aprovechamiento(data) {

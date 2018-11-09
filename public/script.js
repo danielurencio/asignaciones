@@ -276,6 +276,11 @@ var HOSTNAME = 'http://172.16.24.57:5000/';
 
                     mapNdataObj['ajaxData'] = ajaxData;
 
+/*
+                    Object.keys(mapNdataObj.ajaxData.seguimiento).forEach((d) => {
+                      mapNdataObj.ajaxData.seguimiento[d] = JSON.parse(mapNdata.ajaxData.seguimiento[d])
+                    });
+*/
                     switcher($('.selectedButton').attr('id'),mapNdataObj);
 
                   }
@@ -359,6 +364,7 @@ var HOSTNAME = 'http://172.16.24.57:5000/';
                           }
 
                           mapNdataObj['ajaxData'] = ajaxData;
+
                           switcher($('.selectedButton').attr('id'),mapNdataObj);
 
                         }
@@ -724,6 +730,11 @@ function openInNewTab(url) {
 
 
 function switcher(id,mapNdataObj) {
+          Object.keys(mapNdataObj.ajaxData.seguimiento).forEach((d) => {
+              if(typeof(mapNdataObj.ajaxData.seguimiento[d]) == 'string') {
+                  mapNdataObj.ajaxData.seguimiento[d] = JSON.parse(mapNdataObj.ajaxData.seguimiento[d])
+              }
+          });
 
     		 	switch (true) {
               case id == 'Datos generales':
