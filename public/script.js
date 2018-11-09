@@ -240,8 +240,8 @@ var HOSTNAME = 'http://172.16.24.57:5000/';
           };
 
           function AjaxCall(data,mymap,asignaciones) {
-            datosAsignacion(data,null,null,mymap,asignaciones);
 
+            datosAsignacion(data,null,null,mymap,asignaciones);
             $('#visor').html('');
 
             var ID, TIPO, UBICACION, CUENCA;
@@ -253,6 +253,7 @@ var HOSTNAME = 'http://172.16.24.57:5000/';
             $.ajax({
                   type:'GET',
                   dataType:'JSON',
+                  //type:'json',
                   url:HOSTNAME + 'grales_asig.py',
                   data:{
                     ID:ID,
@@ -261,14 +262,16 @@ var HOSTNAME = 'http://172.16.24.57:5000/';
                     CUENCA:CUENCA
                   },
                   success:function(ajaxData) {
+
                     var noms = [CUENCA,TIPO,UBICACION];
 
                     for(var k in ajaxData) {
-                      ajaxData[k] = JSON.parse(ajaxData[k]).map(function(d) {
+
+                      ajaxData[k] = JSON.parse(ajaxData[k])/*.map(function(d) {
                             var name = noms.filter((d) => d.slice(0,3) != 'Tod').join(' - ')// ? 'Todas' : noms.join(' - ')
                             d['nombre'] = name ? name : 'Nacional'
                             return d;
-                      })
+                      })*/
                     }
 
                     mapNdataObj['ajaxData'] = ajaxData;
@@ -321,6 +324,7 @@ var HOSTNAME = 'http://172.16.24.57:5000/';
                     },'NOMBRE');
                     $('.asignacion').trigger('change');
                 } else {
+                  console.log(11)
                     AjaxCall(data,mymap,asignaciones);
                     cambio(data,'asignacion',function(d) {
                         return localCond(d,'cuenca') && localCond(d,'ubicacion') && localCond(d,'tipo');
@@ -677,7 +681,7 @@ function cambio(data,str,fn,extraParam) {
             CUENCA:$('.cuenca>option:selected').text()
           },
           success: function(data) {
-              //console.log(JSON.parse(data)
+
                for(var k in data) { data[k] = JSON.parse(data[k]); }
                mapNdataObj['ajaxData'] = data;
     	         $('#botones_>div').filter(function(i,d) { return i === 0 })
@@ -750,30 +754,24 @@ function switcher(id,mapNdataObj) {
                     var reservas = mapNdataObj.ajaxData.reservas;
 
                     if(reservas.length > 0) {
-                          var panel_height = 80;
-                          var visor = "<div style='width:100%;height:100%;'>" +
-                                        "<div style='width:100%;height:"+ panel_height +"px;' id='visor_panel'>"+
-                                          "<div style='text-align:center;'>" +
-                                            "<div style='display:inline-block;'>" +
-                                              "<div style='font-weight:800;font-size:2em;'>Reservas</div>" +
-                                              "<div style='display:table;'>" +
-                                                "<div style='display:table-cell;padding-right:1%;'>"+
-                                                  "<input type='radio' name='reservas' value='rr_pce_mmbpce' checked> PCE</input>" +
-                                                "</div>" +
-                                                "<div style='display:table-cell;padding-right:1%;'>"+
-                                                  "<input type='radio' name='reservas' value='rr_aceite_mmb'> Aceite</input>" +
-                                                "</div>" +
-                                                "<div style='display:table-cell;padding-left:1%;'>"+
-                                                  "<input type='radio' name='reservas' value='rr_gas_natural_mmmpc'> Gas</input>" +
-                                                "</div>" +
-                                              "</div>" +
-                                            "</div>" +
-                                          "</div>" +
-                                        "</div>" +
-                                        "<div style='width:100%;height:calc(100% - "+ panel_height +"px);' id='visor_chart'></div>" +
-                                      "</div>";
+
+                          // ----------------- AGREGAR FRAME QUE INCLUYE BOTONES TIPO RADIO --------------------
+                          var visor_config = {
+                            'name':'reservas',
+                            'title':'Reservas',
+                            'options': [
+                                { 'value':'rr_pce_mmbpce', 'text':' PCE' },
+                                { 'value':'rr_aceite_mmb', 'text':' Aceite' },
+                                { 'value':'rr_gas_natural_mmmpc', 'text':' Gas' }
+                              ],
+                            'height':80
+                          };
+
+                          var visor = frameVisor_withRadios(visor_config)
 
                           $('#visor').html(visor);
+
+                          // ----------------- AGREGAR FRAME QUE INCLUYE BOTONES TIPO RADIO --------------------
 
                           var plot_config = {
                             title:'',
