@@ -274,6 +274,10 @@ var HOSTNAME = 'http://172.16.24.57:5000/';
                       })*/
                     }
 
+                    Object.keys(ajaxData.seguimiento).forEach((d) => {
+                      ajaxData.seguimiento[d] = JSON.parse(ajaxData.seguimiento[d])
+                    });
+
                     mapNdataObj['ajaxData'] = ajaxData;
 
 /*
@@ -689,7 +693,13 @@ function cambio(data,str,fn,extraParam) {
           success: function(data) {
 
                for(var k in data) { data[k] = JSON.parse(data[k]); }
+
+               Object.keys(data.seguimiento).forEach((d) => {
+                 data.seguimiento[d] = JSON.parse(data.seguimiento[d])
+               });
+
                mapNdataObj['ajaxData'] = data;
+
     	         $('#botones_>div').filter(function(i,d) { return i === 0 })
                         .click();
           }
@@ -730,12 +740,13 @@ function openInNewTab(url) {
 
 
 function switcher(id,mapNdataObj) {
+  /*
           Object.keys(mapNdataObj.ajaxData.seguimiento).forEach((d) => {
               if(typeof(mapNdataObj.ajaxData.seguimiento[d]) == 'string') {
                   mapNdataObj.ajaxData.seguimiento[d] = JSON.parse(mapNdataObj.ajaxData.seguimiento[d])
               }
           });
-
+*/
     		 	switch (true) {
               case id == 'Datos generales':
                     grapher(function() {
