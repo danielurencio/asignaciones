@@ -1,5 +1,6 @@
 
 function DatosGrales(data)  {
+
   var grales = data.grales;//JSON.parse(JSON.stringify(data.grales));
   var params = ['cuenca','ubicacion','tipo','asignacion'].map((d) => [d.toUpperCase(),$('.' + d + '>option:selected').text()])
 
@@ -117,7 +118,7 @@ function DatosGrales(data)  {
   d3.select('div#row_a>div#col_2')
   .html(function(d) {
     var grales_ = ASIG_ != 'Todas' ? data.grales.filter((d) => d.NOMBRE == ASIG_) : data.grales;
-    var seg = _.sortBy(data.ajaxData.seguimiento,function(d) { return d.anio; }).filter((f) => f.tipo_observacion == 'Real');
+    var seg = _.sortBy(data.ajaxData.seguimiento.ext,function(d) { return d.anio; }).filter((f) => f.tipo_observacion == 'Real');
     var gop = d3.sum(seg.filter((f) => f.concepto == 'G_Op').map((d) => d.valor))/1000;
 
 
@@ -147,8 +148,9 @@ function DatosGrales(data)  {
 
   d3.select('div#row_a>div#col_3')
   .html(function(d) {
+
     var grales_ = ASIG_ != 'Todas' ? data.grales.filter((d) => d.NOMBRE == ASIG_) : data.grales;
-    var seg = _.sortBy(data.ajaxData.seguimiento,function(d) { return d.anio; }).filter((f) => f.tipo_observacion == 'Real');
+    var seg = _.sortBy(data.ajaxData.seguimiento.ext,function(d) { return d.anio; }).filter((f) => f.tipo_observacion == 'Real');
     //seg = ASIG_ != 'Todas' ? seg.filter((f) => new RegExp(ASIG_,f)) : '';
 
     var inv = d3.sum(seg.filter((f) => f.concepto == 'Inv').map((d) => d.valor))/1000;
@@ -198,6 +200,7 @@ function DatosGrales(data)  {
       'color':'white'
     })
     .html(function(d) {
+      
       var prod = _.sortBy(data.ajaxData.produccion,function (d) { return d.fecha; });
       var prod = prod[prod.length -1 ];
 
@@ -207,6 +210,10 @@ function DatosGrales(data)  {
         var anio = f.getFullYear(ts)
         return meses[mes] + ' - ' + anio;
       }
+
+      var _aceite_ = data.ajaxData.produccion.length > 0 ? (+prod.aceite_mbd.toFixed(1)).toLocaleString('es-MX') : 0;
+      var _gas_ = data.ajaxData.produccion.length > 0 ? (+prod.gas_mmpcd.toFixed(1)).toLocaleString('es-MX') : 0;
+      var _fecha_ = data.ajaxData.produccion.length > 0 ? fechA(prod.fecha) : '-';
 
       return "<div style='width:100%;height:100%;position:relative;display:table;table-layout:fixed;'>" +
                 "<div style='display:table-row;width:100%;height:50%;text-align:center;table-layout:fixed;position:relative;'>" +
@@ -221,12 +228,12 @@ function DatosGrales(data)  {
                                       "<div style='display:table;font-weight:800;font-size:2.5em;'>" +
                                           "<div style='display:table-row;'>" +
                                               "<div style='display:table-cell;text-align:right;'><span style='font-weight:400;font-size:0.4em;'>ACEITE&nbsp;</span></div>" +
-                                              "<div style='display:table-cell;text-align:center;'>"+ (+prod.aceite_mbd.toFixed(1)).toLocaleString('es-MX') +"</div>" +
+                                              "<div style='display:table-cell;text-align:center;'>"+ _aceite_ +"</div>" +
                                               "<div style='display:table-cell;text-align:left;'><span style='font-weight:400;font-size:0.4em;'>&nbsp;MBD</span></div>" +
                                           "</div>" +
                                           "<div style='display:table-row;'>" +
                                               "<div style='display:table-cell;text-align:right;'><span style='font-weight:400;font-size:0.4em;'>GAS&nbsp;</span></div>" +
-                                              "<div style='display:table-cell;text-align:center;'>"+ (+prod.gas_mmpcd.toFixed(1)).toLocaleString('es-MX') +"</div>" +
+                                              "<div style='display:table-cell;text-align:center;'>"+ _gas_ +"</div>" +
                                               "<div style='display:table-cell;text-align:left;'><span style='font-weight:400;font-size:0.4em;'>&nbsp;MMPCD</span></div>" +
                                           "</div>" +
                                       "</div>" +
@@ -234,7 +241,7 @@ function DatosGrales(data)  {
                                    "</div>" +
                                 "</div>" +
 
-                                "<div style='position:relative:;top:-10px;font-size:1.5em;font-weight:700;color:"+colors_[0]+"'>"+ fechA(prod.fecha) +"</div>" +
+                                "<div style='position:relative:;top:-10px;font-size:1.5em;font-weight:700;color:"+colors_[0]+"'>"+ _fecha_ +"</div>" +
                             "</div>" +
                         "</div>" +
                     "</div>" +
@@ -659,7 +666,7 @@ function BarChart(config) {
       // Los parámetros de este prototipo pueden cambiar el título, orientación de las barras y demás.
       this.plot = function(data,fn) {
             var stack_ = fn(data);
-            var plot_ = Highcharts.chart(config.where, {
+            Highcharts.chart(config.where, {
                 legend: {
                   enabled: (function() {
                     var legend;
@@ -770,7 +777,6 @@ function BarChart(config) {
                 }
             });
 
-            return plot_;
     };
 }
 
@@ -914,228 +920,292 @@ function documentos(data) {
 }
 
 
+
+
 function CMT(data) {
-  console.log(data)
-  var agregados = Object.keys(data).every((d) => !+d) ? true : false;
 
-  var nombres = {
-    'G_Op': { 'nombre':'Gastos de operación', 'unidades':'Millones de pesos' },
-    'Perf':{ 'nombre':'Perforaciones', 'unidades':'Número' },
-    'Qg': { 'nombre':'Producción de gas', 'unidades':'MMPCD' },
-    'Qo':{ 'nombre':'Producción de aceite', 'unidades':'MBD' },
-    'RMA':{ 'nombre':'Reparaciones mayores', 'unidades':'Número' },
-    'Term': { 'nombre':'Terminaciones', 'unidades':'Número' },
-    'Inv': { 'nombre':'Inversión', 'unidades':'Millones de pesos'},
-    'AD_SIS_2D_KM': { 'nombre':'Adquisición sísmica 2D', 'unidades':'KM' },
-    'AD_SIS_3D_KM2': { 'nombre':'Adquisición sísmica 3D', 'unidades':'KM<sup>2</sup>' },
-    'ELECTROMAG': { 'nombre':'Electromagneticos', 'unidades':'Número' },
-    'ESTUDIOS': { 'nombre':'Estudios', 'unidades':'Número' },
-    'INV_MMPESOS': { 'nombre':'Inversión', 'unidades':'Millones de pesos' },
-    'POZOS': { 'nombre':'Pozos', 'unidades':'Número' },
-    'PROCESADO_KM': { 'nombre':'Procesado (km)', 'unidades':'KM' },
-    'PROCESADO_KM2': { 'nombre':'Procesado (km<sup>2</sup>)', 'unidades':'KM<sup>2</sup>' }
-  }
+        var agregados = Object.keys(data).every((d) => !+d) //? true : false;
+        var tipoDisponible = agregados ? Object.keys(data).map((d) => JSON.parse(data[d]).length ? d : null).filter((f) => f) : [];
 
-
-  function table_(config,a) {
-      var data = JSON.parse(config.data);
-      var sel = $('#botonera_' + config.id + ">option:selected").attr('id');
-      var sel_data = data.filter((d) => d.concepto == sel);
-
-      if(a) {
-        sel_data = _.sortBy(sel_data,(d) => d.concepto).filter((d) => d.valores);
-        var rows = sel_data.map((d) => {
-          var str_ = '<tr style="width:100%;">'+
-                        '<td style="width:50%;padding:0px;">'+ d.anio +'</td>'+
-                        '<td style="width:50%;padding:0px;">'+ d.valores.toLocaleString('es-MX') +'</td>'+
-                     '</tr>'
-          return str_;
-        }).join('');
-      }
-      else {
-        sel_data = _.sortBy(sel_data,(d) => d.concepto).filter((d) => d.valor);
-
-        var rows = sel_data.map((d) => {
-          var str_ = '<tr style="width:100%;">'+
-                        '<td style="width:50%;padding:0px;">'+ d.anio +'</td>'+
-                        '<td style="width:50%;padding:0px;">'+ d.valor.toLocaleString('es-MX') +'</td>'+
-                     '</tr>'
-          return str_;
-        }).join('');
-      }
-
-      var t = '<div style="width:100%;">' +
-                '<table style="width:100%;table-layout:fixed;" align="center">' +
-                  '<tbody>'+
-                    '<tr style="border-bottom:1px solid '+ config.color +';color:'+ config.color +'">' +
-                      '<td>Año</td><td>'+ nombres[sel].unidades +'</td>' +
-                    '</tr>' +
-                  '</tbody>' +
-                //'<tbody>' + rows + '</tbody>'
-               '</table>' +
-              '</div>' +
-              '<div style="width:100%;overlfow:auto;">' +
-                '<table style="width:100%;table-layout:fixed;">' +
-                  '<tbody>' +
-                    rows +
-                  '</tbody>' +
-                '</tbody>' +
-              '</div>'
-
-      $('#CMT_' + config.id).html(t)
-      //$('#CMT_' + config.id).html('a')
-  };
+        var nombres = {
+            'G_Op': { 'nombre':'Gastos de operación', 'unidades':'Millones de pesos' },
+            'Perf':{ 'nombre':'Perforaciones', 'unidades':'Número' },
+            'Qg': { 'nombre':'Producción de gas', 'unidades':'MMPCD' },
+            'Qo':{ 'nombre':'Producción de aceite', 'unidades':'MBD' },
+            'RMA':{ 'nombre':'Reparaciones mayores', 'unidades':'Número' },
+            'Term': { 'nombre':'Terminaciones', 'unidades':'Número' },
+            'Inv': { 'nombre':'Inversión', 'unidades':'Millones de pesos'},
+            'AD_SIS_2D_KM': { 'nombre':'Adquisición sísmica 2D', 'unidades':'KM' },
+            'AD_SIS_3D_KM2': { 'nombre':'Adquisición sísmica 3D', 'unidades':'KM<sup>2</sup>' },
+            'ELECTROMAG': { 'nombre':'Electromagneticos', 'unidades':'Número' },
+            'ESTUDIOS': { 'nombre':'Estudios', 'unidades':'Número' },
+            'INV_MMPESOS': { 'nombre':'Inversión', 'unidades':'Millones de pesos' },
+            'POZOS': { 'nombre':'Pozos', 'unidades':'Número' },
+            'PROCESADO_KM': { 'nombre':'Procesado (km)', 'unidades':'KM' },
+            'PROCESADO_KM2': { 'nombre':'Procesado (km<sup>2</sup>)', 'unidades':'KM<sup>2</sup>' }
+        };
 
 
-  function apartado(config,a) {
+        function table_(config,a) {
 
-      if(a) {
-        var ww = '100'
-        var hh = '50'
-        var disp ='table-row'
-      } else {
-        var ww = '50'
-        var hh = '100'
-        var disp = 'table-cell'
-      }
+              var data = JSON.parse(config.data);
+              var sel = $('#botonera_' + config.id + ">option:selected").attr('id');
+              var sel_data = data.filter((d) => d.concepto == sel);
 
-      var data = JSON.parse(config.data);
+              if(a) {
+                    sel_data = _.sortBy(sel_data,(d) => d.concepto).filter((d) => d.valores);
+                    var rows = sel_data.map((d) => {
+                      var str_ = '<tr style="width:100%;">'+
+                                    '<td style="width:50%;padding:0px;">'+ d.anio +'</td>'+
+                                    '<td style="width:50%;padding:0px;">'+ d.valores.toLocaleString('es-MX') +'</td>'+
+                                 '</tr>'
+                      return str_;
+                    }).join('');
+              }
+              else {
+                    sel_data = _.sortBy(sel_data,(d) => d.concepto).filter((d) => d.valor);
 
-      var conceptos = _.uniq(data.map((d) => d.concepto));
-      var anios = _.uniq(data.map((d) => d.anio));
+                    var rows = sel_data.map((d) => {
+                      var str_ = '<tr style="width:100%;">'+
+                                    '<td style="width:50%;padding:0px;">'+ d.anio +'</td>'+
+                                    '<td style="width:50%;padding:0px;">'+ d.valor.toLocaleString('es-MX') +'</td>'+
+                                 '</tr>'
+                      return str_;
+                    }).join('');
+              }
 
-      var str__ = '<div style="width:100%; height:100%; display:table; table-layout:fixed">' +
-                    '<div style="width:100%;height:20%; ">'+
-                        '<div style="height:50%;width:100%;font-weight:800;color:' + config.color + ';">' + config.titulo + '</div>' +
-                        '<div style="height:10%;width:100%;font-size:13px;font-weight:300;">Compromiso mínimo en:&emsp;'+
-                          '<select id="botonera_'+ config.id +'" style="font-weight:700;color:'+ config.color +';">'
-                              + conceptos.map((d) => '<option id="'+ d +'">'+ nombres[d]['nombre'] +'</option>') +
-                          '</select>'+
-                        '</div>' +
-                    '</div>' +
-                    '<div style="width:100%;height:80%;">'+
+              var t = '<div style="width:100%;">' +
+                        '<table style="width:100%;table-layout:fixed;" align="center">' +
+                          '<tbody>'+
+                            '<tr style="border-bottom:1px solid '+ config.color +';color:'+ config.color +'">' +
+                              '<td>Año</td><td>'+ nombres[sel].unidades +'</td>' +
+                            '</tr>' +
+                          '</tbody>' +
 
-                        '<div style="width:100%;height:100%;display:table;">' +
-                          '<div style="width:'+ww+'%;height:'+hh+'%;display:'+disp+';vertical-align:top;">'+
-                              '<div style="display:table;width:100%;height:100%;">'+
-                                '<div style="width:100%;height:100%;" class="cmt_table" id="CMT_'+ config.id +'"></div>' +
-                              '</div>'+
-                          '</div>' +
-                          '<div style="width:'+ww+'%;height:'+hh+'%;display:'+disp+';">'+
-                              '<div style="width:100%;height:100%;display:table;">'+
-                                '<div style="width:100%;height:100%;" id="barcmt_'+ config.id +'"></div>' +
-                              '</div>'
-                          '</div>' +
-                        '</div>' +
+                       '</table>' +
+                      '</div>' +
+                      '<div style="width:100%;overlfow:auto;">' +
+                        '<table style="width:100%;table-layout:fixed;">' +
+                          '<tbody>' +
+                            rows +
+                          '</tbody>' +
+                        '</tbody>' +
+                      '</div>'
 
-                    '</div>' +
+              $('#CMT_' + config.id).html(t)
 
-                  '</div>';
-
-      return str__;
-  };
-
-  function barplot_cmt(config,a) {
-     var data = JSON.parse(config.data);
-     var sel = $('select#botonera_'+ config.id +'>option:selected').attr('id');
-
-     if(a) {
-       data = data.filter((f) => f.concepto == sel)
-                  .map((d) => [d.anio,d.valores])
-                  .filter((f) => f[1]);
-     }
-     else {
-       data = data.filter((f) => f.concepto == sel)
-                  .map((d) => [d.anio,d.valor])
-                  .filter((f) => f[1]);
-     }
+        };
 
 
-     data = [
-       {
-         data:data,
-         color:config.color
-       }
-     ];
+        function apartado(config,a) {
+
+                if(a) {
+                      var ww = '100'
+                      var hh = '50'
+                      var disp ='table-row'
+                } else {
+                      var ww = '50'
+                      var hh = '100'
+                      var disp = 'table-cell'
+                }
+
+                var data = JSON.parse(config.data);
+
+                var conceptos = _.uniq(data.map((d) => d.concepto));
+                var anios = _.uniq(data.map((d) => d.anio));
+
+                var str__ = '<div style="width:100%; height:100%; display:table; table-layout:fixed">' +
+                              '<div style="width:100%;height:20%; ">'+
+                                  '<div style="height:50%;width:100%;font-weight:800;color:' + config.color + ';">' + config.titulo + '</div>' +
+                                  '<div style="height:10%;width:100%;font-size:13px;font-weight:300;">Compromiso mínimo en:&emsp;'+
+                                    '<select id="botonera_'+ config.id +'" style="font-weight:700;color:'+ config.color +';">'
+                                        + conceptos.map((d) => '<option id="'+ d +'">'+ nombres[d]['nombre'] +'</option>') +
+                                    '</select>'+
+                                  '</div>' +
+                              '</div>' +
+                              '<div style="width:100%;height:80%;">'+
+
+                                  '<div style="width:100%;height:100%;display:table;">' +
+                                    '<div style="width:'+ww+'%;height:'+hh+'%;display:'+disp+';vertical-align:top;">'+
+                                        '<div style="display:table;width:100%;height:100%;">'+
+                                          '<div style="width:100%;height:100%;" class="cmt_table" id="CMT_'+ config.id +'"></div>' +
+                                        '</div>'+
+                                    '</div>' +
+                                    '<div style="width:'+ww+'%;height:'+hh+'%;display:'+disp+';">'+
+                                        '<div style="width:100%;height:100%;display:table;">'+
+                                          '<div style="width:100%;height:100%;" id="barcmt_'+ config.id +'"></div>' +
+                                        '</div>'
+                                    '</div>' +
+                                  '</div>' +
+
+                              '</div>' +
+
+                            '</div>';
+
+                return str__;
+        };
+
+        function barplot_cmt(config,a) {
+               var data = JSON.parse(config.data);
+               var sel = $('select#botonera_'+ config.id +'>option:selected').attr('id');
+
+               if(a) {
+                 data = data.filter((f) => f.concepto == sel)
+                            .map((d) => [d.anio,d.valores])
+                            .filter((f) => f[1]);
+               }
+               else {
+                 data = data.filter((f) => f.concepto == sel)
+                            .map((d) => [d.anio,d.valor])
+                            .filter((f) => f[1]);
+               }
 
 
-     var plot = new BarChart({
-       where:'barcmt_' + config.id,
-       chart: { type:'column' },
-       noRange:1,
-       opposite:true,
-       title:'',
-       xAxis: {
-         categories: data[0].data.map((d) => String(d[0]))
-       },
-       hideLegend:true
-       //tooltip: '<div></div>'
-     });
-
-     grapher(plot.plot,data,(d) => d)
-  }
-
-  if(agregados) {
-    var division = '<div style="width:100%;height:100%;display:table;">' +
-                      '<div id="exp" style="width:100%;height:50%;border-bottom:1px solid gray;"></div>' +
-                      '<div id="ext" style="width:100%;height:50%;"></div>' +
-                   '</div>';
-
-    $('#visor').html(division)
-
-    var config = [
-      {
-        'titulo':'Extracción',
-        'color':'rgb(70,130,180)',
-        'id':'ext',
-        'data':data['ext']
-      },
-      {
-        'titulo':'Exploración',
-        'color':'rgb(0,128,129)',
-        'id':'exp',
-        'data':data['exp']
-      }
-    ]
-
-    config.forEach((d) => {
-      $('#visor #' + d.id).html(apartado(d));
-      table_(d);
-      barplot_cmt(d);
+               data = [
+                 {
+                   data:data,
+                   color:config.color
+                 }
+               ];
 
 
-    })
+               var plot = new BarChart({
+                 where:'barcmt_' + config.id,
+                 chart: { type:'column' },
+                 noRange:1,
+                 opposite:true,
+                 title:'',
+                 xAxis: {
+                   categories: data[0].data.map((d) => String(d[0]))
+                 },
+                 hideLegend:true
+                 //tooltip: '<div></div>'
+               });
+
+               grapher(plot.plot,data,(d) => d)
+        };
+
+        // ----------------- AGREGAR FRAME QUE INCLUYE BOTONES TIPO RADIO --------------------
+        var visor_config = {
+          'name':'cmt',
+          'title':'Compromiso mínimo de trabajo',
+          'options': [
+              { 'value':'ext', 'text':' Extracción' },
+              { 'value':'exp', 'text':' Exploración' }
+            ],
+          'height':80
+        };
+
+        var visor = frameVisor_withRadios(visor_config)
+
+        //$('#visor').html(visor);
+
+        // ----------------- AGREGAR FRAME QUE INCLUYE BOTONES TIPO RADIO --------------------
 
 
-    $('#botonera_ext,#botonera_exp').on('change',function() {
-      var id = $(this).attr('id').split('_')[1];
-      var conf = config.filter(function(d) { return d.id == id })
-      table_(conf[0])
-      barplot_cmt(conf[0])
-    })
-  } else {
-    var division = '<div style="width:100%;height:100%;display:table;">' +
-                      '<div id="x_asig" style="width:100%;height:100%;"></div>' +
-                   '</div>';
-    var config = {
-      'titulo': 'Compromiso mínimo',//_.uniq(data.map((d) => d.nombre))[0].split(',')[0].split(' - ')[0],
-      'id':'x_asig',
-      'color':'purple',
-      'data':JSON.stringify(data)
-    }
-    $('#visor').html(division)
-    $('#visor #x_asig').html(apartado(config,true))
-    table_(config,true)
-    barplot_cmt(config,true)
+        if(agregados && tipoDisponible.length == 2) {
 
-    $('#botonera_x_asig').on('change',function() {
-      var id = $(this).attr('id')//.split('_')[1];
-      console.log(id)
-      //var conf = config.filter(function(d) { return d.id == id })
-      table_(config,true)
-      barplot_cmt(config,true)
-    })
-  }
+              var division = '<div style="width:100%;height:100%;display:table;">' +
+                                '<div id="exp" style="width:100%;height:50%;border-bottom:1px solid gray;"></div>' +
+                                '<div id="ext" style="width:100%;height:50%;"></div>' +
+                             '</div>';
+
+              $('#visor').html(division)
+
+              var config = [
+                {
+                  'titulo':'Extracción',
+                  'color':'rgb(70,130,180)',
+                  'id':'ext',
+                  'data':data['ext']
+                },
+                {
+                  'titulo':'Exploración',
+                  'color':'rgb(0,128,129)',
+                  'id':'exp',
+                  'data':data['exp']
+                }
+              ]
+
+              config.forEach((d) => {
+                $('#visor #' + d.id).html(apartado(d));
+                table_(d);
+                barplot_cmt(d);
+
+
+              })
+
+
+              $('#botonera_ext,#botonera_exp').on('change',function() {
+                var id = $(this).attr('id').split('_')[1];
+                var conf = config.filter(function(d) { return d.id == id })
+                table_(conf[0])
+                barplot_cmt(conf[0])
+              });
+
+        } else if(!agregados || tipoDisponible.length == 1){
+              console.log('agregados: ',agregados)
+              console.log('tipoDisponible: ', tipoDisponible)
+
+              if(!tipoDisponible.length) {
+                    var cpts = _.uniq(data.map((d) => d.concepto));
+
+                    var nonZeroConcepts = cpts.map((d) => {
+                            return data.filter((f) => f.concepto == d)
+                                       .map((m) => m.valores)
+                                       .every((e) => e == 0) ? null : d;
+                    }).filter((f) => f);
+
+                    data = data.filter((f) => {
+                            return nonZeroConcepts.some((s) => s == f.concepto);
+                    });
+                    console.log(data)
+              } else {
+                    data = JSON.parse(data[tipoDisponible[0]]);
+                    data.forEach((d) => {
+                        d.valores = d.valor;
+                        delete d.valor;
+                    })
+                    console.log(data);
+              }
+
+              var division = '<div style="width:100%;height:100%;display:table;">' +
+                                '<div id="x_asig" style="width:100%;height:100%;"></div>' +
+                             '</div>';
+
+
+              var config_ops = {
+                  'titulo': {
+                    'ext':'Extracción',
+                    'exp':'Exploración'
+                  },
+                  'color': {
+                    'ext':'rgb(70,130,180)',
+                    'exp':'rgb(0,128,129)'
+                  }
+              };
+
+
+              var config = {
+                'titulo': !tipoDisponible.length ? 'Compromiso mínimo' : config_ops.titulo[tipoDisponible[0]],
+                'id':'x_asig',
+                'color': !tipoDisponible.length ? 'purple' : config_ops.color[tipoDisponible[0]],
+                'data':JSON.stringify(data)
+              };
+
+              $('#visor').html(division)
+              $('#visor #x_asig').html(apartado(config,true))
+              table_(config,true)
+              barplot_cmt(config,true)
+
+              $('#botonera_x_asig').on('change',function() {
+                var id = $(this).attr('id')//.split('_')[1];
+                console.log(id)
+                //var conf = config.filter(function(d) { return d.id == id })
+                table_(config,true)
+                barplot_cmt(config,true)
+              })
+        }
 
 };
 
@@ -1417,187 +1487,111 @@ function dashboard(data) {
 
 
 function seguimiento(data) {
+  var agregados = Object.keys(data).every((d) => !+d) //? true : false;
+  var tipoDisponible = agregados ? Object.keys(data).map((d) => data[d].length ? d : null).filter((f) => f) : [];
 
-  data.forEach(function(d,i){
-      data[i].valor = +data[i].valor.toFixed(1)
-      if(d.concepto == 'QgHC') {
-          data[i].concepto = 'Qg'
-      }
-
-  })
-
-
-   var anios = _.sortBy(_.uniq(data.map(function(d) { return String(d.anio); })));
-   var tipo_obs = _.uniq(data.map(function(d) { return d.tipo_observacion; }));
-   var conceptos = _.uniq(data.map(function(d) { return d.concepto }));
-//console.log(conceptos,data,tipo_obs)
-
-
-   // Esto filtra los conceptos que no tienen valores igual a cero.
-   conceptos = conceptos.map((d) => data.filter((f) => f.concepto == d).some((e) => e.valor))
-                                        .map((m,i) => m ? conceptos[i] : m)
-                                        .filter((f) => f)
-
-   var conceptos_traduccion = {
-     Qo: 'Producción de aceite',
-     Qg: 'Producción de gas',
-     Perf_Des: 'Perforaciones - Desarrollo',
-     Perf_Iny: 'Perforaciones - Inyecciones',
-     Term_Des: 'Terminaciones - Desarrollo',
-     Term_Iny: 'Terminaciones - Inyecciones',
-     RMA: 'Reparaciones Mayores',
-     RME: 'Reparaciones Menores',
-     Tap: 'Taponamientos',
-     Inv: 'Inversión',
-     G_Op: 'Gastos de Operación',
-     Np: 'Producción acumulada de aceite',
-     Gp: 'Producción acumulada de gas',
-     QgHC: 'Producción de gas hidrocarburo'
-   };
-
-   var c_ = conceptos.map(function(d) { return '<option style="font-size:12px" id='+d+'>' + conceptos_traduccion[d] + '</option>'; });
-
-   var str =
-   "<div style='width:100%;height:100%;'>"+
-     "<div style='width:100%;height:30px;display:table;text-align:center;'>" +
-        "<span style='font-weight:600;'>Ver seguimiento en:&ensp;</span> <select id='botonera'>"
-            + c_ +"</select>&ensp;<input id='acumulado' type='checkbox'></input>&nbsp;Acumulado</div>" +
-     "<div style='width:100%; height:calc(100% - 30px)'>" +
-        "<div id='one' style='width:100%;height:50%;'></div>" +
-        "<div id='two' style='width:100%;'></div>" +
-     "</div>" +
-   "</div>"
-
-   $('#visor').html(str);
-
-
-   $('#botonera').on('change',function() {
-         ff = processedData();
-
-         chart.series[0].setName($('#botonera>option:selected').text() + ' - Plan');
-         chart.series[1].setName($('#botonera>option:selected').text() + ' - Real');
-
-         if($('#acumulado:checked')[0]) {
-             var ff_acum = JSON.parse(JSON.stringify(ff));
-
-             ff_acum.map((f) => {
-               f.forEach((d,i) => {
-                   if(i > 0) {
-                     f[i].valor = f[i-1].valor + f[i].valor
-                   }
-               });
-               return f;
-             });
-
-             var max = d3.max( ff_acum.map((d) => d3.max(d.map((d) => d.valor))) );
-             chart.yAxis[0].setExtremes(0,max);
-
-             chart.series[0].setData(ff_acum[0].map((d) => d.valor ));
-             chart.series[1].setData(ff_acum[1].map((d) => d.valor ));
-             chart.series[0].update({type:'area'});
-             chart.series[1].update({type:'area'});
-
-             updateTable(ff_acum)
-         } else {
-             chart.series[0].setData(ff[0].map(function(d) { return d.valor; }).filter((f) => f))
-             chart.series[1].setData(ff[1].map(function(d) { return d.valor; }))
-
-             var max = d3.max( ff.map((d) => d3.max(d.map((d) => d.valor))) );
-             chart.yAxis[0].setExtremes(0,max);
-             //chart.yAxis[1].setExtremes(0,yAxis_max);
-             chart.series[0].update({type:'column'});
-             chart.series[1].update({type:'column'});
-
-             updateTable(ff)
-         };
-
-   });
-
-   function updateTable(ff) {
-           var filas = ff[0].map(function(d,i) {
-             var str = '<tr width="100%;">'+
-                          '<td style="width:33.33%;">'+ d.anio +'</td>'+
-                          '<td style="width:33.33%;">'+ (+d.valor.toFixed(1)).toLocaleString('es-MX') +'</td>'+
-                          '<td style="width:33.33%;" id=a_'+ d.anio +'>'+ ' - ' +'</td>'
-                       '</tr>'
-
-             return str;
-           }).join('');
-
-           var table_container = '<div style="height:30px;width:100%;">'+
-                                  '<table style="width:calc(100% - 8px);height:100%;table-layout:fixed;">'+
-                                    '<tbody style="width:100%;">'+
-                                      '<tr style="width:100%;font-weight:600;text-align:center;border-bottom:1px solid gray;border-top:1px solid gray;">' +
-                                        '<td>AÑO</td>' +
-                                        '<td>PLAN</td>' +
-                                        '<td>REAL</td>' +
-                                      '</tr>' +
-                                    '</tbody>' +
-                                  '</table>';
-                                 '</div>';
-
-           var tabla = //table_container +
-            '<div id="scroll_table_" style="width:100%;height:calc(' + $('#one').css('height') + ' - 30px);overflow:auto;border-bottom:1px solid gray;">' +
-              '<table style="width:100%;,table-layout:fixed;">' +
-              /*'<thead>' +
-               '<tr style="font-weight:600;text-align:center;border-bottom:1px solid gray;border-top:1px solid gray;">' +
-                  '<td>AÑO</td>'+
-                  '<td>PLAN</td>'+
-                  '<td>REAL</td>' +
-               '</tr>' +
-              '</thead>' +
-              */
-                '<tbody id="filas_" style="text-align:center;">' +
-                filas +
-                '</tbody>'
-              '</table>'+
-            '</div>';
-
-           var div_table = '<div style="width:100%;height:100%;">'+
-                              table_container +
-                              tabla +
-                           '</div>'
-
-           $('#two').html(div_table);
-
-           ff[1].forEach(function(d) {
-             $('#a_' + d.anio).text((+d.valor.toFixed(1)).toLocaleString('es-MX'))
-           });
+  var conceptos_traduccion = {
+      Qo: 'Producción de aceite',
+      Qg: 'Producción de gas',
+      Perf_Des: 'Perforaciones - Desarrollo',
+      Perf_Iny: 'Perforaciones - Inyecciones',
+      Term_Des: 'Terminaciones - Desarrollo',
+      Term_Iny: 'Terminaciones - Inyecciones',
+      RMA: 'Reparaciones Mayores',
+      RME: 'Reparaciones Menores',
+      Tap: 'Taponamientos',
+      Inv: 'Inversión',
+      G_Op: 'Gastos de Operación',
+      Np: 'Producción acumulada de aceite',
+      Gp: 'Producción acumulada de gas',
+      QgHC: 'Producción de gas hidrocarburo'
   };
 
 
-   function processedData() {
-           var op_id = $('#botonera>option:selected').attr('id');
+  var visor_config = {
+    'name':'seg',
+    'title':'Seguimiento',
+    'options': [
+        { 'value':'ext', 'text':' Extracción' },
+        { 'value':'exp', 'text':' Exploración' }
+      ],
+    'height':80
+  };
 
-           var ff = tipo_obs.map(function(d) {
-               return data.filter(function(f) {
-                 return f.tipo_observacion == d && f.concepto == op_id;
-               })
-           });
+  var visor = frameVisor_withRadios(visor_config);
 
-           ff[0] = _.sortBy(ff[0], (d) => d.anio).filter((d) => d.valor)
+  $('#visor').html(visor);
 
-           return ff;
-    };
+  $('input[type=radio]').each(function(i,d) {
+      $(this).parent().css('padding',0)
+      if(i == 0) $(this).parent().css('padding-right','15px')
+  })
 
-    var ff = processedData()
+  if(data.ext.lenght > 0) {
+        data.ext.forEach(function(d,i){
+            data.ext[i].valor = +data.ext[i].valor.toFixed(1);
 
-    updateTable(ff)
+            if(d.concepto == 'QgHC') {
+                data.ext[i].concepto = 'Qg'
+            }
 
-   $('#acumulado').on('change',function() {
-           if(this.checked) {
+        });
+  }
+
+  draw(data,'ext')
+
+  function draw(data,type) {
+         if(type) {
+           var data = data[type]
+         } else {
+
+         }
+
+         var anios = _.sortBy(_.uniq(data.map(function(d) { return String(d.anio); })));
+         var tipo_obs = _.uniq(data.map(function(d) { return d.tipo_observacion; }));
+         var conceptos = _.uniq(data.map(function(d) { return d.concepto }));
+      //console.log(conceptos,data,tipo_obs)
+
+
+         // Esto filtra los conceptos que no tienen valores igual a cero.
+         conceptos = conceptos.map((d) => data.filter((f) => f.concepto == d).some((e) => e.valor))
+                                              .map((m,i) => m ? conceptos[i] : m)
+                                              .filter((f) => f)
+
+
+         var c_ = conceptos.map(function(d) { return '<option style="font-size:12px" id='+d+'>' + conceptos_traduccion[d] + '</option>'; });
+
+         var str =
+         "<div style='width:100%;height:100%;'>"+
+           "<div style='width:100%;height:30px;display:table;text-align:center;'>" +
+              "<span style='font-weight:600;'>Ver seguimiento en:&ensp;</span> <select id='botonera'>"
+                  + c_ +"</select>&ensp;<input id='acumulado' type='checkbox'></input>&nbsp;Acumulado</div>" +
+           "<div style='width:100%; height:calc(100% - 30px)'>" +
+              "<div id='one' style='width:100%;height:50%;'></div>" +
+              "<div id='two' style='width:100%;'></div>" +
+           "</div>" +
+         "</div>"
+
+         $('#visor_chart').html(str);
+
+
+         $('#botonera').on('change',function() {
+               ff = processedData();
+
+               chart.series[0].setName($('#botonera>option:selected').text() + ' - Plan');
+               chart.series[1].setName($('#botonera>option:selected').text() + ' - Real');
+
+               if($('#acumulado:checked')[0]) {
                    var ff_acum = JSON.parse(JSON.stringify(ff));
 
                    ff_acum.map((f) => {
-                       f.forEach((d,i) => {
-                           if(i > 0) {
-                             f[i].valor = f[i-1].valor + f[i].valor
-                           }
-                       });
-                       return f;
+                     f.forEach((d,i) => {
+                         if(i > 0) {
+                           f[i].valor = f[i-1].valor + f[i].valor
+                         }
+                     });
+                     return f;
                    });
-
-                   console.log(ff_acum)
 
                    var max = d3.max( ff_acum.map((d) => d3.max(d.map((d) => d.valor))) );
                    chart.yAxis[0].setExtremes(0,max);
@@ -1608,78 +1602,190 @@ function seguimiento(data) {
                    chart.series[1].update({type:'area'});
 
                    updateTable(ff_acum)
-
-           } else {
+               } else {
+                   chart.series[0].setData(ff[0].map(function(d) { return d.valor; }).filter((f) => f))
+                   chart.series[1].setData(ff[1].map(function(d) { return d.valor; }))
 
                    var max = d3.max( ff.map((d) => d3.max(d.map((d) => d.valor))) );
                    chart.yAxis[0].setExtremes(0,max);
-
-                   chart.series[0].setData(ff[0].map((d) => d.valor ));
-                   chart.series[1].setData(ff[1].map((d) => d.valor ));
+                   //chart.yAxis[1].setExtremes(0,yAxis_max);
                    chart.series[0].update({type:'column'});
                    chart.series[1].update({type:'column'});
 
                    updateTable(ff)
-           }
+               };
 
-   });
+         });
 
+         function updateTable(ff) {
+                 var filas = ff[0].map(function(d,i) {
+                   var str = '<tr width="100%;">'+
+                                '<td style="width:33.33%;">'+ d.anio +'</td>'+
+                                '<td style="width:33.33%;">'+ (+d.valor.toFixed(1)).toLocaleString('es-MX') +'</td>'+
+                                '<td style="width:33.33%;" id=a_'+ d.anio +'>'+ ' - ' +'</td>'
+                             '</tr>'
 
-   var chart = Highcharts.chart('one', {
-                    chart: {
-                        type: 'column'
-                    },
-                    credits: { enabled:false },
-                    title: {
-                        text: ''
-                    },
-                    subtitle:{
-                      text:'Actividad Planeada vs Real'
-                    },
-                    xAxis: {
-                        categories: anios//['1998','1999','2000']
-                    },
-                    yAxis: {
-                        tickInterval:2,
-                        min: 0,
-                        title: {
-                            text: ''
-                        },
-                        max: d3.max( ff.map((d) => d3.max(d.map((d) => d.valor))) ) //d3.max(ff[0].map(function(d) { return d.valor; })) > d3.max(ff[1].map(function(d) { return d.valor; })) ?
-                          //d3.max(ff[0].map(function(d) { return d.valor; })) : d3.max(ff[1].map(function(d) { return d.valor; }))
-                    },
-                    legend: {
-                        shadow: false
-                    },
-                    tooltip: {
-                        shared: true
-                    },
-                    plotOptions: {
-                        series: {
-                          marker: {
-                            enabled:false
-                          }
-                        },
-                        column: {
-                            grouping: false,
-                            shadow: false,
-                            borderWidth: 0
-                        }
-                    },
-                    series: [{
-                        name: $('#botonera>option:selected').text() + ' - Plan',
-                        color: 'rgba(13,180,190,0.6)',
-                        data: ff[0].map(function(d) { return d.valor; }),
-                        pointPadding: 0.3,
-                        pointPlacement: -0.2
-                    }, {
-                        name: $('#botonera>option:selected').text() + ' - Real',
-                        color: 'rgba(126,86,134,.9)',
-                        data: ff[1].map(function(d) { return d.valor; }),
-                        pointPadding: 0.4,
-                        pointPlacement: -0.2
-                    }]
-    });
+                   return str;
+                 }).join('');
+
+                 var table_container = '<div style="height:30px;width:100%;">'+
+                                        '<table style="width:calc(100% - 8px);height:100%;table-layout:fixed;">'+
+                                          '<tbody style="width:100%;">'+
+                                            '<tr style="width:100%;font-weight:600;text-align:center;border-bottom:1px solid gray;border-top:1px solid gray;">' +
+                                              '<td>AÑO</td>' +
+                                              '<td>PLAN</td>' +
+                                              '<td>REAL</td>' +
+                                            '</tr>' +
+                                          '</tbody>' +
+                                        '</table>';
+                                       '</div>';
+
+                 var tabla = //table_container +
+                  '<div id="scroll_table_" style="width:100%;height:calc(' + $('#one').css('height') + ' - 30px);overflow:auto;border-bottom:1px solid gray;">' +
+                    '<table style="width:100%;,table-layout:fixed;">' +
+                    /*'<thead>' +
+                     '<tr style="font-weight:600;text-align:center;border-bottom:1px solid gray;border-top:1px solid gray;">' +
+                        '<td>AÑO</td>'+
+                        '<td>PLAN</td>'+
+                        '<td>REAL</td>' +
+                     '</tr>' +
+                    '</thead>' +
+                    */
+                      '<tbody id="filas_" style="text-align:center;">' +
+                      filas +
+                      '</tbody>'
+                    '</table>'+
+                  '</div>';
+
+                 var div_table = '<div style="width:100%;height:100%;">'+
+                                    table_container +
+                                    tabla +
+                                 '</div>'
+
+                 $('#two').html(div_table);
+
+                 ff[1].forEach(function(d) {
+                   $('#a_' + d.anio).text((+d.valor.toFixed(1)).toLocaleString('es-MX'))
+                 });
+        };
+
+      // -------
+         function processedData() {
+                 var op_id = $('#botonera>option:selected').attr('id');
+
+                 var ff = tipo_obs.map(function(d) {
+                     return data.filter(function(f) {
+                       return f.tipo_observacion == d && f.concepto == op_id;
+                     })
+                 });
+
+                 ff[0] = _.sortBy(ff[0], (d) => d.anio).filter((d) => d.valor)
+
+                 return ff;
+          };
+
+          var ff = processedData()
+
+          updateTable(ff)
+
+         $('#acumulado').on('change',function() {
+                 if(this.checked) {
+                         var ff_acum = JSON.parse(JSON.stringify(ff));
+
+                         ff_acum.map((f) => {
+                             f.forEach((d,i) => {
+                                 if(i > 0) {
+                                   f[i].valor = f[i-1].valor + f[i].valor
+                                 }
+                             });
+                             return f;
+                         });
+
+                         console.log(ff_acum)
+
+                         var max = d3.max( ff_acum.map((d) => d3.max(d.map((d) => d.valor))) );
+                         chart.yAxis[0].setExtremes(0,max);
+
+                         chart.series[0].setData(ff_acum[0].map((d) => d.valor ));
+                         chart.series[1].setData(ff_acum[1].map((d) => d.valor ));
+                         chart.series[0].update({type:'area'});
+                         chart.series[1].update({type:'area'});
+
+                         updateTable(ff_acum)
+
+                 } else {
+
+                         var max = d3.max( ff.map((d) => d3.max(d.map((d) => d.valor))) );
+                         chart.yAxis[0].setExtremes(0,max);
+
+                         chart.series[0].setData(ff[0].map((d) => d.valor ));
+                         chart.series[1].setData(ff[1].map((d) => d.valor ));
+                         chart.series[0].update({type:'column'});
+                         chart.series[1].update({type:'column'});
+
+                         updateTable(ff)
+                 }
+
+         });
+
+         var chart = Highcharts.chart('one', {
+                          chart: {
+                              type: 'column'
+                          },
+                          credits: { enabled:false },
+                          title: {
+                              text: ''
+                          },
+                          subtitle:{
+                            text:'Actividad Planeada vs Real'
+                          },
+                          xAxis: {
+                              categories: anios//['1998','1999','2000']
+                          },
+                          yAxis: {
+                              tickInterval:2,
+                              min: 0,
+                              title: {
+                                  text: ''
+                              },
+                              max: d3.max( ff.map((d) => d3.max(d.map((d) => d.valor))) ) //d3.max(ff[0].map(function(d) { return d.valor; })) > d3.max(ff[1].map(function(d) { return d.valor; })) ?
+                                //d3.max(ff[0].map(function(d) { return d.valor; })) : d3.max(ff[1].map(function(d) { return d.valor; }))
+                          },
+                          legend: {
+                              shadow: false
+                          },
+                          tooltip: {
+                              shared: true
+                          },
+                          plotOptions: {
+                              series: {
+                                marker: {
+                                  enabled:false
+                                }
+                              },
+                              column: {
+                                  grouping: false,
+                                  shadow: false,
+                                  borderWidth: 0
+                              }
+                          },
+                          series: [{
+                              name: $('#botonera>option:selected').text() + ' - Plan',
+                              color: 'rgba(13,180,190,0.6)',
+                              data: ff[0].map(function(d) { return d.valor; }),
+                              pointPadding: 0.3,
+                              pointPlacement: -0.2
+                          }, {
+                              name: $('#botonera>option:selected').text() + ' - Real',
+                              color: 'rgba(126,86,134,.9)',
+                              data: ff[1].map(function(d) { return d.valor; }),
+                              pointPadding: 0.4,
+                              pointPlacement: -0.2
+                          }]
+          });
+
+    }
+
 }
 
 function aprovechamiento(data) {
@@ -1771,32 +1877,73 @@ function aprovechamiento(data) {
 };
 
 
-function enConstruccion() {
-  var str =
-  "<div class='ficha' style='position:relative;width:100%;height:100%;background-color:transparent;'>" +
-    "<div style='display:table;position:absolute;width:100%;height:100%;'>" +
-      "<div style='display:table-cell;width:100%;vertical-align:middle;text-align:center;font-size:30px;font-weight:800;'>" + // <- 'vertical-align:middle' para centrar
-        ' EN CONSTRUCCIÓN &#9874;' +
-      "</div>" +
-    "</div>" +
-  "</div>"
 
-  $('#visor').html(str);
-}
+function enConstruccion() {
+        var str =
+        "<div class='ficha' style='position:relative;width:100%;height:100%;background-color:transparent;'>" +
+          "<div style='display:table;position:absolute;width:100%;height:100%;'>" +
+            "<div style='display:table-cell;width:100%;vertical-align:middle;text-align:center;font-size:30px;font-weight:800;'>" + // <- 'vertical-align:middle' para centrar
+              ' EN CONSTRUCCIÓN &#9874;' +
+            "</div>" +
+          "</div>" +
+        "</div>"
+
+        $('#visor').html(str);
+};
+
 
 
 function noDato() {
-  var asig = $('.asignacion>option:selected').val();
-  var topic = $('.selectedButton').attr('id');
+        var asig = $('.asignacion>option:selected').val();
+        var topic = $('.selectedButton').attr('id');
 
-  var str =
-  "<div class='ficha' style='position:relative;width:100%;height:100%;background-color:transparent;'>" +
-    "<div style='display:table;position:absolute;width:100%;height:100%;'>" +
-      "<div style='display:table-cell;width:100%;vertical-align:middle;text-align:center;font-size:25px;font-weight:400;'>" + // <- 'vertical-align:middle' para centrar
-        ' Esta información aún no se encuentra disponible.' +
-      "</div>" +
-    "</div>" +
-  "</div>"
+        var str =
+        "<div class='ficha' style='position:relative;width:100%;height:100%;background-color:transparent;'>" +
+          "<div style='display:table;position:absolute;width:100%;height:100%;'>" +
+            "<div style='display:table-cell;width:100%;vertical-align:middle;text-align:center;font-size:25px;font-weight:400;'>" + // <- 'vertical-align:middle' para centrar
+              ' Esta información aún no se encuentra disponible.' +
+            "</div>" +
+          "</div>" +
+        "</div>"
 
-  $('#visor').html(str);
-}
+        $('#visor').html(str);
+};
+
+
+
+function frameVisor_withRadios(config) {
+
+        var options = config.options.map((d,i) => {
+          var style = 'style="display:table-cell;padding-right:1%;"'
+          var checked = i === 0 ? ' checked' : '';
+          var element =
+            '<div ' + style + '>' +
+              '<input type="radio" name="'+ config.radio_names +'" value="'+ d.value +'"'+ checked +'>'+ d.text +'</input>' +
+            '</div>';
+
+          return element;
+        }).join('');
+
+        var panel_height = 80;
+        var visor = "<div style='width:100%;height:100%;'>" +
+                      "<div style='width:100%;height:"+ config.height +"px;' id='visor_panel'>"+
+                        "<div style='text-align:center;'>" +
+                          "<div style='display:inline-block;'>" +
+                            "<div style='font-weight:800;font-size:2em;'>" + config.title + "</div>" +
+
+                              "<div style='display:inline-block;'>" +
+                                "<div style='display:table;'>" +
+
+                                    options +
+
+                                "</div>" +
+                              "</div>" +
+
+                          "</div>" +
+                        "</div>" +
+                      "</div>" +
+                      "<div style='width:100%;height:calc(100% - "+ config.height +"px);' id='visor_chart'></div>" +
+                    "</div>";
+
+        return visor;
+};

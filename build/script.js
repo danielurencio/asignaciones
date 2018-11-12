@@ -240,8 +240,8 @@ var HOSTNAME = 'http://172.16.24.57:5000/';
           };
 
           function AjaxCall(data,mymap,asignaciones) {
-            datosAsignacion(data,null,null,mymap,asignaciones);
 
+            datosAsignacion(data,null,null,mymap,asignaciones);
             $('#visor').html('');
 
             var ID, TIPO, UBICACION, CUENCA;
@@ -253,6 +253,7 @@ var HOSTNAME = 'http://172.16.24.57:5000/';
             $.ajax({
                   type:'GET',
                   dataType:'JSON',
+                  //type:'json',
                   url:HOSTNAME + 'grales_asig.py',
                   data:{
                     ID:ID,
@@ -261,18 +262,29 @@ var HOSTNAME = 'http://172.16.24.57:5000/';
                     CUENCA:CUENCA
                   },
                   success:function(ajaxData) {
+
                     var noms = [CUENCA,TIPO,UBICACION];
 
                     for(var k in ajaxData) {
-                      ajaxData[k] = JSON.parse(ajaxData[k]).map(function(d) {
+
+                      ajaxData[k] = JSON.parse(ajaxData[k])/*.map(function(d) {
                             var name = noms.filter((d) => d.slice(0,3) != 'Tod').join(' - ')// ? 'Todas' : noms.join(' - ')
                             d['nombre'] = name ? name : 'Nacional'
                             return d;
-                      })
+                      })*/
                     }
+
+                    Object.keys(ajaxData.seguimiento).forEach((d) => {
+                      ajaxData.seguimiento[d] = JSON.parse(ajaxData.seguimiento[d])
+                    });
 
                     mapNdataObj['ajaxData'] = ajaxData;
 
+/*
+                    Object.keys(mapNdataObj.ajaxData.seguimiento).forEach((d) => {
+                      mapNdataObj.ajaxData.seguimiento[d] = JSON.parse(mapNdata.ajaxData.seguimiento[d])
+                    });
+*/
                     switcher($('.selectedButton').attr('id'),mapNdataObj);
 
                   }
@@ -315,12 +327,18 @@ var HOSTNAME = 'http://172.16.24.57:5000/';
 
 
           $('.tipo').on('change',function() {
+            cambio(data,'asignacion',function(d) {
+                return localCond(d,'cuenca') && localCond(d,'ubicacion') && localCond(d,'tipo');
+            },'NOMBRE');
+
                 if( $('.asignacion>option:selected').attr('ID') != 'Todas' ) {
+                  console.log('diferente de Todas')
                     cambio(data,'asignacion',function(d) {
                         return localCond(d,'cuenca') && localCond(d,'ubicacion') && localCond(d,'tipo');
                     },'NOMBRE');
                     $('.asignacion').trigger('change');
                 } else {
+                  console.log('Igual a Todas')
                     AjaxCall(data,mymap,asignaciones);
                     cambio(data,'asignacion',function(d) {
                         return localCond(d,'cuenca') && localCond(d,'ubicacion') && localCond(d,'tipo');
@@ -341,20 +359,28 @@ var HOSTNAME = 'http://172.16.24.57:5000/';
                         url:HOSTNAME + 'grales_asig.py',
                         data:{ ID: $('.asignacion>option:selected').attr('ID') },
                         success:function(ajaxData) {
-
                           var noms = ['cuenca','ubicacion','tipo','asignacion'].map((d) => [d.toUpperCase(),$('.' + d + '>option:selected').text()])
 
                           for(var k in ajaxData) {
+                            ajaxData[k] = JSON.parse(ajaxData[k])
+                            var isJson = Object.keys(ajaxData[k]).every((d) => !+d);
 
-                            ajaxData[k] = JSON.parse(ajaxData[k]).map(function(d) {
-                                  var name = noms.filter((d) => d.slice(0,3) != 'Tod').join(' - ')// ? 'Todas' : noms.join(' - ')
-                                  d['nombre'] = name ? name : 'Nacional'
-                                  return d;
-                            })
-
+                            if(isJson) {
+                                Object.keys(ajaxData[k]).forEach((d) => {
+                                    ajaxData[k][d] = JSON.parse(ajaxData[k][d])
+                                })
+                            }
+/*
+                                ajaxDat[k].map(function(d) {
+                                      var name = noms.filter((d) => d.slice(0,3) != 'Tod').join(' - ')// ? 'Todas' : noms.join(' - ')
+                                      d['nombre'] = name ? name : 'Nacional'
+                                      return d;
+                                })
+*/
                           }
 
                           mapNdataObj['ajaxData'] = ajaxData;
+
                           switcher($('.selectedButton').attr('id'),mapNdataObj);
 
                         }
@@ -677,9 +703,15 @@ function cambio(data,str,fn,extraParam) {
             CUENCA:$('.cuenca>option:selected').text()
           },
           success: function(data) {
-              //console.log(JSON.parse(data)
+
                for(var k in data) { data[k] = JSON.parse(data[k]); }
+
+               Object.keys(data.seguimiento).forEach((d) => {
+                 data.seguimiento[d] = JSON.parse(data.seguimiento[d])
+               });
+
                mapNdataObj['ajaxData'] = data;
+
     	         $('#botones_>div').filter(function(i,d) { return i === 0 })
                         .click();
           }
@@ -720,7 +752,13 @@ function openInNewTab(url) {
 
 
 function switcher(id,mapNdataObj) {
-
+  /*
+          Object.keys(mapNdataObj.ajaxData.seguimiento).forEach((d) => {
+              if(typeof(mapNdataObj.ajaxData.seguimiento[d]) == 'string') {
+                  mapNdataObj.ajaxData.seguimiento[d] = JSON.parse(mapNdataObj.ajaxData.seguimiento[d])
+              }
+          });
+*/
     		 	switch (true) {
               case id == 'Datos generales':
                     grapher(function() {
@@ -748,32 +786,27 @@ function switcher(id,mapNdataObj) {
         	 		case id === 'Reservas':
 
                     var reservas = mapNdataObj.ajaxData.reservas;
+                    reservas = _.sortBy(reservas,function (d) { return d.fecha; })
 
                     if(reservas.length > 0) {
-                          var panel_height = 80;
-                          var visor = "<div style='width:100%;height:100%;'>" +
-                                        "<div style='width:100%;height:"+ panel_height +"px;' id='visor_panel'>"+
-                                          "<div style='text-align:center;'>" +
-                                            "<div style='display:inline-block;'>" +
-                                              "<div style='font-weight:800;font-size:2em;'>Reservas</div>" +
-                                              "<div style='display:table;'>" +
-                                                "<div style='display:table-cell;padding-right:1%;'>"+
-                                                  "<input type='radio' name='reservas' value='rr_pce_mmbpce' checked> PCE</input>" +
-                                                "</div>" +
-                                                "<div style='display:table-cell;padding-right:1%;'>"+
-                                                  "<input type='radio' name='reservas' value='rr_aceite_mmb'> Aceite</input>" +
-                                                "</div>" +
-                                                "<div style='display:table-cell;padding-left:1%;'>"+
-                                                  "<input type='radio' name='reservas' value='rr_gas_natural_mmmpc'> Gas</input>" +
-                                                "</div>" +
-                                              "</div>" +
-                                            "</div>" +
-                                          "</div>" +
-                                        "</div>" +
-                                        "<div style='width:100%;height:calc(100% - "+ panel_height +"px);' id='visor_chart'></div>" +
-                                      "</div>";
+
+                          // ----------------- AGREGAR FRAME QUE INCLUYE BOTONES TIPO RADIO --------------------
+                          var visor_config = {
+                            'radio_names':'reservas',
+                            'title':'Reservas',
+                            'options': [
+                                { 'value':'rr_pce_mmbpce', 'text':' PCE' },
+                                { 'value':'rr_aceite_mmb', 'text':' Aceite' },
+                                { 'value':'rr_gas_natural_mmmpc', 'text':' Gas' }
+                              ],
+                            'height':80
+                          };
+
+                          var visor = frameVisor_withRadios(visor_config)
 
                           $('#visor').html(visor);
+
+                          // ----------------- AGREGAR FRAME QUE INCLUYE BOTONES TIPO RADIO --------------------
 
                           var plot_config = {
                             title:'',
@@ -787,7 +820,7 @@ function switcher(id,mapNdataObj) {
                             xAxis: {
                               type:'datetime',
                               dateTimeLabelFormats: {
-                                month:'%b \ %Y'
+                                year:'%Y'
                               }
                             },
                             stackLabels:true,
@@ -814,6 +847,8 @@ function switcher(id,mapNdataObj) {
                             }
                           };
 
+                          //console.log(plot_config)
+
                           $('input[type=radio][name=reservas]').change(function() {
                                 plot_config.yAxis = config_changes.yAxis[this.value];
                                 plot_config.subtitle = config_changes.subtitle[this.value];
@@ -838,6 +873,7 @@ function switcher(id,mapNdataObj) {
 
                               var stack_reservas = new Wrangler(config,groups_);
                               var reservasStacked = stack_reservas.stackData(reservas);
+                              //console.log(reservasStacked)
                               var colores = ['rgb(13,180,190)','rgb(46,112,138)','rgb(20,50,90)'];
 
                               reservasStacked = reservasStacked.map(function(d,i) {
