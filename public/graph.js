@@ -200,6 +200,7 @@ function DatosGrales(data)  {
       'color':'white'
     })
     .html(function(d) {
+      
       var prod = _.sortBy(data.ajaxData.produccion,function (d) { return d.fecha; });
       var prod = prod[prod.length -1 ];
 
@@ -209,6 +210,10 @@ function DatosGrales(data)  {
         var anio = f.getFullYear(ts)
         return meses[mes] + ' - ' + anio;
       }
+
+      var _aceite_ = data.ajaxData.produccion.length > 0 ? (+prod.aceite_mbd.toFixed(1)).toLocaleString('es-MX') : 0;
+      var _gas_ = data.ajaxData.produccion.length > 0 ? (+prod.gas_mmpcd.toFixed(1)).toLocaleString('es-MX') : 0;
+      var _fecha_ = data.ajaxData.produccion.length > 0 ? fechA(prod.fecha) : '-';
 
       return "<div style='width:100%;height:100%;position:relative;display:table;table-layout:fixed;'>" +
                 "<div style='display:table-row;width:100%;height:50%;text-align:center;table-layout:fixed;position:relative;'>" +
@@ -223,12 +228,12 @@ function DatosGrales(data)  {
                                       "<div style='display:table;font-weight:800;font-size:2.5em;'>" +
                                           "<div style='display:table-row;'>" +
                                               "<div style='display:table-cell;text-align:right;'><span style='font-weight:400;font-size:0.4em;'>ACEITE&nbsp;</span></div>" +
-                                              "<div style='display:table-cell;text-align:center;'>"+ (+prod.aceite_mbd.toFixed(1)).toLocaleString('es-MX') +"</div>" +
+                                              "<div style='display:table-cell;text-align:center;'>"+ _aceite_ +"</div>" +
                                               "<div style='display:table-cell;text-align:left;'><span style='font-weight:400;font-size:0.4em;'>&nbsp;MBD</span></div>" +
                                           "</div>" +
                                           "<div style='display:table-row;'>" +
                                               "<div style='display:table-cell;text-align:right;'><span style='font-weight:400;font-size:0.4em;'>GAS&nbsp;</span></div>" +
-                                              "<div style='display:table-cell;text-align:center;'>"+ (+prod.gas_mmpcd.toFixed(1)).toLocaleString('es-MX') +"</div>" +
+                                              "<div style='display:table-cell;text-align:center;'>"+ _gas_ +"</div>" +
                                               "<div style='display:table-cell;text-align:left;'><span style='font-weight:400;font-size:0.4em;'>&nbsp;MMPCD</span></div>" +
                                           "</div>" +
                                       "</div>" +
@@ -236,7 +241,7 @@ function DatosGrales(data)  {
                                    "</div>" +
                                 "</div>" +
 
-                                "<div style='position:relative:;top:-10px;font-size:1.5em;font-weight:700;color:"+colors_[0]+"'>"+ fechA(prod.fecha) +"</div>" +
+                                "<div style='position:relative:;top:-10px;font-size:1.5em;font-weight:700;color:"+colors_[0]+"'>"+ _fecha_ +"</div>" +
                             "</div>" +
                         "</div>" +
                     "</div>" +
@@ -1485,7 +1490,23 @@ function seguimiento(data) {
   var agregados = Object.keys(data).every((d) => !+d) //? true : false;
   var tipoDisponible = agregados ? Object.keys(data).map((d) => data[d].length ? d : null).filter((f) => f) : [];
 
-  console.log(data)
+  var conceptos_traduccion = {
+      Qo: 'Producción de aceite',
+      Qg: 'Producción de gas',
+      Perf_Des: 'Perforaciones - Desarrollo',
+      Perf_Iny: 'Perforaciones - Inyecciones',
+      Term_Des: 'Terminaciones - Desarrollo',
+      Term_Iny: 'Terminaciones - Inyecciones',
+      RMA: 'Reparaciones Mayores',
+      RME: 'Reparaciones Menores',
+      Tap: 'Taponamientos',
+      Inv: 'Inversión',
+      G_Op: 'Gastos de Operación',
+      Np: 'Producción acumulada de aceite',
+      Gp: 'Producción acumulada de gas',
+      QgHC: 'Producción de gas hidrocarburo'
+  };
+
 
   var visor_config = {
     'name':'seg',
@@ -1506,187 +1527,71 @@ function seguimiento(data) {
       if(i == 0) $(this).parent().css('padding-right','15px')
   })
 
-  data.ext.forEach(function(d,i){
-      data.ext[i].valor = +data.ext[i].valor.toFixed(1);
+  if(data.ext.lenght > 0) {
+        data.ext.forEach(function(d,i){
+            data.ext[i].valor = +data.ext[i].valor.toFixed(1);
 
-      if(d.concepto == 'QgHC') {
-          data.ext[i].concepto = 'Qg'
-      }
+            if(d.concepto == 'QgHC') {
+                data.ext[i].concepto = 'Qg'
+            }
 
-  })
+        });
+  }
 
+  draw(data,'ext')
 
-   var anios = _.sortBy(_.uniq(data.ext.map(function(d) { return String(d.anio); })));
-   var tipo_obs = _.uniq(data.ext.map(function(d) { return d.tipo_observacion; }));
-   var conceptos = _.uniq(data.ext.map(function(d) { return d.concepto }));
-//console.log(conceptos,data,tipo_obs)
-
-
-   // Esto filtra los conceptos que no tienen valores igual a cero.
-   conceptos = conceptos.map((d) => data.ext.filter((f) => f.concepto == d).some((e) => e.valor))
-                                        .map((m,i) => m ? conceptos[i] : m)
-                                        .filter((f) => f)
-
-   var conceptos_traduccion = {
-     Qo: 'Producción de aceite',
-     Qg: 'Producción de gas',
-     Perf_Des: 'Perforaciones - Desarrollo',
-     Perf_Iny: 'Perforaciones - Inyecciones',
-     Term_Des: 'Terminaciones - Desarrollo',
-     Term_Iny: 'Terminaciones - Inyecciones',
-     RMA: 'Reparaciones Mayores',
-     RME: 'Reparaciones Menores',
-     Tap: 'Taponamientos',
-     Inv: 'Inversión',
-     G_Op: 'Gastos de Operación',
-     Np: 'Producción acumulada de aceite',
-     Gp: 'Producción acumulada de gas',
-     QgHC: 'Producción de gas hidrocarburo'
-   };
-
-   var c_ = conceptos.map(function(d) { return '<option style="font-size:12px" id='+d+'>' + conceptos_traduccion[d] + '</option>'; });
-
-   var str =
-   "<div style='width:100%;height:100%;'>"+
-     "<div style='width:100%;height:30px;display:table;text-align:center;'>" +
-        "<span style='font-weight:600;'>Ver seguimiento en:&ensp;</span> <select id='botonera'>"
-            + c_ +"</select>&ensp;<input id='acumulado' type='checkbox'></input>&nbsp;Acumulado</div>" +
-     "<div style='width:100%; height:calc(100% - 30px)'>" +
-        "<div id='one' style='width:100%;height:50%;'></div>" +
-        "<div id='two' style='width:100%;'></div>" +
-     "</div>" +
-   "</div>"
-
-   $('#visor_chart').html(str);
-
-
-   $('#botonera').on('change',function() {
-         ff = processedData();
-
-         chart.series[0].setName($('#botonera>option:selected').text() + ' - Plan');
-         chart.series[1].setName($('#botonera>option:selected').text() + ' - Real');
-
-         if($('#acumulado:checked')[0]) {
-             var ff_acum = JSON.parse(JSON.stringify(ff));
-
-             ff_acum.map((f) => {
-               f.forEach((d,i) => {
-                   if(i > 0) {
-                     f[i].valor = f[i-1].valor + f[i].valor
-                   }
-               });
-               return f;
-             });
-
-             var max = d3.max( ff_acum.map((d) => d3.max(d.map((d) => d.valor))) );
-             chart.yAxis[0].setExtremes(0,max);
-
-             chart.series[0].setData(ff_acum[0].map((d) => d.valor ));
-             chart.series[1].setData(ff_acum[1].map((d) => d.valor ));
-             chart.series[0].update({type:'area'});
-             chart.series[1].update({type:'area'});
-
-             updateTable(ff_acum)
+  function draw(data,type) {
+         if(type) {
+           var data = data[type]
          } else {
-             chart.series[0].setData(ff[0].map(function(d) { return d.valor; }).filter((f) => f))
-             chart.series[1].setData(ff[1].map(function(d) { return d.valor; }))
 
-             var max = d3.max( ff.map((d) => d3.max(d.map((d) => d.valor))) );
-             chart.yAxis[0].setExtremes(0,max);
-             //chart.yAxis[1].setExtremes(0,yAxis_max);
-             chart.series[0].update({type:'column'});
-             chart.series[1].update({type:'column'});
+         }
 
-             updateTable(ff)
-         };
-
-   });
-
-   function updateTable(ff) {
-           var filas = ff[0].map(function(d,i) {
-             var str = '<tr width="100%;">'+
-                          '<td style="width:33.33%;">'+ d.anio +'</td>'+
-                          '<td style="width:33.33%;">'+ (+d.valor.toFixed(1)).toLocaleString('es-MX') +'</td>'+
-                          '<td style="width:33.33%;" id=a_'+ d.anio +'>'+ ' - ' +'</td>'
-                       '</tr>'
-
-             return str;
-           }).join('');
-
-           var table_container = '<div style="height:30px;width:100%;">'+
-                                  '<table style="width:calc(100% - 8px);height:100%;table-layout:fixed;">'+
-                                    '<tbody style="width:100%;">'+
-                                      '<tr style="width:100%;font-weight:600;text-align:center;border-bottom:1px solid gray;border-top:1px solid gray;">' +
-                                        '<td>AÑO</td>' +
-                                        '<td>PLAN</td>' +
-                                        '<td>REAL</td>' +
-                                      '</tr>' +
-                                    '</tbody>' +
-                                  '</table>';
-                                 '</div>';
-
-           var tabla = //table_container +
-            '<div id="scroll_table_" style="width:100%;height:calc(' + $('#one').css('height') + ' - 30px);overflow:auto;border-bottom:1px solid gray;">' +
-              '<table style="width:100%;,table-layout:fixed;">' +
-              /*'<thead>' +
-               '<tr style="font-weight:600;text-align:center;border-bottom:1px solid gray;border-top:1px solid gray;">' +
-                  '<td>AÑO</td>'+
-                  '<td>PLAN</td>'+
-                  '<td>REAL</td>' +
-               '</tr>' +
-              '</thead>' +
-              */
-                '<tbody id="filas_" style="text-align:center;">' +
-                filas +
-                '</tbody>'
-              '</table>'+
-            '</div>';
-
-           var div_table = '<div style="width:100%;height:100%;">'+
-                              table_container +
-                              tabla +
-                           '</div>'
-
-           $('#two').html(div_table);
-
-           ff[1].forEach(function(d) {
-             $('#a_' + d.anio).text((+d.valor.toFixed(1)).toLocaleString('es-MX'))
-           });
-  };
+         var anios = _.sortBy(_.uniq(data.map(function(d) { return String(d.anio); })));
+         var tipo_obs = _.uniq(data.map(function(d) { return d.tipo_observacion; }));
+         var conceptos = _.uniq(data.map(function(d) { return d.concepto }));
+      //console.log(conceptos,data,tipo_obs)
 
 
-   function processedData() {
-           var op_id = $('#botonera>option:selected').attr('id');
+         // Esto filtra los conceptos que no tienen valores igual a cero.
+         conceptos = conceptos.map((d) => data.filter((f) => f.concepto == d).some((e) => e.valor))
+                                              .map((m,i) => m ? conceptos[i] : m)
+                                              .filter((f) => f)
 
-           var ff = tipo_obs.map(function(d) {
-               return data.ext.filter(function(f) {
-                 return f.tipo_observacion == d && f.concepto == op_id;
-               })
-           });
 
-           ff[0] = _.sortBy(ff[0], (d) => d.anio).filter((d) => d.valor)
+         var c_ = conceptos.map(function(d) { return '<option style="font-size:12px" id='+d+'>' + conceptos_traduccion[d] + '</option>'; });
 
-           return ff;
-    };
+         var str =
+         "<div style='width:100%;height:100%;'>"+
+           "<div style='width:100%;height:30px;display:table;text-align:center;'>" +
+              "<span style='font-weight:600;'>Ver seguimiento en:&ensp;</span> <select id='botonera'>"
+                  + c_ +"</select>&ensp;<input id='acumulado' type='checkbox'></input>&nbsp;Acumulado</div>" +
+           "<div style='width:100%; height:calc(100% - 30px)'>" +
+              "<div id='one' style='width:100%;height:50%;'></div>" +
+              "<div id='two' style='width:100%;'></div>" +
+           "</div>" +
+         "</div>"
 
-    var ff = processedData()
+         $('#visor_chart').html(str);
 
-    updateTable(ff)
 
-   $('#acumulado').on('change',function() {
-           if(this.checked) {
+         $('#botonera').on('change',function() {
+               ff = processedData();
+
+               chart.series[0].setName($('#botonera>option:selected').text() + ' - Plan');
+               chart.series[1].setName($('#botonera>option:selected').text() + ' - Real');
+
+               if($('#acumulado:checked')[0]) {
                    var ff_acum = JSON.parse(JSON.stringify(ff));
 
                    ff_acum.map((f) => {
-                       f.forEach((d,i) => {
-                           if(i > 0) {
-                             f[i].valor = f[i-1].valor + f[i].valor
-                           }
-                       });
-                       return f;
+                     f.forEach((d,i) => {
+                         if(i > 0) {
+                           f[i].valor = f[i-1].valor + f[i].valor
+                         }
+                     });
+                     return f;
                    });
-
-                   console.log(ff_acum)
 
                    var max = d3.max( ff_acum.map((d) => d3.max(d.map((d) => d.valor))) );
                    chart.yAxis[0].setExtremes(0,max);
@@ -1697,78 +1602,189 @@ function seguimiento(data) {
                    chart.series[1].update({type:'area'});
 
                    updateTable(ff_acum)
-
-           } else {
+               } else {
+                   chart.series[0].setData(ff[0].map(function(d) { return d.valor; }).filter((f) => f))
+                   chart.series[1].setData(ff[1].map(function(d) { return d.valor; }))
 
                    var max = d3.max( ff.map((d) => d3.max(d.map((d) => d.valor))) );
                    chart.yAxis[0].setExtremes(0,max);
-
-                   chart.series[0].setData(ff[0].map((d) => d.valor ));
-                   chart.series[1].setData(ff[1].map((d) => d.valor ));
+                   //chart.yAxis[1].setExtremes(0,yAxis_max);
                    chart.series[0].update({type:'column'});
                    chart.series[1].update({type:'column'});
 
                    updateTable(ff)
-           }
+               };
 
-   });
+         });
 
+         function updateTable(ff) {
+                 var filas = ff[0].map(function(d,i) {
+                   var str = '<tr width="100%;">'+
+                                '<td style="width:33.33%;">'+ d.anio +'</td>'+
+                                '<td style="width:33.33%;">'+ (+d.valor.toFixed(1)).toLocaleString('es-MX') +'</td>'+
+                                '<td style="width:33.33%;" id=a_'+ d.anio +'>'+ ' - ' +'</td>'
+                             '</tr>'
 
-   var chart = Highcharts.chart('one', {
-                    chart: {
-                        type: 'column'
-                    },
-                    credits: { enabled:false },
-                    title: {
-                        text: ''
-                    },
-                    subtitle:{
-                      text:'Actividad Planeada vs Real'
-                    },
-                    xAxis: {
-                        categories: anios//['1998','1999','2000']
-                    },
-                    yAxis: {
-                        tickInterval:2,
-                        min: 0,
-                        title: {
-                            text: ''
-                        },
-                        max: d3.max( ff.map((d) => d3.max(d.map((d) => d.valor))) ) //d3.max(ff[0].map(function(d) { return d.valor; })) > d3.max(ff[1].map(function(d) { return d.valor; })) ?
-                          //d3.max(ff[0].map(function(d) { return d.valor; })) : d3.max(ff[1].map(function(d) { return d.valor; }))
-                    },
-                    legend: {
-                        shadow: false
-                    },
-                    tooltip: {
-                        shared: true
-                    },
-                    plotOptions: {
-                        series: {
-                          marker: {
-                            enabled:false
-                          }
-                        },
-                        column: {
-                            grouping: false,
-                            shadow: false,
-                            borderWidth: 0
-                        }
-                    },
-                    series: [{
-                        name: $('#botonera>option:selected').text() + ' - Plan',
-                        color: 'rgba(13,180,190,0.6)',
-                        data: ff[0].map(function(d) { return d.valor; }),
-                        pointPadding: 0.3,
-                        pointPlacement: -0.2
-                    }, {
-                        name: $('#botonera>option:selected').text() + ' - Real',
-                        color: 'rgba(126,86,134,.9)',
-                        data: ff[1].map(function(d) { return d.valor; }),
-                        pointPadding: 0.4,
-                        pointPlacement: -0.2
-                    }]
-    });
+                   return str;
+                 }).join('');
+
+                 var table_container = '<div style="height:30px;width:100%;">'+
+                                        '<table style="width:calc(100% - 8px);height:100%;table-layout:fixed;">'+
+                                          '<tbody style="width:100%;">'+
+                                            '<tr style="width:100%;font-weight:600;text-align:center;border-bottom:1px solid gray;border-top:1px solid gray;">' +
+                                              '<td>AÑO</td>' +
+                                              '<td>PLAN</td>' +
+                                              '<td>REAL</td>' +
+                                            '</tr>' +
+                                          '</tbody>' +
+                                        '</table>';
+                                       '</div>';
+
+                 var tabla = //table_container +
+                  '<div id="scroll_table_" style="width:100%;height:calc(' + $('#one').css('height') + ' - 30px);overflow:auto;border-bottom:1px solid gray;">' +
+                    '<table style="width:100%;,table-layout:fixed;">' +
+                    /*'<thead>' +
+                     '<tr style="font-weight:600;text-align:center;border-bottom:1px solid gray;border-top:1px solid gray;">' +
+                        '<td>AÑO</td>'+
+                        '<td>PLAN</td>'+
+                        '<td>REAL</td>' +
+                     '</tr>' +
+                    '</thead>' +
+                    */
+                      '<tbody id="filas_" style="text-align:center;">' +
+                      filas +
+                      '</tbody>'
+                    '</table>'+
+                  '</div>';
+
+                 var div_table = '<div style="width:100%;height:100%;">'+
+                                    table_container +
+                                    tabla +
+                                 '</div>'
+
+                 $('#two').html(div_table);
+
+                 ff[1].forEach(function(d) {
+                   $('#a_' + d.anio).text((+d.valor.toFixed(1)).toLocaleString('es-MX'))
+                 });
+        };
+
+      // -------
+         function processedData() {
+                 var op_id = $('#botonera>option:selected').attr('id');
+
+                 var ff = tipo_obs.map(function(d) {
+                     return data.filter(function(f) {
+                       return f.tipo_observacion == d && f.concepto == op_id;
+                     })
+                 });
+
+                 ff[0] = _.sortBy(ff[0], (d) => d.anio).filter((d) => d.valor)
+
+                 return ff;
+          };
+
+          var ff = processedData()
+
+          updateTable(ff)
+
+         $('#acumulado').on('change',function() {
+                 if(this.checked) {
+                         var ff_acum = JSON.parse(JSON.stringify(ff));
+
+                         ff_acum.map((f) => {
+                             f.forEach((d,i) => {
+                                 if(i > 0) {
+                                   f[i].valor = f[i-1].valor + f[i].valor
+                                 }
+                             });
+                             return f;
+                         });
+
+                         console.log(ff_acum)
+
+                         var max = d3.max( ff_acum.map((d) => d3.max(d.map((d) => d.valor))) );
+                         chart.yAxis[0].setExtremes(0,max);
+
+                         chart.series[0].setData(ff_acum[0].map((d) => d.valor ));
+                         chart.series[1].setData(ff_acum[1].map((d) => d.valor ));
+                         chart.series[0].update({type:'area'});
+                         chart.series[1].update({type:'area'});
+
+                         updateTable(ff_acum)
+
+                 } else {
+
+                         var max = d3.max( ff.map((d) => d3.max(d.map((d) => d.valor))) );
+                         chart.yAxis[0].setExtremes(0,max);
+
+                         chart.series[0].setData(ff[0].map((d) => d.valor ));
+                         chart.series[1].setData(ff[1].map((d) => d.valor ));
+                         chart.series[0].update({type:'column'});
+                         chart.series[1].update({type:'column'});
+
+                         updateTable(ff)
+                 }
+
+         });
+
+         var chart = Highcharts.chart('one', {
+                          chart: {
+                              type: 'column'
+                          },
+                          credits: { enabled:false },
+                          title: {
+                              text: ''
+                          },
+                          subtitle:{
+                            text:'Actividad Planeada vs Real'
+                          },
+                          xAxis: {
+                              categories: anios//['1998','1999','2000']
+                          },
+                          yAxis: {
+                              tickInterval:2,
+                              min: 0,
+                              title: {
+                                  text: ''
+                              },
+                              max: d3.max( ff.map((d) => d3.max(d.map((d) => d.valor))) ) //d3.max(ff[0].map(function(d) { return d.valor; })) > d3.max(ff[1].map(function(d) { return d.valor; })) ?
+                                //d3.max(ff[0].map(function(d) { return d.valor; })) : d3.max(ff[1].map(function(d) { return d.valor; }))
+                          },
+                          legend: {
+                              shadow: false
+                          },
+                          tooltip: {
+                              shared: true
+                          },
+                          plotOptions: {
+                              series: {
+                                marker: {
+                                  enabled:false
+                                }
+                              },
+                              column: {
+                                  grouping: false,
+                                  shadow: false,
+                                  borderWidth: 0
+                              }
+                          },
+                          series: [{
+                              name: $('#botonera>option:selected').text() + ' - Plan',
+                              color: 'rgba(13,180,190,0.6)',
+                              data: ff[0].map(function(d) { return d.valor; }),
+                              pointPadding: 0.3,
+                              pointPlacement: -0.2
+                          }, {
+                              name: $('#botonera>option:selected').text() + ' - Real',
+                              color: 'rgba(126,86,134,.9)',
+                              data: ff[1].map(function(d) { return d.valor; }),
+                              pointPadding: 0.4,
+                              pointPlacement: -0.2
+                          }]
+          });
+
+    }
 
 }
 

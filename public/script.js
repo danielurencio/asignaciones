@@ -327,13 +327,18 @@ var HOSTNAME = 'http://172.16.24.57:5000/';
 
 
           $('.tipo').on('change',function() {
+            cambio(data,'asignacion',function(d) {
+                return localCond(d,'cuenca') && localCond(d,'ubicacion') && localCond(d,'tipo');
+            },'NOMBRE');
+
                 if( $('.asignacion>option:selected').attr('ID') != 'Todas' ) {
+                  console.log('diferente de Todas')
                     cambio(data,'asignacion',function(d) {
                         return localCond(d,'cuenca') && localCond(d,'ubicacion') && localCond(d,'tipo');
                     },'NOMBRE');
                     $('.asignacion').trigger('change');
                 } else {
-                  console.log(11)
+                  console.log('Igual a Todas')
                     AjaxCall(data,mymap,asignaciones);
                     cambio(data,'asignacion',function(d) {
                         return localCond(d,'cuenca') && localCond(d,'ubicacion') && localCond(d,'tipo');
@@ -354,17 +359,24 @@ var HOSTNAME = 'http://172.16.24.57:5000/';
                         url:HOSTNAME + 'grales_asig.py',
                         data:{ ID: $('.asignacion>option:selected').attr('ID') },
                         success:function(ajaxData) {
-
                           var noms = ['cuenca','ubicacion','tipo','asignacion'].map((d) => [d.toUpperCase(),$('.' + d + '>option:selected').text()])
 
                           for(var k in ajaxData) {
+                            ajaxData[k] = JSON.parse(ajaxData[k])
+                            var isJson = Object.keys(ajaxData[k]).every((d) => !+d);
 
-                            ajaxData[k] = JSON.parse(ajaxData[k]).map(function(d) {
-                                  var name = noms.filter((d) => d.slice(0,3) != 'Tod').join(' - ')// ? 'Todas' : noms.join(' - ')
-                                  d['nombre'] = name ? name : 'Nacional'
-                                  return d;
-                            })
-
+                            if(isJson) {
+                                Object.keys(ajaxData[k]).forEach((d) => {
+                                    ajaxData[k][d] = JSON.parse(ajaxData[k][d])
+                                })
+                            }
+/*
+                                ajaxDat[k].map(function(d) {
+                                      var name = noms.filter((d) => d.slice(0,3) != 'Tod').join(' - ')// ? 'Todas' : noms.join(' - ')
+                                      d['nombre'] = name ? name : 'Nacional'
+                                      return d;
+                                })
+*/
                           }
 
                           mapNdataObj['ajaxData'] = ajaxData;
@@ -774,12 +786,13 @@ function switcher(id,mapNdataObj) {
         	 		case id === 'Reservas':
 
                     var reservas = mapNdataObj.ajaxData.reservas;
+                    reservas = _.sortBy(reservas,function (d) { return d.fecha; })
 
                     if(reservas.length > 0) {
 
                           // ----------------- AGREGAR FRAME QUE INCLUYE BOTONES TIPO RADIO --------------------
                           var visor_config = {
-                            'name':'reservas',
+                            'radio_names':'reservas',
                             'title':'Reservas',
                             'options': [
                                 { 'value':'rr_pce_mmbpce', 'text':' PCE' },
@@ -807,7 +820,7 @@ function switcher(id,mapNdataObj) {
                             xAxis: {
                               type:'datetime',
                               dateTimeLabelFormats: {
-                                month:'%b \ %Y'
+                                year:'%Y'
                               }
                             },
                             stackLabels:true,
@@ -834,6 +847,8 @@ function switcher(id,mapNdataObj) {
                             }
                           };
 
+                          //console.log(plot_config)
+
                           $('input[type=radio][name=reservas]').change(function() {
                                 plot_config.yAxis = config_changes.yAxis[this.value];
                                 plot_config.subtitle = config_changes.subtitle[this.value];
@@ -858,6 +873,7 @@ function switcher(id,mapNdataObj) {
 
                               var stack_reservas = new Wrangler(config,groups_);
                               var reservasStacked = stack_reservas.stackData(reservas);
+                              //console.log(reservasStacked)
                               var colores = ['rgb(13,180,190)','rgb(46,112,138)','rgb(20,50,90)'];
 
                               reservasStacked = reservasStacked.map(function(d,i) {
