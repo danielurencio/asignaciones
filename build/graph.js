@@ -200,7 +200,7 @@ function DatosGrales(data)  {
       'color':'white'
     })
     .html(function(d) {
-      
+
       var prod = _.sortBy(data.ajaxData.produccion,function (d) { return d.fecha; });
       var prod = prod[prod.length -1 ];
 
@@ -1521,6 +1521,8 @@ function seguimiento(data) {
   var visor = frameVisor_withRadios(visor_config);
 
   $('#visor').html(visor);
+  $('input[type=radio]')[1].disabled = true;
+  $($('input[type=radio]')[1]).parent().css('color','lightGray')
 
   $('input[type=radio]').each(function(i,d) {
       $(this).parent().css('padding',0)

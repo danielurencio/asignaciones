@@ -663,15 +663,17 @@ function cambio(data,str,fn,extraParam) {
 
          		var text = $(this).attr('id');
          		var pos = +$(this).attr('pos');
-         		var width = +$(this).css('width').split('px')[0];
-         		var left = width*pos;
+         		var button_width = +$(this).css('width').split('px')[0];
+         		var left = button_width*pos;
+            var buttonOrigin = this.getBoundingClientRect().x;
 
          		var p = '<div id="bubble" style="z-index:1000;left:'+ left +'px">'+ text +'</div>'
          		$('div#bubbles').append(p)
 
-         		var offset = Math.abs($('#bubble')[0].getBoundingClientRect().width - width) / 2;
+            var bubble_width = $('#bubble')[0].getBoundingClientRect().width;
+         		var offset = Math.abs(bubble_width - button_width) / 2;
          		var currentLeft = +$('#bubble').css('left').split('px')[0];
-         		var newLeft = currentLeft - offset;
+         		var newLeft = bubble_width > button_width ? currentLeft - offset : currentLeft + offset;
 
          		$('#bubble').css('left',newLeft + 'px');
 
