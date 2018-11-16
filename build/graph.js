@@ -523,15 +523,18 @@ function LineChart(data) {
                           };
                       });
 
+                      var nombre = points[0].nombre ? points[0].nombre : '';
+                      
                       var str =
                         '<div class="customTooltip">' +
-                          '<div>'+
-                              //+ points[0].nombre +
+                          '<div>' +
+                               nombre +
                           '</div>' +
                           '<div style="padding-bottom:8px;padding-left:8px;font-weight:600;font-size:11px;">'
                               + parseDate(points[0].fecha) +
                           '</div>' +
                               points.map(function(d) {
+
                                 return '<div style="padding-left:8px;">'
                                           + '<b style="color:'+ d.color +'">' + d.hidrocarburo + ':</b> ' + d.valor.toFixed(2) +
                                        '</div>';

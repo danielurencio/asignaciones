@@ -1241,7 +1241,8 @@ function switcher(id,mapNdataObj) {
         	 		case id === 'Seguimiento':
 
                     var seg = mapNdataObj.ajaxData.seguimiento;
-                    seguimiento(seg);
+
+                    seg.length > 0 || Object.keys(seg).length > 0 ? seguimiento(seg) : noDato();
                     //grapher(enConstruccion)
             	 			break;
     	 	}
