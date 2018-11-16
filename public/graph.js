@@ -270,14 +270,14 @@ function DatosGrales(data)  {
 
           var style = "display:table-cell;text-align:center;padding:5px;"
           var ff =
-          "<div style='border-right:1px solid rgba(255,255,255,.3);"+ style +"font-weight:400;font-size:.8em;color:"+colors_[2]+"'>"+ str_.toUpperCase() + "</div>"+
+          "<div style='border-right:0px solid rgba(255,255,255,.3);"+ style +"font-weight:400;font-size:.8em;color:"+colors_[2]+"'>"+ str_.toUpperCase() + "</div>"+
           "<div style='"+ style +"border-right:1px solid rgba(255,255,255,.3);'>"+
             _pce_ +
           "</div>" +
           "<div style='"+ style +"border-right:1px solid rgba(255,255,255,.3);'>"+
              _aceite_ +
           "</div>" +
-          "<div style='"+ style +"border-right:1px solid rgba(255,255,255,.3);'>"+
+          "<div style='"+ style +"border-right:0px solid rgba(255,255,255,.3);'>"+
              _gas_ +
           "</div>" //+
           //"<div style='"+ style +"font-weight:400;font-size:.8em;color:"+colors_[2]+"'>"+ str_.toUpperCase() + "</div>"
