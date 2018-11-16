@@ -270,6 +270,7 @@ function DatosGrales(data)  {
 
           var style = "display:table-cell;text-align:center;padding:5px;"
           var ff =
+          "<div style='border-right:1px solid rgba(255,255,255,.3);"+ style +"font-weight:400;font-size:.8em;color:"+colors_[2]+"'>"+ str_.toUpperCase() + "</div>"+
           "<div style='"+ style +"border-right:1px solid rgba(255,255,255,.3);'>"+
             _pce_ +
           "</div>" +
@@ -278,8 +279,8 @@ function DatosGrales(data)  {
           "</div>" +
           "<div style='"+ style +"border-right:1px solid rgba(255,255,255,.3);'>"+
              _gas_ +
-          "</div>" +
-          "<div style='"+ style +"font-weight:400;font-size:.8em;color:"+colors_[2]+"'>"+ str_.toUpperCase() + "</div>"
+          "</div>" //+
+          //"<div style='"+ style +"font-weight:400;font-size:.8em;color:"+colors_[2]+"'>"+ str_.toUpperCase() + "</div>"
 
           return ff;
         }
@@ -296,10 +297,10 @@ function DatosGrales(data)  {
 
                                         "<div style='display:table;font-weight:800;font-size:1em;'>" +
                                             "<div style='display:table-row;text-align:center;font-weight:400;color:"+colors_[2]+"'>" +
+                                                "<div style='display:table-cell;text-align:center;'>"+ '' +"</div>" +
                                                 "<div style='display:table-cell;text-align:center;'>"+ 'PCE' +"</div>" +
                                                 "<div style='display:table-cell;text-align:center;'>"+ 'ACEITE' +"</div>" +
                                                 "<div style='display:table-cell;text-align:center;'>"+ 'GAS' +"</div>" +
-                                                "<div style='display:table-cell;text-align:center;'>"+ '' +"</div>" +
                                             "</div>" +
                                             "<div style='display:table-row;'>" +
                                                 filas('probadas') +
@@ -311,10 +312,10 @@ function DatosGrales(data)  {
                                                 filas('posibles') +
                                             "</div>" +
                                             "<div style='display:table-row;font-weight:400;color:"+colors_[2]+"'>" +
+                                                  "<div style='display:table-cell;text-align:center;'>"+ '' +"</div>" +
                                                   "<div style='display:table-cell;text-align:center;'>"+ 'MMB' +"</div>" +
                                                   "<div style='display:table-cell;text-align:center;'>"+ 'MMB' +"</div>" +
                                                   "<div style='display:table-cell;text-align:center;'>"+ 'MMMPC' +"</div>" +
-                                                  "<div style='display:table-cell;text-align:center;'>"+ '' +"</div>" +
                                             "</div>" +
                                         "</div>" +
 
@@ -524,7 +525,7 @@ function LineChart(data) {
                       });
 
                       var nombre = points[0].nombre ? points[0].nombre : '';
-                      
+
                       var str =
                         '<div class="customTooltip">' +
                           '<div>' +
