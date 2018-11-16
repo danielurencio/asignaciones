@@ -1613,9 +1613,12 @@ function seguimiento(data) {
 
 
   if(tipoDisponible.length > 0) {
-    draw(data,'ext')
+    tipoDisponible.some((s) => s == 'ext') ? draw(data,'ext') : noDato();
+    //draw(data,'ext')
   } else {
-    draw(data)
+
+    var tipo_ = Object.keys(data[0]).some((s) => s == 'anio') ? 'ext' : 'exp';
+    tipo_ == 'ext' ? draw(data) : noDato();
   }
 
   function draw(data,type) {
