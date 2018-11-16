@@ -54,7 +54,7 @@ class Service():
                            "ON A.ID = B.ID " +\
                          ") " + self.conditionalQuery() +\
                          "GROUP BY FECHA,TIPO_RESERVAS",
-            'cmt_ext': "SELECT ANIO,CONCEPTO,SUM(VALORES) AS VALOR FROM ( " +\
+            'cmt_ext': "SELECT ANIO,CONCEPTO,SUM(VALOR) AS VALOR FROM ( " +\
                             "SELECT A.*, B.CUENCA, B.UBICACION, B.TIPO FROM ASIGNACIONES_CMT_EXTRACCION A " +\
                             "LEFT JOIN DATOS_ASIGNACIONES_GRALES B " +\
                             "ON A.ID = B.ID " +\
@@ -254,12 +254,12 @@ class Service():
                 query = "SELECT ANIO,CONCEPTO,VALOR FROM ASIGNACIONES_CMT_EXPLORACION WHERE ID='" + self.ID + "'"
                 df = self.connectionResult(query,conn_str)
 
-                for i in ['nombre','estatus']:
-                    df[i] = df[i].str.decode('latin1').str.encode('utf-8')
+                #for i in ['nombre','estatus']:
+                #    df[i] = df[i].str.decode('latin1').str.encode('utf-8')
 
 
             elif(tipo == 'A'):
-                query = "SELECT ANIO,CONCEPTO,VALORES FROM ASIGNACIONES_CMT_EXTRACCION WHERE ID='" + self.ID + "'"
+                query = "SELECT ANIO,CONCEPTO,VALOR FROM ASIGNACIONES_CMT_EXTRACCION WHERE ID='" + self.ID + "'"
                 df = self.connectionResult(query,conn_str)
 
             df = df.to_json(orient='records')
@@ -282,12 +282,12 @@ class Service():
         if(self.ID != 'Todas'):
             tipo = 'A' if len(self.ID.split('-')[0]) == 1 else 'AE'
 
-            if(tipo.ID == 'AE'):
-                query = "SELECT ANIO,CONCEPTO,VALOR FROM ASIGNACIONES_SEGUIMIENTO_EXP WHERE ID='" + self.ID + "'"
+            if(tipo == 'AE'):
+                query = "SELECT PERIODO,CONCEPTO,VALOR,TIPO_OBSERVACION FROM ASIGNACIONES_SEGUIMIENTO_EXP WHERE ID='" + self.ID + "'"
                 df = self.connectionResult(query,conn_str)
 
             elif(tipo == 'A'):
-                query = "SELECT ANIO,CONCEPTO,VALOR FROM ASIGNACIONES_SEGUIMIENTO_EXT WHERE ID='" + self.ID + "'"
+                query = "SELECT ANIO,CONCEPTO,VALOR,TIPO_OBSERVACION FROM ASIGNACIONES_SEGUIMIENTO_EXT WHERE ID='" + self.ID + "'"
                 df = self.connectionResult(query,conn_str)
             
             df = df.to_json(orient='records')

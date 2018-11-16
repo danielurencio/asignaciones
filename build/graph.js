@@ -117,7 +117,7 @@ function DatosGrales(data)  {
 
   d3.select('div#row_a>div#col_2')
   .html(function(d) {
-    var grales_ = ASIG_ != 'Todas' ? data.grales.filter((d) => d.NOMBRE == ASIG_) : data.grales;
+    var grales_ = ASIG_ != 'Todas' ? data.grales.filter((d) => d.NOMBRE == ASIG_) : grales;
     var seg = _.sortBy(data.ajaxData.seguimiento.ext,function(d) { return d.anio; }).filter((f) => f.tipo_observacion == 'Real');
     var gop = d3.sum(seg.filter((f) => f.concepto == 'G_Op').map((d) => d.valor))/1000;
 
@@ -149,7 +149,7 @@ function DatosGrales(data)  {
   d3.select('div#row_a>div#col_3')
   .html(function(d) {
 
-    var grales_ = ASIG_ != 'Todas' ? data.grales.filter((d) => d.NOMBRE == ASIG_) : data.grales;
+    var grales_ = ASIG_ != 'Todas' ? data.grales.filter((d) => d.NOMBRE == ASIG_) : grales;
     var seg = _.sortBy(data.ajaxData.seguimiento.ext,function(d) { return d.anio; }).filter((f) => f.tipo_observacion == 'Real');
     //seg = ASIG_ != 'Todas' ? seg.filter((f) => new RegExp(ASIG_,f)) : '';
 
@@ -260,18 +260,24 @@ function DatosGrales(data)  {
         var resv = resv_[resv_.length -1 ];
 
         var resv_ = resv_.filter((f) => f.fecha == resv.fecha);
+        var _fecha_ = data.ajaxData.reservas.length > 0 ? new Date(resv.fecha).getFullYear() : '-';
 
         function filas(str_) {
+          var _pce_ = data.ajaxData.reservas.length > 0 ? (+resv_.filter((f) => f.tipo == str_)[0].rr_pce_mmbpce.toFixed(1)).toLocaleString('es-MX') : '0';
+          var _aceite_ = data.ajaxData.reservas.length > 0 ? (+resv_.filter((f) => f.tipo == str_)[0].rr_aceite_mmb.toFixed(1)).toLocaleString('es-MX') : '0';
+          var _gas_ = data.ajaxData.reservas.length > 0 ? (+resv_.filter((f) => f.tipo == str_)[0].rr_gas_natural_mmmpc.toFixed(1)).toLocaleString('es-MX') : '0';
+
+
           var style = "display:table-cell;text-align:center;padding:5px;"
           var ff =
           "<div style='"+ style +"border-right:1px solid rgba(255,255,255,.3);'>"+
-            (+resv_.filter((f) => f.tipo == str_)[0].rr_pce_mmbpce.toFixed(1)).toLocaleString('es-MX') +
+            _pce_ +
           "</div>" +
           "<div style='"+ style +"border-right:1px solid rgba(255,255,255,.3);'>"+
-            (+resv_.filter((f) => f.tipo == str_)[0].rr_aceite_mmb.toFixed(1)).toLocaleString('es-MX') +
+             _aceite_ +
           "</div>" +
           "<div style='"+ style +"border-right:1px solid rgba(255,255,255,.3);'>"+
-            (+resv_.filter((f) => f.tipo == str_)[0].rr_gas_natural_mmmpc.toFixed(1)).toLocaleString('es-MX') +
+             _gas_ +
           "</div>" +
           "<div style='"+ style +"font-weight:400;font-size:.8em;color:"+colors_[2]+"'>"+ str_.toUpperCase() + "</div>"
 
@@ -316,7 +322,7 @@ function DatosGrales(data)  {
                                   "</div>" +
 
                                   "<div style='position:relative:;top:-10px;font-size:1.5em;font-weight:700;color:"+colors_[2]+"'>"
-                                              + new Date(resv.fecha).getFullYear() +"</div>" +
+                                              + _fecha_ +"</div>" +
 
                               "</div>" +
                           "</div>" +
@@ -468,13 +474,13 @@ function LineChart(data) {
                     enabled:true
                 },
                 title: {
-                    text: null//$('.asignacion>option:selected').text()
+                    text: 'Producción'//null//$('.asignacion>option:selected').text()
                 },
                 subtitle: {
                     text: null//'Producción'
                 },
 
-                series: Series('aceite_mbd',1,'red').concat(Series('gas_mmpcd',null,'green')),
+                series: Series('aceite_mbd',1,'green').concat(Series('gas_mmpcd',null,'red')),
                 rangeSelector: {
                   enabled:true,
                   buttons: [
@@ -745,6 +751,7 @@ function BarChart(config) {
                     var rangeSelector;
                     if(!config.noRange) {
                       rangeSelector = true;
+
                     } else {
                       rangeSelector = false;
                     }
@@ -881,7 +888,36 @@ function pie(data_,subdata) {
 }
 
 function documentos(data) {
-  data = _.sortBy(data,(d) => d.NOMBRE)
+
+  var selects = Array.prototype.slice.call(document.querySelectorAll('select'))
+                .map(function(d) {
+                  var class_ = d.getAttribute('class');
+                  var txt = $('.' + class_ + '>option:selected').text();
+                  var obj = {};
+
+                  return [class_.toUpperCase(),txt];
+                })
+                .filter((f) => !new RegExp(/^Tod/).test(f[1]));
+
+
+  if(selects.length > 0) {
+        var obj = {};
+
+        for(var k in selects) {
+            var key = selects[k][0];
+            var val = selects[k][1];
+            key = key == 'ASIGNACION' ? 'NOMBRE' : key;
+            obj[key] = val;
+        }
+
+        Object.keys(obj).forEach((key) => {
+            data = data.filter((f) => f[key] == obj[key])
+        });
+
+  };
+
+  data = _.sortBy(data,(d) => d.NOMBRE);
+
   var filas = data.map(function(d,i) {
     var str = '<tr width="100%;">'+
                  '<td style="padding:3px;width:50%;">'+ d.NOMBRE +'</td>'+
@@ -924,6 +960,20 @@ function documentos(data) {
 
 function CMT(data) {
 
+        function clean_(data) {
+
+            var a = _.uniq(data.map((d) => d.concepto))
+                     .map(function(d) {
+                            return data.filter((f) => f.concepto == d)
+                              .map((d) => d.valor)
+                              .every((d) => d) ? d : null;
+                    }).filter((f) => f);
+
+            return data.filter((f) => a.some((d) => d == f.concepto));
+
+        };
+
+
         var agregados = Object.keys(data).every((d) => !+d) //? true : false;
         var tipoDisponible = agregados ? Object.keys(data).map((d) => JSON.parse(data[d]).length ? d : null).filter((f) => f) : [];
 
@@ -948,16 +998,16 @@ function CMT(data) {
 
         function table_(config,a) {
 
-              var data = JSON.parse(config.data);
+              var data = typeof(config.data) == 'string' ? JSON.parse(config.data) : config.data;
               var sel = $('#botonera_' + config.id + ">option:selected").attr('id');
               var sel_data = data.filter((d) => d.concepto == sel);
 
               if(a) {
-                    sel_data = _.sortBy(sel_data,(d) => d.concepto).filter((d) => d.valores);
+                    sel_data = _.sortBy(sel_data,(d) => d.concepto).filter((d) => d.valor);
                     var rows = sel_data.map((d) => {
                       var str_ = '<tr style="width:100%;">'+
                                     '<td style="width:50%;padding:0px;">'+ d.anio +'</td>'+
-                                    '<td style="width:50%;padding:0px;">'+ d.valores.toLocaleString('es-MX') +'</td>'+
+                                    '<td style="width:50%;padding:0px;">'+ d.valor.toLocaleString('es-MX') +'</td>'+
                                  '</tr>'
                       return str_;
                     }).join('');
@@ -1009,7 +1059,9 @@ function CMT(data) {
                       var disp = 'table-cell'
                 }
 
-                var data = JSON.parse(config.data);
+                var data = typeof(config.data) == 'string' ? JSON.parse(config.data) : config.data;
+                data = clean_(data)
+                data = _.sortBy(data,(d) => d.concepto);
 
                 var conceptos = _.uniq(data.map((d) => d.concepto));
                 var anios = _.uniq(data.map((d) => d.anio));
@@ -1046,12 +1098,12 @@ function CMT(data) {
         };
 
         function barplot_cmt(config,a) {
-               var data = JSON.parse(config.data);
+               var data = typeof(config.data) == 'string' ? JSON.parse(config.data) : config.data;
                var sel = $('select#botonera_'+ config.id +'>option:selected').attr('id');
 
                if(a) {
                  data = data.filter((f) => f.concepto == sel)
-                            .map((d) => [d.anio,d.valores])
+                            .map((d) => [d.anio,d.valor])
                             .filter((f) => f[1]);
                }
                else {
@@ -1110,7 +1162,7 @@ function CMT(data) {
                                 '<div id="ext" style="width:100%;height:50%;"></div>' +
                              '</div>';
 
-              $('#visor').html(division)
+              $('#visor').html(division);
 
               var config = [
                 {
@@ -1132,8 +1184,7 @@ function CMT(data) {
                 table_(d);
                 barplot_cmt(d);
 
-
-              })
+              });
 
 
               $('#botonera_ext,#botonera_exp').on('change',function() {
@@ -1148,6 +1199,7 @@ function CMT(data) {
               console.log('tipoDisponible: ', tipoDisponible)
 
               if(!tipoDisponible.length) {
+/*
                     var cpts = _.uniq(data.map((d) => d.concepto));
 
                     var nonZeroConcepts = cpts.map((d) => {
@@ -1156,18 +1208,25 @@ function CMT(data) {
                                        .every((e) => e == 0) ? null : d;
                     }).filter((f) => f);
 
+
                     data = data.filter((f) => {
                             return nonZeroConcepts.some((s) => s == f.concepto);
                     });
+*/
+
+                    data = clean_(data);
+
+                    data = _.sortBy(data,(d) => d.concepto);
                     console.log(data)
               } else {
                     data = JSON.parse(data[tipoDisponible[0]]);
-                    data.forEach((d) => {
-                        d.valores = d.valor;
-                        delete d.valor;
-                    })
-                    console.log(data);
+
+                    data = clean_(data)
+                    data = _.sortBy(data,(d) => d.concepto);
+                    console.log(data)
               }
+
+              console.log(data)
 
               var division = '<div style="width:100%;height:100%;display:table;">' +
                                 '<div id="x_asig" style="width:100%;height:100%;"></div>' +
@@ -1190,9 +1249,9 @@ function CMT(data) {
                 'titulo': !tipoDisponible.length ? 'Compromiso mínimo' : config_ops.titulo[tipoDisponible[0]],
                 'id':'x_asig',
                 'color': !tipoDisponible.length ? 'purple' : config_ops.color[tipoDisponible[0]],
-                'data':JSON.stringify(data)
+                'data':typeof(data) == 'string' ? JSON.stringify(data) : data
               };
-
+console.log(config)
               $('#visor').html(division)
               $('#visor #x_asig').html(apartado(config,true))
               table_(config,true)
@@ -1527,24 +1586,32 @@ function seguimiento(data) {
   $('input[type=radio]').each(function(i,d) {
       $(this).parent().css('padding',0)
       if(i == 0) $(this).parent().css('padding-right','15px')
-  })
+  });
 
-  if(data.ext.lenght > 0) {
-        data.ext.forEach(function(d,i){
-            data.ext[i].valor = +data.ext[i].valor.toFixed(1);
+  // Si es de extracción tomar en cuenta el gas hidrocarburo en el seguimiento
+  if(data.ext) {
+    if(data.ext.length > 0) {
+          data.ext.forEach(function(d,i){
+              data.ext[i].valor = +data.ext[i].valor.toFixed(1);
 
-            if(d.concepto == 'QgHC') {
-                data.ext[i].concepto = 'Qg'
-            }
+              if(d.concepto == 'QgHC') {
+                  data.ext[i].concepto = 'Qg'
+              }
 
-        });
+          });
+    }
   }
 
-  draw(data,'ext')
+
+  if(tipoDisponible.length > 0) {
+    draw(data,'ext')
+  } else {
+    draw(data)
+  }
 
   function draw(data,type) {
          if(type) {
-           var data = data[type]
+            data = data[type]
          } else {
 
          }
@@ -1703,7 +1770,7 @@ function seguimiento(data) {
                              return f;
                          });
 
-                         console.log(ff_acum)
+
 
                          var max = d3.max( ff_acum.map((d) => d3.max(d.map((d) => d.valor))) );
                          chart.yAxis[0].setExtremes(0,max);
@@ -1791,7 +1858,7 @@ function seguimiento(data) {
 }
 
 function aprovechamiento(data) {
-    console.log(data.aprovechamiento)
+
     var obj_data = {}
 
     obj_data['produccion'] = data.produccion.map((d) => {

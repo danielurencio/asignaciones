@@ -250,6 +250,8 @@ var HOSTNAME = 'http://172.16.24.57:5000/';
             UBICACION = $('.ubicacion>option:selected').text();
             CUENCA = $('.cuenca>option:selected').text();
 
+            console.log(ID,TIPO,UBICACION,CUENCA)
+
             $.ajax({
                   type:'GET',
                   dataType:'JSON',
@@ -275,11 +277,10 @@ var HOSTNAME = 'http://172.16.24.57:5000/';
                     }
 
                     Object.keys(ajaxData.seguimiento).forEach((d) => {
-                      ajaxData.seguimiento[d] = JSON.parse(ajaxData.seguimiento[d])
+                      if(typeof(ajaxData.seguimiento[d]) == 'string') ajaxData.seguimiento[d] = JSON.parse(ajaxData.seguimiento[d])
                     });
 
                     mapNdataObj['ajaxData'] = ajaxData;
-
 /*
                     Object.keys(mapNdataObj.ajaxData.seguimiento).forEach((d) => {
                       mapNdataObj.ajaxData.seguimiento[d] = JSON.parse(mapNdata.ajaxData.seguimiento[d])
@@ -297,7 +298,10 @@ var HOSTNAME = 'http://172.16.24.57:5000/';
 
 		      $('.cuenca').on('change',function() {
               if( $('.asignacion>option:selected').attr('ID') != 'Todas' ) {
+                console.log('uy')
+                  //AjaxCall(data,mymap,asignaciones)
 		      		    cambioAsignacion(data);
+                  AjaxCall(data,mymap,asignaciones)
 		      		    datosAsignacion(data,null,null,mymap,asignaciones);
               } else {
 
@@ -327,6 +331,9 @@ var HOSTNAME = 'http://172.16.24.57:5000/';
 
 
           $('.tipo').on('change',function() {
+            //
+            // Si las siguientes tres líneas no se incorporan: no se hacen bien los queries. caso VERACRUZ, MARINO, EXTRACCIÒN
+            //
             cambio(data,'asignacion',function(d) {
                 return localCond(d,'cuenca') && localCond(d,'ubicacion') && localCond(d,'tipo');
             },'NOMBRE');
@@ -920,29 +927,75 @@ function switcher(id,mapNdataObj) {
                               return cond;
                         });
 
-                        var pozosPlot = new BarChart({
-                          title:'Actividad física',
-                          subtitle:'(En operación, perforaciones, terminaciones & taponamientos)',
-                          yAxis:'Número de pozos',
-                          where:'visor',
-                          chart: {
-                            type:'column'
-                          },
-                          xAxis: {
-                            type:'datetime',
-                            dateTimeLabelFormats: {
-                              month:'%b \ %Y'
-                            }
-                          },
-                        });
+                        var groups_ = {
+                          'per': [
+                            { 'stackName':'Perforaciones','groups':['Perforaciones desarrollo'] },
+                            { 'stackName':'Terminaciones', 'groups':['Terminaciones desarrollo'] }
+                          ],
+                          'ops': [
+                            { 'stackName':'Pozos operando','groups':['Pozos operando'] }
+                          ],
+                          'rep': [
+                            { 'stackName':'Reparaciones menores','groups':['Reparaciones menores'] },
+                            { 'stackName':'Reparaciones mayores','groups':['Reparaciones mayores'] },
+                            { 'stackName':'Taponamientos','groups':['Taponamientos'] }
+                          ]
+                        };
 
+                        var checkComplete = Object.keys(groups_)
+                              .map((d) => {
+                                  var rs = groups_[d].map((d) => d.groups)
+                                                   .map((k) => {
+                                                     return pozos.filter((f) => k.some((s) => s == f.descriptor))
+                                                                 .map((a) => a.valor).every((e) => !e)
+                                                   });
+
+                                  rs = rs.every((e) => !e)
+                                  return rs ? d : null
+                              }).filter((f) => f);
+/*
                         var groups_ = [
                           { 'stackName':'Perforaciones','groups':['Perforaciones desarrollo'] },
                           { 'stackName':'Terminaciones', 'groups':['Terminaciones desarrollo'] },
-                          { 'stackName':'Reparaciones','groups':['Reparaciones menores','Repraciones mayores'] },
+                          { 'stackName':'Reparaciones','groups':['Reparaciones menores','Reparaciones mayores'] },
                           { 'stackName':'Taponamientos','groups':['Taponamientos'] },
                           { 'stackName':'Pozos operando','groups':['Pozos operando'] }
                         ];
+*/
+
+
+                        var visor_config = {
+                          'name':'pozos',
+                          'title':'Actividad física',
+                          'options': [
+                              { 'value':'per', 'text':' Perforaciones' },
+                              { 'value':'ops', 'text':' En operación' },
+                              { 'value':'rep', 'text':' Reparaciones y taponamientos' }
+                            ],
+                          'height':80
+                        };
+
+                        var visor = frameVisor_withRadios(visor_config);
+                        $('#visor').html(visor);
+
+                        $('input[type=radio][value='+ checkComplete[0] +']').attr('checked',true);
+
+                        var noEstan = Object.keys(groups_).filter((f) => checkComplete.some((s) => s != f))
+
+                        if(noEstan.length < 3) {
+                                      noEstan
+                                            .forEach((d) => {
+                                              var el = document.querySelector('input[type=radio][value='+ d +']');
+                                              el.disabled = true;
+                                              $(el).parent().css('color','lightGray');
+
+                                            });
+                        }
+
+                        $('input[type=radio]').each(function(i,d) {
+                            $(this).parent().css('padding',0)
+                            if(i >= 0) $(this).parent().css('padding-right','15px')
+                        });
 
                         var config = {
                             filter:'descriptor',
@@ -954,11 +1007,57 @@ function switcher(id,mapNdataObj) {
                             timebuttons:true
                         };
 
-                        var stack_pozos = new Wrangler(config, groups_);
+                        var categoria = $('input[type=radio]:checked').val();
+                        var stack_pozos = new Wrangler(config, groups_[categoria]);
                         var stackedPozos = stack_pozos.stackData(pozos);
 
+
+                        function removeEdges(stackedPozos) {
+                              var stackedPozos_ = JSON.parse(JSON.stringify(stackedPozos))
+
+                              stackedPozos_.forEach(function(d,i) {
+                                 var valid = d.data.filter((f) => f.y).map((d) => d.x);
+                                 var max = d3.max(valid);
+                                 var min = d3.min(valid);
+
+                                 var a = d.data.filter((f) => f.x >= min).filter((f) => f.x <= max);
+                                 stackedPozos_[i].data = a;
+                              })
+
+                              return stackedPozos_;
+                        };
+
+
+                        var chartConfig_ = {
+                          title:'',
+                          subtitle:'',
+                          yAxis:'Número',
+                          where:'visor_chart',
+                          chart: {
+                            type:'column'
+                          },
+                          xAxis: {
+                            type:'datetime',
+                            dateTimeLabelFormats: {
+                              month:'%b \ %Y'
+                            }
+                          },
+                          noRange:false,
+                          timebuttons:true
+                        }
+
+                        var pozosPlot = new BarChart(chartConfig_);
                     //if(pozos.length > 0) {
-                        grapher(pozosPlot.plot,pozos,stack_pozos.stackData);
+                        grapher(pozosPlot.plot,stackedPozos,removeEdges);
+                        //pozosPlot.plot(removeEdges(stackedPozos),(d) => d)
+
+                        $('input[type=radio]').on('change',function() {
+                              var categoria = $('input[type=radio]:checked').val();
+                              var stack_pozos = new Wrangler(config, groups_[categoria]);
+                              var stackedPozos = stack_pozos.stackData(pozos);
+                              grapher(pozosPlot.plot,stackedPozos,removeEdges);
+                        });
+
                     } else {
                         noDato();
                     }
