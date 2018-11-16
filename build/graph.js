@@ -260,7 +260,7 @@ function DatosGrales(data)  {
         var resv = resv_[resv_.length -1 ];
 
         var resv_ = resv_.filter((f) => f.fecha == resv.fecha);
-        var _fecha_ = data.ajaxData.reservas.length > 0 ? new Date(resv.fecha).getFullYear() : '-';
+        var _fecha_ = data.ajaxData.reservas.length > 0 ? +(new Date(resv.fecha).getFullYear()) + 1 : '-';
 
         function filas(str_) {
           var _pce_ = data.ajaxData.reservas.length > 0 ? (+resv_.filter((f) => f.tipo == str_)[0].rr_pce_mmbpce.toFixed(1)).toLocaleString('es-MX') : '0';
@@ -474,7 +474,12 @@ function LineChart(data) {
                     enabled:true
                 },
                 title: {
-                    text: 'Producción'//null//$('.asignacion>option:selected').text()
+                    text: 'Producción',
+                    style: {
+                      'font-family':'Open Sans',
+                      'font-weight':800,
+                      'font-size':'2.5em'
+                    }//null//$('.asignacion>option:selected').text()
                 },
                 subtitle: {
                     text: null//'Producción'
@@ -1549,6 +1554,10 @@ function seguimiento(data) {
   var agregados = Object.keys(data).every((d) => !+d) //? true : false;
   var tipoDisponible = agregados ? Object.keys(data).map((d) => data[d].length ? d : null).filter((f) => f) : [];
 
+  console.log('Agregados: ',agregados)
+  console.log('Tipo disponible: ',tipoDisponible)
+  console.log(data)
+
   var conceptos_traduccion = {
       Qo: 'Producción de aceite',
       Qg: 'Producción de gas',
@@ -1633,7 +1642,7 @@ function seguimiento(data) {
          var str =
          "<div style='width:100%;height:100%;'>"+
            "<div style='width:100%;height:30px;display:table;text-align:center;'>" +
-              "<span style='font-weight:600;'>Ver seguimiento en:&ensp;</span> <select id='botonera'>"
+              "<select id='botonera'>"
                   + c_ +"</select>&ensp;<input id='acumulado' type='checkbox'></input>&nbsp;Acumulado</div>" +
            "<div style='width:100%; height:calc(100% - 30px)'>" +
               "<div id='one' style='width:100%;height:50%;'></div>" +
@@ -1881,7 +1890,12 @@ function aprovechamiento(data) {
             zoomType: 'x'
         },
         title: {
-            text: 'Aprovechamiento de gas'
+            text: 'Aprovechamiento de gas',
+            style: {
+              'font-family':'Open Sans',
+              'font-size':'2em',
+              'font-weight':800
+            }
         },
         subtitle: {
             text: null//document.ontouchstart === undefined ?

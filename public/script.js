@@ -250,7 +250,6 @@ var HOSTNAME = 'http://172.16.24.57:5000/';
             UBICACION = $('.ubicacion>option:selected').text();
             CUENCA = $('.cuenca>option:selected').text();
 
-            console.log(ID,TIPO,UBICACION,CUENCA)
 
             $.ajax({
                   type:'GET',
