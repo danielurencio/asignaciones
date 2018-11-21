@@ -65,15 +65,15 @@ function DatosGrales(data)  {
   var ASIG_ = $('.asignacion>option:selected').text()
   var numOnom = ASIG_ != 'Todas' ? ASIG_.split(' - ')[0] : grales.length;
   var numOnomSize = ASIG_ != 'Todas' ? 2 : 5;
-  var subtNumOnom = ASIG_ != 'Todas' ? ASIG_.split(' - ')[1] : 'ASIGNACIONES';
+  var subtNumOnom = ASIG_ != 'Todas' ? ASIG_.split(' - ')[1] : 'ASIGNACIONES VIGENTES';
 
   d3.select('div#row_a>div#col_1')
   .html(function(d) {
 
     var tipos_asigs =
-      "<div style='font-weight:700;color:rgb(13,180,190);'>"+ grales.filter((d) => new RegExp('^A-').test(d.NOMBRE)).length +" Extracción</div>"+
-      "<div style='font-weight:700;color:rgb(46,112,138);'>"+ grales.filter((d) => new RegExp('^AE-').test(d.NOMBRE)).length +" Exploración</div>"+
-      "<div style='font-weight:700;color:rgb(20,50,90);'>"+ grales.filter((d) => new RegExp('^AR-').test(d.NOMBRE)).length +" Resguardo</div>"
+      "<div style='font-weight:700;color:rgb(13,180,190);font-size:1.5em;'>"+ grales.filter((d) => new RegExp('^A-').test(d.NOMBRE)).length +" Extracción</div>"+
+      "<div style='font-weight:700;color:rgb(46,112,138);font-size:1.5em;'>"+ grales.filter((d) => new RegExp('^AE-').test(d.NOMBRE)).length +" Exploración</div>"+
+      "<div style='font-weight:700;color:rgb(20,50,90);font-size:1.5em;'>"+ grales.filter((d) => new RegExp('^AR-').test(d.NOMBRE)).length +" Resguardo</div>"
 
     var _tipo_ = "";
     var color = "";
@@ -117,9 +117,12 @@ function DatosGrales(data)  {
 
   d3.select('div#row_a>div#col_2')
   .html(function(d) {
+
     var grales_ = ASIG_ != 'Todas' ? data.grales.filter((d) => d.NOMBRE == ASIG_) : grales;
+
+
     var seg = _.sortBy(data.ajaxData.seguimiento.ext,function(d) { return d.anio; }).filter((f) => f.tipo_observacion == 'Real');
-    var gop = d3.sum(seg.filter((f) => f.concepto == 'G_Op').map((d) => d.valor))/1000;
+    var gop = Number(d3.sum(seg.filter((f) => f.concepto == 'G_Op').map((d) => d.valor)).toFixed(1)).toLocaleString('es-MX');
 
 
     return "<div style='width:100%;height:100%;background-color:white;position:relative;display:table;table-layout:fixed;'>" +
@@ -128,7 +131,7 @@ function DatosGrales(data)  {
                       "<div style='display:table;width:100%;height:100%;'>" +
                           "<div style='display:table-cell;vertical-align:middle;color:white;color:"+colors_[0]+"'>" +
                               "<div style='font-size:3em;font-weight:700;'>"+ d3.sum(grales_.map((d) => d.N_CAMPOS_RESERVAS)) +"</div>" +
-                              "<div style='position:relative:;top:-10px;font-size:0.85em;font-weight:600;color:black;'>CAMPOS CON RESERVAS</div>" +
+                              "<div style='position:relative:;top:-10px;font-size:0.85em;font-weight:600;color:black;'>Campos con reservas</div>" +
                           "</div>" +
                       "</div>" +
                   "</div>" +
@@ -137,8 +140,9 @@ function DatosGrales(data)  {
                   "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
                       "<div style='display:table;width:100%;height:100%;'>" +
                           "<div style='display:table-cell;vertical-align:middle;color:white;color:"+colors_[1]+"'>" +
-                              "<div style='font-size:3em;font-weight:700;'>"+ gop.toFixed(1) +"</div>" +
-                              "<div style='position:relative:;top:-10px;font-size:0.85em;font-weight:600;color:black'>GASTOS DE OPERACIÓN<br>(miles de millones de pesos)</div>" +
+                              "<div style='font-size:2em;font-weight:700;'>"+ gop +"</div>" +
+                              "<div style='position:relative:;top:-10px;font-size:0.85em;font-weight:600;color:black;color:"+colors_[4]+";'>millones de pesos</div>" +
+                              "<div style='position:relative:;top:-10px;font-size:0.85em;font-weight:600;color:black'>Gastos ejercidos<br>de operación</div>" +
                           "</div>" +
                       "</div>" +
                   "</div>" +
@@ -150,18 +154,39 @@ function DatosGrales(data)  {
   .html(function(d) {
 
     var grales_ = ASIG_ != 'Todas' ? data.grales.filter((d) => d.NOMBRE == ASIG_) : grales;
-    var seg = _.sortBy(data.ajaxData.seguimiento.ext,function(d) { return d.anio; }).filter((f) => f.tipo_observacion == 'Real');
+
+    var agregados = Object.keys(data.ajaxData.seguimiento).every((d) => !+d);
+    var seg = data.ajaxData.seguimiento;
+
+    if(agregados) {
+        var inv = Object.keys(seg).map((d) => {
+            var inv_ = seg[d].filter((f) => new RegExp(/^I(n|N)/).test(f.concepto) && f.tipo_observacion == 'Real')
+                             .map((d) => d.valor);
+
+            return d3.sum(inv_)
+        });
+
+        inv = d3.sum(inv);
+
+    } else {
+      var inv = seg.filter((f) => f.tipo_observacion == 'Real')
+         .map((d) => d.valor);
+
+      inv = d3.sum(inv);
+    }
+
+    //var seg = _.sortBy(data.ajaxData.seguimiento.ext,function(d) { return d.anio; }).filter((f) => f.tipo_observacion == 'Real');
     //seg = ASIG_ != 'Todas' ? seg.filter((f) => new RegExp(ASIG_,f)) : '';
 
-    var inv = d3.sum(seg.filter((f) => f.concepto == 'Inv').map((d) => d.valor))/1000;
+    //var inv = d3.sum(seg.filter((f) => f.concepto == 'Inv').map((d) => d.valor));
 
     return "<div style='width:100%;height:100%;background-color:white;position:relative;display:table;table-layout:fixed;'>" +
               "<div style='display:table-row;width:100%;height:50%;text-align:center;table-layout:fixed;position:relative;'>" +
                   "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
                       "<div style='display:table;width:100%;height:100%;'>" +
                           "<div style='display:table-cell;vertical-align:middle;color:white;color:"+colors_[2]+"'>" +
-                              "<div style='font-size:3em;font-weight:700;'>"+ (d3.sum(grales_.map((d) => d.SUPERFICIE_KM2))/1000).toFixed(1) +"</div>" +
-                              "<div style='position:relative:;top:-10px;font-size:0.85em;font-weight:600;color:black;'>MILES DE KM<sup>2</sup></div>" +
+                              "<div style='font-size:2em;font-weight:700;'>"+ Number((d3.sum(grales_.map((d) => d.SUPERFICIE_KM2))).toFixed(1)).toLocaleString('es-MX') +"</div>" +
+                              "<div style='position:relative:;top:-10px;font-size:0.85em;font-weight:600;color:black;'>Kilómetros<sup>2</sup></div>" +
                           "</div>" +
                       "</div>" +
                   "</div>" +
@@ -170,8 +195,9 @@ function DatosGrales(data)  {
                   "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
                       "<div style='display:table;width:100%;height:100%;'>" +
                           "<div style='display:table-cell;vertical-align:middle;color:white;color:"+colors_[3]+"'>" +
-                              "<div style='font-size:3em;font-weight:700;'>"+ inv.toFixed(1) +"</div>" +
-                              "<div style='position:relative:;top:-10px;font-size:0.85em;font-weight:600;color:black;'>INVERSIÓN<br>(miles de millones de pesos)</div>" +
+                              "<div style='font-size:2em;font-weight:700;'>"+ Number(inv.toFixed(1)).toLocaleString('es-MX') +"</div>" +
+                              "<div style='position:relative:;top:-10px;font-size:0.85em;font-weight:600;color:"+ colors_[5] +";'> millones de pesos</div>" +
+                              "<div style='position:relative:;top:-10px;font-size:0.85em;font-weight:600;color:black;'>Inversión total ejercida</div>" +
                           "</div>" +
                       "</div>" +
                   "</div>" +
@@ -221,6 +247,7 @@ function DatosGrales(data)  {
                         "<div style='display:table;width:100%;height:100%;'>" +
                             "<div style='display:table-cell;vertical-align:middle;'>" +
                                 "<div style='position:relative:;top:-10px;font-size:1.5em;font-weight:700;color:"+colors_[0]+"'>PRODUCCIÓN</div>" +
+                                "<div style='position:relative:;top:-10px;font-size:1.5em;font-weight:700;color:"+colors_[0]+"'>"+ _fecha_ +"</div>" +
 
                                 "<div style='text-align:center;'>" +
                                   "<div style='display:inline-block;'>" +
@@ -241,7 +268,6 @@ function DatosGrales(data)  {
                                    "</div>" +
                                 "</div>" +
 
-                                "<div style='position:relative:;top:-10px;font-size:1.5em;font-weight:700;color:"+colors_[0]+"'>"+ _fecha_ +"</div>" +
                             "</div>" +
                         "</div>" +
                     "</div>" +
@@ -291,6 +317,8 @@ function DatosGrales(data)  {
                           "<div style='display:table;width:100%;height:100%;'>" +
                               "<div style='display:table-cell;vertical-align:middle;'>" +
                                   "<div style='position:relative:;top:-10px;font-size:1.5em;font-weight:700;color:"+colors_[2]+"'>RESERVAS</div>" +
+                                  "<div style='position:relative:;top:-10px;font-size:1.5em;font-weight:700;color:"+colors_[2]+"'>"
+                                              + _fecha_ +"</div>" +
 
                                   "<div style='text-align:center;'>" +
                                     "<div style='display:inline-block;'>" +
@@ -321,9 +349,6 @@ function DatosGrales(data)  {
 
                                      "</div>" +
                                   "</div>" +
-
-                                  "<div style='position:relative:;top:-10px;font-size:1.5em;font-weight:700;color:"+colors_[2]+"'>"
-                                              + _fecha_ +"</div>" +
 
                               "</div>" +
                           "</div>" +
@@ -475,7 +500,7 @@ function LineChart(data) {
                     enabled:true
                 },
                 title: {
-                    text: 'Producción',
+                    text: 'Producción de hidrocarburos',
                     style: {
                       'font-family':'Open Sans',
                       'font-weight':800,
@@ -1040,7 +1065,6 @@ function CMT(data) {
                               '<td>Año</td><td>'+ nombres[sel].unidades +'</td>' +
                             '</tr>' +
                           '</tbody>' +
-
                        '</table>' +
                       '</div>' +
                       '<div style="width:100%;overlfow:auto;">' +
@@ -1139,8 +1163,10 @@ function CMT(data) {
                  xAxis: {
                    categories: data[0].data.map((d) => String(d[0]))
                  },
-                 hideLegend:true
-                 //tooltip: '<div></div>'
+                 hideLegend:true,
+                 tooltip: "'<div style=\"font-weight:300;font-family:Open Sans;text-align:center;\">'+" +
+                             "'<span style=\"font-weight:800;\">' + this.x + '</span><br>'+ Number(this.y.toFixed(1)).toLocaleString('es-MX') +" +
+                          "'</div>'"
                });
 
                grapher(plot.plot,data,(d) => d)
@@ -1204,8 +1230,6 @@ function CMT(data) {
               });
 
         } else if(!agregados || tipoDisponible.length == 1){
-              console.log('agregados: ',agregados)
-              console.log('tipoDisponible: ', tipoDisponible)
 
               if(!tipoDisponible.length) {
 /*
@@ -1226,16 +1250,14 @@ function CMT(data) {
                     data = clean_(data);
 
                     data = _.sortBy(data,(d) => d.concepto);
-                    console.log(data)
+
               } else {
                     data = JSON.parse(data[tipoDisponible[0]]);
 
                     data = clean_(data)
                     data = _.sortBy(data,(d) => d.concepto);
-                    console.log(data)
-              }
 
-              console.log(data)
+              }
 
               var division = '<div style="width:100%;height:100%;display:table;">' +
                                 '<div id="x_asig" style="width:100%;height:100%;"></div>' +
@@ -1260,7 +1282,7 @@ function CMT(data) {
                 'color': !tipoDisponible.length ? 'purple' : config_ops.color[tipoDisponible[0]],
                 'data':typeof(data) == 'string' ? JSON.stringify(data) : data
               };
-console.log(config)
+
               $('#visor').html(division)
               $('#visor #x_asig').html(apartado(config,true))
               table_(config,true)
@@ -1268,7 +1290,6 @@ console.log(config)
 
               $('#botonera_x_asig').on('change',function() {
                 var id = $(this).attr('id')//.split('_')[1];
-                console.log(id)
                 //var conf = config.filter(function(d) { return d.id == id })
                 table_(config,true)
                 barplot_cmt(config,true)
@@ -1539,17 +1560,15 @@ var ProgressMeter = function(config) {
 };
 
 
-function dashboard(data) {
+function dashboard(data,place) {
    var str =
    "<div style='width:100%;height:100%;'>"+
-        "<div style='width:100%;height:50%;display:table;'>"+
-            "<div id='one' style='width:50%;height:100%;display:table-cell;'></div>" +
-            "<div id='two' style='width:50%;height:100%;display:table-cell;'></div>" +
+        "<div id='inv_barchart' style='width:100%;height:70%;'>"+
         "</div>" +
-        "<div id='three' style='width:100%;height:50%;'></div>" +
+        "<div id='inv_tabla' style='width:100%;height:30%;margin-top:2%;'></div>" +
    "</div>"
 
-   $('#visor').html(str);
+   $(place).html(str);
 }
 
 
@@ -1557,10 +1576,6 @@ function dashboard(data) {
 function seguimiento(data) {
   var agregados = Object.keys(data).every((d) => !+d) //? true : false;
   var tipoDisponible = agregados ? Object.keys(data).map((d) => data[d].length ? d : null).filter((f) => f) : [];
-
-  console.log('Agregados: ',agregados)
-  console.log('Tipo disponible: ',tipoDisponible)
-  console.log(data)
 
   var conceptos_traduccion = {
       Qo: 'Producción de aceite',
@@ -1576,12 +1591,21 @@ function seguimiento(data) {
       G_Op: 'Gastos de Operación',
       Np: 'Producción acumulada de aceite',
       Gp: 'Producción acumulada de gas',
-      QgHC: 'Producción de gas hidrocarburo'
+      QgHC: 'Producción de gas hidrocarburo',
+      AD_SIS_2D_KM: 'Adquisición sísmica 2D',
+      AD_SIS_3D_KM2: 'Adquisición sísmica 3D',
+      ELECTROMAG: 'Electromagnéticos',
+      ESTUDIOS:'Estudios',
+      INV_MMPESOS:'Millones de pesos',
+      POZOS:'Pozos',
+      PROCESADO_KM:'Kilómetros procesados',
+      PROCESADO_KM2:'Kilómetros<sup>2</sup> procesados'
   };
 
 
+
   var visor_config = {
-    'name':'seg',
+    'radio_names':'seg',
     'title':'Seguimiento',
     'options': [
         { 'value':'ext', 'text':' Extracción' },
@@ -1593,41 +1617,115 @@ function seguimiento(data) {
   var visor = frameVisor_withRadios(visor_config);
 
   $('#visor').html(visor);
-  $('input[type=radio]')[1].disabled = true;
-  $($('input[type=radio]')[1]).parent().css('color','lightGray')
+  $('input[type=radio]').attr('disabled',true);
 
   $('input[type=radio]').each(function(i,d) {
+      $(this).parent().css('color','lightGray')
       $(this).parent().css('padding',0)
       if(i == 0) $(this).parent().css('padding-right','15px')
   });
 
-  // Si es de extracción tomar en cuenta el gas hidrocarburo en el seguimiento
-  if(data.ext) {
-    if(data.ext.length > 0) {
-          data.ext.forEach(function(d,i){
-              data.ext[i].valor = +data.ext[i].valor.toFixed(1);
-
-              if(d.concepto == 'QgHC') {
-                  data.ext[i].concepto = 'Qg'
-              }
-
-          });
-    }
-  }
 
 
+
+// MANEJAR TODA LA LÓGICA DE SEGUIMIENTO SEGÚN EL DATO.
+//////////------------------------------------------------------------------------------------
+// <-- //-----------------------------------------------------------------------------------
+////////-----------------------------------------------------------------------------------
   if(tipoDisponible.length > 0) {
-    tipoDisponible.some((s) => s == 'ext') ? draw(data,'ext') : noDato();
-    //draw(data,'ext')
-  } else {
 
-    var tipo_ = Object.keys(data[0]).some((s) => s == 'anio') ? 'ext' : 'exp';
-    tipo_ == 'ext' ? draw(data) : noDato();
+        var sel = $('input[type=radio][value='+ tipoDisponible[0] +']');
+        sel.prop('checked',true);
+
+        tipoDisponible.forEach(function(d) {
+            var sel = $('input[type=radio][value='+ d +']');
+            sel.parent().css('color','black');
+            sel.attr('disabled',false);
+        })
+
+
+        // Si es de extracción tomar en cuenta el gas hidrocarburo en el seguimiento
+        if(data.ext) {
+          if(data.ext.length > 0) {
+                data.ext.forEach(function(d,i){
+                    data.ext[i].valor = +data.ext[i].valor.toFixed(1);
+
+                    if(d.concepto == 'QgHC') {
+                        data.ext[i].concepto = 'Qg'
+                    }
+
+                });
+          }
+        }
+
+        // Si siempre está disponible la información de extracción, que ésta se visualice primero.
+        tipoDisponible.some((s) => s == 'ext') ? draw(data,'ext') : draw(data,'exp')//noDato();
+
+        $('input[type=radio][name=seg]').on('change',function() {
+              $('#extra_panels').remove();
+              $('#visor_panel').css('height','80px');
+              draw(data,this.getAttribute('value'))
+        });
+
+  } else {
+        // ¿Qué tipo es? Si tenemos anio, entonces se trata de la base de extracción.
+        // De lo contrario, es exploración.
+        var tipo_ = Object.keys(data[0]).some((s) => s == 'anio') ? 'ext' : 'exp';
+        tipo_ == 'ext' ? draw(data) : noDato();
   }
+//////////--------------------------------------------------------------------------------
+// <-- //----------------------------------------------------------------------------------
+////////------------------------------------------------------------------------------------
 
   function draw(data,type) {
+
          if(type) {
             data = data[type]
+
+            if(type == 'exp') {
+
+                    var periodos = {
+                      ' Planes (Escenario base 2018-2019)':'2018 - 2019',
+                      'Real (2018-2021)':'2018 - 2021',
+                      'Real (sep 2017 -sep 2018)':'2018 - 2019',
+                      'Real a septiembre 2018':'2016 - 2019',
+                      'Total Planes (2016-2019)':'2016 - 2019',
+                      'Total Planes (2018-2021)':'2018 - 2021'
+                    };
+
+
+                    data.forEach((d) => {
+                      if(d.periodo) {
+                        d.anio = periodos[d.periodo];
+                        delete d.periodo;
+                      }
+                    });
+
+                    data = data.filter((f) => f.anio)
+
+                    var periodos_ = _.uniq(data.map((d) => d.anio));
+
+                    $('#visor_panel').css('height','auto');
+
+                    var str_html = '<div id="extra_panels" style="display:table;width:100%;height:auto;text-align:center;padding:1em;">'+
+                                      '<div style="font-weight:700;padding:.5em;">Periodos:</div>' +
+                                      '<div id="panels_periodos" style="width:100%;display:table;text-align:center;"></div>' +
+                                   '</div>';
+
+                    $('#visor_panel').append(str_html);
+
+                    d3.select('#panels_periodos')
+                      .selectAll('div')
+                    .data(periodos_).enter()
+                      .append('div')
+                      .style('display','table-cell')
+                      .html(function(d,i) {
+                        var check = i == 0 ? ' checked' : '';
+                        return '<div><input type="radio" name="periodos" value="' + d + '"' + check + '></input> ' + d + '</div>';
+                      })
+
+            }
+
          } else {
 
          }
@@ -1635,22 +1733,22 @@ function seguimiento(data) {
          var anios = _.sortBy(_.uniq(data.map(function(d) { return String(d.anio); })));
          var tipo_obs = _.uniq(data.map(function(d) { return d.tipo_observacion; }));
          var conceptos = _.uniq(data.map(function(d) { return d.concepto }));
-      //console.log(conceptos,data,tipo_obs)
-
 
          // Esto filtra los conceptos que no tienen valores igual a cero.
          conceptos = conceptos.map((d) => data.filter((f) => f.concepto == d).some((e) => e.valor))
                                               .map((m,i) => m ? conceptos[i] : m)
-                                              .filter((f) => f)
+                                              .filter((f) => f);
 
 
          var c_ = conceptos.map(function(d) { return '<option style="font-size:12px" id='+d+'>' + conceptos_traduccion[d] + '</option>'; });
 
+         var _input_ = type == 'ext' ? "&ensp;<input id='acumulado' type='checkbox'></input>&nbsp;Acumulado" : '';
          var str =
          "<div style='width:100%;height:100%;'>"+
            "<div style='width:100%;height:30px;display:table;text-align:center;'>" +
-              "<select id='botonera'>"
-                  + c_ +"</select>&ensp;<input id='acumulado' type='checkbox'></input>&nbsp;Acumulado</div>" +
+              "<select id='botonera'>" + c_ + "</select>" +
+              _input_ +
+          "</div>" +
            "<div style='width:100%; height:calc(100% - 30px)'>" +
               "<div id='one' style='width:100%;height:50%;'></div>" +
               "<div id='two' style='width:100%;'></div>" +
@@ -1660,54 +1758,133 @@ function seguimiento(data) {
          $('#visor_chart').html(str);
 
 
+         // -------
+            function processedData() {
+                    var op_id = $('#botonera>option:selected').attr('id');
+
+                    var ff = tipo_obs.map(function(d) {
+                        return data.filter(function(f) {
+                          var checked = $('input[type=radio][name=periodos]:checked').parent().text()
+                          checked = checked.substr(1,checked.length);
+                          var add_bool = type == 'exp' ? f.anio == checked : true;
+                          return f.tipo_observacion == d && f.concepto == op_id && add_bool;
+                        })
+                    });
+
+                    ff[0] = _.sortBy(ff[0], (d) => d.anio)
+                    ff[1] = _.sortBy(ff[1], (d) => d.anio)//.filter((d) => d.valor)
+
+                    return ff;
+             };
+
+////////////////////////////////////////////
+          var ff = processedData()
+          updateTable(ff)
+////////////////////////////////////////////
+
+          $('input[name=periodos]').on('change',function() {
+              var selText = $(this).parent().text();
+              selText = selText.substr(1,selText.length);
+              console.log(selText);
+              var ff = processedData()
+              console.log(ff)
+              chart.series[0].setData(ff[0].map((d) => d.valor ));
+              chart.series[1].setData(ff[1].map((d) => d.valor ));
+              updateTable(ff)
+              //cambiar xAxis
+          });
+
          $('#botonera').on('change',function() {
                ff = processedData();
 
-               chart.series[0].setName($('#botonera>option:selected').text() + ' - Plan');
-               chart.series[1].setName($('#botonera>option:selected').text() + ' - Real');
+               chart.series[0].setName('Plan');
+               chart.series[1].setName('Real');
 
                if($('#acumulado:checked')[0]) {
-                   var ff_acum = JSON.parse(JSON.stringify(ff));
+                       var ff_acum = JSON.parse(JSON.stringify(ff));
 
-                   ff_acum.map((f) => {
-                     f.forEach((d,i) => {
-                         if(i > 0) {
-                           f[i].valor = f[i-1].valor + f[i].valor
-                         }
-                     });
-                     return f;
-                   });
+                       ff_acum.map((f) => {
+                         f.forEach((d,i) => {
+                             if(i > 0) {
+                               f[i].valor = f[i-1].valor + f[i].valor
+                             }
+                         });
+                         return f;
+                       });
 
-                   var max = d3.max( ff_acum.map((d) => d3.max(d.map((d) => d.valor))) );
-                   chart.yAxis[0].setExtremes(0,max);
+                       var max = d3.max( ff_acum.map((d) => d3.max(d.map((d) => d.valor))) );
+                       chart.yAxis[0].setExtremes(0,max);
 
-                   chart.series[0].setData(ff_acum[0].map((d) => d.valor ));
-                   chart.series[1].setData(ff_acum[1].map((d) => d.valor ));
-                   chart.series[0].update({type:'area'});
-                   chart.series[1].update({type:'area'});
+                       chart.series[0].setData(ff_acum[0].map((d) => d.valor ));
+                       chart.series[1].setData(ff_acum[1].map((d) => d.valor ));
+                       chart.series[0].update({type:'area'});
+                       chart.series[1].update({type:'area'});
 
-                   updateTable(ff_acum)
+                       updateTable(ff_acum)
                } else {
-                   chart.series[0].setData(ff[0].map(function(d) { return d.valor; }).filter((f) => f))
-                   chart.series[1].setData(ff[1].map(function(d) { return d.valor; }))
+                       chart.series[0].setData(ff[0].map(function(d) { return d.valor; }).filter((f) => f))
+                       chart.series[1].setData(ff[1].map(function(d) { return d.valor; }))
 
-                   var max = d3.max( ff.map((d) => d3.max(d.map((d) => d.valor))) );
-                   chart.yAxis[0].setExtremes(0,max);
-                   //chart.yAxis[1].setExtremes(0,yAxis_max);
-                   chart.series[0].update({type:'column'});
-                   chart.series[1].update({type:'column'});
+                       var max = d3.max( ff.map((d) => d3.max(d.map((d) => d.valor))) );
+                       chart.yAxis[0].setExtremes(0,max);
+                       //chart.yAxis[1].setExtremes(0,yAxis_max);
+                       chart.series[0].update({type:'column'});
+                       chart.series[1].update({type:'column'});
 
-                   updateTable(ff)
+                       updateTable(ff);
                };
 
          });
 
+         $('#acumulado').on('change',function() {
+                 if(this.checked) {
+                         var ff_acum = JSON.parse(JSON.stringify(ff));
+
+                         ff_acum.map((f) => {
+                             f.forEach((d,i) => {
+                                 if(i > 0) {
+                                   f[i].valor = f[i-1].valor + f[i].valor
+                                 }
+                             });
+                             return f;
+                         });
+
+
+
+                         var max = d3.max( ff_acum.map((d) => d3.max(d.map((d) => d.valor))) );
+                         chart.yAxis[0].setExtremes(0,max);
+
+                         chart.series[0].setData(ff_acum[0].map((d) => d.valor ));
+                         chart.series[1].setData(ff_acum[1].map((d) => d.valor ));
+                         chart.series[0].update({type:'area'});
+                         chart.series[1].update({type:'area'});
+
+                         updateTable(ff_acum)
+
+                 } else {
+
+                         var max = d3.max( ff.map((d) => d3.max(d.map((d) => d.valor))) );
+                         chart.yAxis[0].setExtremes(0,max);
+
+                         chart.series[0].setData(ff[0].map((d) => d.valor ));
+                         chart.series[1].setData(ff[1].map((d) => d.valor ));
+                         chart.series[0].update({type:'column'});
+                         chart.series[1].update({type:'column'});
+
+                         updateTable(ff)
+                 }
+
+         });
+
          function updateTable(ff) {
+
                  var filas = ff[0].map(function(d,i) {
+
+                   var id = String(d.anio).split(' ').join('_').replace(/(\(|\)|-)/g,'_')
                    var str = '<tr width="100%;">'+
                                 '<td style="width:33.33%;">'+ d.anio +'</td>'+
                                 '<td style="width:33.33%;">'+ (+d.valor.toFixed(1)).toLocaleString('es-MX') +'</td>'+
-                                '<td style="width:33.33%;" id=a_'+ d.anio +'>'+ ' - ' +'</td>'
+                                '<td style="width:33.33%;" id=a_'+ id +'>'+ ' - ' +'</td>'
                              '</tr>'
 
                    return str;
@@ -1750,68 +1927,12 @@ function seguimiento(data) {
                  $('#two').html(div_table);
 
                  ff[1].forEach(function(d) {
-                   $('#a_' + d.anio).text((+d.valor.toFixed(1)).toLocaleString('es-MX'))
+                   var id = String(d.anio).split(' ').join('_').replace(/(\(|\)|-)/g,'_')
+                   $('#a_' + id).text((+d.valor.toFixed(1)).toLocaleString('es-MX'))
                  });
         };
 
-      // -------
-         function processedData() {
-                 var op_id = $('#botonera>option:selected').attr('id');
 
-                 var ff = tipo_obs.map(function(d) {
-                     return data.filter(function(f) {
-                       return f.tipo_observacion == d && f.concepto == op_id;
-                     })
-                 });
-
-                 ff[0] = _.sortBy(ff[0], (d) => d.anio).filter((d) => d.valor)
-
-                 return ff;
-          };
-
-          var ff = processedData()
-
-          updateTable(ff)
-
-         $('#acumulado').on('change',function() {
-                 if(this.checked) {
-                         var ff_acum = JSON.parse(JSON.stringify(ff));
-
-                         ff_acum.map((f) => {
-                             f.forEach((d,i) => {
-                                 if(i > 0) {
-                                   f[i].valor = f[i-1].valor + f[i].valor
-                                 }
-                             });
-                             return f;
-                         });
-
-
-
-                         var max = d3.max( ff_acum.map((d) => d3.max(d.map((d) => d.valor))) );
-                         chart.yAxis[0].setExtremes(0,max);
-
-                         chart.series[0].setData(ff_acum[0].map((d) => d.valor ));
-                         chart.series[1].setData(ff_acum[1].map((d) => d.valor ));
-                         chart.series[0].update({type:'area'});
-                         chart.series[1].update({type:'area'});
-
-                         updateTable(ff_acum)
-
-                 } else {
-
-                         var max = d3.max( ff.map((d) => d3.max(d.map((d) => d.valor))) );
-                         chart.yAxis[0].setExtremes(0,max);
-
-                         chart.series[0].setData(ff[0].map((d) => d.valor ));
-                         chart.series[1].setData(ff[1].map((d) => d.valor ));
-                         chart.series[0].update({type:'column'});
-                         chart.series[1].update({type:'column'});
-
-                         updateTable(ff)
-                 }
-
-         });
 
          var chart = Highcharts.chart('one', {
                           chart: {
@@ -1840,7 +1961,8 @@ function seguimiento(data) {
                               shadow: false
                           },
                           tooltip: {
-                              shared: true
+                              shared: true,
+                              borderColor:'transparent'
                           },
                           plotOptions: {
                               series: {
@@ -1855,13 +1977,13 @@ function seguimiento(data) {
                               }
                           },
                           series: [{
-                              name: $('#botonera>option:selected').text() + ' - Plan',
+                              name: 'Plan',
                               color: 'rgba(13,180,190,0.6)',
                               data: ff[0].map(function(d) { return d.valor; }),
                               pointPadding: 0.3,
                               pointPlacement: -0.2
                           }, {
-                              name: $('#botonera>option:selected').text() + ' - Real',
+                              name: 'Real',
                               color: 'rgba(126,86,134,.9)',
                               data: ff[1].map(function(d) { return d.valor; }),
                               pointPadding: 0.4,
@@ -1869,9 +1991,9 @@ function seguimiento(data) {
                           }]
           });
 
-    }
+    }; // <-- draw();
 
-}
+};
 
 function aprovechamiento(data) {
 
@@ -1905,7 +2027,7 @@ function aprovechamiento(data) {
             }
         },
         subtitle: {
-            text: null//document.ontouchstart === undefined ?
+            text: 'Millones de pies cúbicos diarios'//document.ontouchstart === undefined ?
                     //'Click and drag in the plot area to zoom in' : 'Pinch the chart to zoom in'
         },
         xAxis: {
@@ -1923,10 +2045,11 @@ function aprovechamiento(data) {
           //useHTML:true,
           shared:true,
           split:false,
+          borderColor:'transparent'
        },
         series: [{
             type: 'area',
-            name: 'Gas producido (MMPCD)',
+            name: 'Gas producido',
             data: _.sortBy(obj_data.produccion,function(d) { return d[0] }),
             lineWidth: 1,
             //lineColor: 'rgba(46, 112, 138, 1)',
@@ -1944,7 +2067,7 @@ function aprovechamiento(data) {
         },
         {
             type: 'area',
-            name: 'Gas no aprovechado (MMPCD)',
+            name: 'Gas no aprovechado',
             data: _.sortBy(obj_data.aprovechamiento,function(d) { return d[0] }),
             lineWidth: 2,
             lineColor: 'white',
@@ -1999,6 +2122,158 @@ function noDato() {
         $('#visor').html(str);
 };
 
+
+function inversion_aprob(data) {
+
+      var actividades = _.uniq(data.map((d) => d.actividad)).map((d,i) => {
+          var obj = {};
+          obj['value'] = 'actividad_' + i;
+          obj['text'] = d;
+          return obj;
+      })
+
+      var visor_config = {
+        'name':'inv_aprob',
+        'title':'Inversión aprobada',
+        'options': actividades,
+        'height':80
+      };
+
+      var visor = frameVisor_withRadios(visor_config);
+
+      $('#visor').html(visor);
+      $('#visor_panel').css('height','auto');
+      $('#visor_panel').append('<div style="width:100%;text-align:center;"><select id="inv_select"></select><div>');
+
+      function draw_() {
+            var selectedRadio = $('input[type=radio]:checked');
+
+            var subactividades = data.filter((f) => selectedRadio.parent().text() == f.actividad)
+                                      .map((d) => d.sub_actividad);
+
+            var subactividades = _.sortBy(_.uniq(subactividades)).map((sub) => {
+                                       return '<option>' + sub + '</option>';
+                                     }).join('');
+
+            $('select#inv_select').html('');
+            $('select#inv_select').html(subactividades);
+
+            var radios = document.querySelectorAll('input[type=radio]');
+
+            dashboard(null,'#visor_chart')
+
+            if(radios.length == 1) radios[0].style.display = 'none';
+
+            var data_selected = data.filter((f) => {
+                    let act = selectedRadio.parent().text();
+                    let sub = $('select#inv_select>option:selected').text();
+                    return act == f.actividad && sub == f.sub_actividad;
+            }).map((d) => [d.anio,d.monto_usd])
+
+            var plot = new BarChart({
+              where:'inv_barchart',
+              chart: { type:'column' },
+              noRange:1,
+              opposite:false,
+              subtitle:'Dólares',
+              xAxis: {
+                categories: data_selected.map((d) => String(d[0]))//[]//data[0].data.map((d) => String(d[0]))
+              },
+              hideLegend:true,
+              tooltip: "'<div style=\"font-weight:300;font-family:Open Sans;text-align:center;\">'+" +
+                          "'<span style=\"font-weight:800;\">' + this.x + '</span><br>$'+ Number(this.y.toFixed(1)).toLocaleString('es-MX') +" +
+                       "'</div>'"
+            });
+
+            grapher(plot.plot,[{ 'data':data_selected }],(d) => d);
+            updateTable(data_selected);
+
+
+            $('select#inv_select').on('change',function() {
+
+                  var data_selected = data.filter((f) => {
+                          let act = selectedRadio.parent().text();
+                          let sub = $('select#inv_select>option:selected').text();
+                          return act == f.actividad && sub == f.sub_actividad;
+                  }).map((d) => [d.anio,d.monto_usd]);
+
+                  var plot = new BarChart({
+                    where:'inv_barchart',
+                    chart: { type:'column' },
+                    noRange:1,
+                    opposite:false,
+                    subtitle:'Dólares',
+                    xAxis: {
+                      categories: data_selected.map((d) => String(d[0]))//[]//data[0].data.map((d) => String(d[0]))
+                    },
+                    hideLegend:true,
+                    tooltip: "'<div style=\"font-weight:300;font-family:Open Sans;text-align:center;\">'+" +
+                                    "'<span style=\"font-weight:800;\">' + this.x + '</span><br>$'+ Number(this.y.toFixed(1)).toLocaleString('es-MX') +" +
+                             "'</div>'"
+
+                  });
+
+                  grapher(plot.plot,[{ 'data':data_selected }],(d) => d);
+                  updateTable(data_selected);
+
+            });
+
+      };
+
+      function updateTable(ff) {
+              var filas = ff.map(function(d,i) {
+                var str = '<tr width="100%;">'+
+                             '<td style="width:50%;">'+ d[0] +'</td>'+
+                             '<td style="width:50%;">'+ (+d[1].toFixed(1)).toLocaleString('es-MX') +'</td>'+
+                          '</tr>'
+
+                return str;
+              }).join('');
+
+              var table_container = '<div style="height:30px;width:100%;">'+
+                                     '<table style="width:calc(100% - 8px);height:100%;table-layout:fixed;">'+
+                                       '<tbody style="width:100%;">'+
+                                         '<tr style="width:100%;font-weight:600;text-align:center;border-bottom:1px solid gray;border-top:1px solid gray;">' +
+                                           '<td>AÑO</td>' +
+                                           '<td>MONTO (dólares)</td>' +
+                                         '</tr>' +
+                                       '</tbody>' +
+                                     '</table>';
+                                    '</div>';
+
+              var tabla = //table_container +
+               '<div id="scroll_table_" style="width:100%;height:calc(' + $('#one').css('height') + ' - 30px);overflow:auto;border-bottom:1px solid transparent;">' +
+                 '<table style="width:100%;,table-layout:fixed;">' +
+                 /*'<thead>' +
+                  '<tr style="font-weight:600;text-align:center;border-bottom:1px solid gray;border-top:1px solid gray;">' +
+                     '<td>AÑO</td>'+
+                     '<td>PLAN</td>'+
+                     '<td>REAL</td>' +
+                  '</tr>' +
+                 '</thead>' +
+                 */
+                   '<tbody id="filas_" style="text-align:center;">' +
+                   filas +
+                   '</tbody>'
+                 '</table>'+
+               '</div>';
+
+              var div_table = '<div style="width:100%;height:100%;">'+
+                                 table_container +
+                                 tabla +
+                              '</div>'
+
+              $('#inv_tabla').html(div_table);
+
+     };
+
+      draw_();
+
+      $('input[type=radio]').on('change',function() {
+          draw_();
+      })
+
+}
 
 
 function frameVisor_withRadios(config) {

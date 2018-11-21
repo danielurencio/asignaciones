@@ -86,7 +86,6 @@ var HOSTNAME = 'http://172.16.24.57:5000/';
           var data = datos_grales;
 
           //var exp = new Expandir(data,'CUENCA')
-          //console.log(exp.unicos());
 
 		      var cuencas = data.map(function(d) {
 		      		return d.CUENCA;
@@ -297,7 +296,6 @@ var HOSTNAME = 'http://172.16.24.57:5000/';
 
 		      $('.cuenca').on('change',function() {
               if( $('.asignacion>option:selected').attr('ID') != 'Todas' ) {
-                console.log('uy')
                   //AjaxCall(data,mymap,asignaciones)
 		      		    cambioAsignacion(data);
                   AjaxCall(data,mymap,asignaciones)
@@ -338,14 +336,17 @@ var HOSTNAME = 'http://172.16.24.57:5000/';
             },'NOMBRE');
 
                 if( $('.asignacion>option:selected').attr('ID') != 'Todas' ) {
-                  console.log('diferente de Todas')
+
                     cambio(data,'asignacion',function(d) {
                         return localCond(d,'cuenca') && localCond(d,'ubicacion') && localCond(d,'tipo');
                     },'NOMBRE');
+
                     $('.asignacion').trigger('change');
+
                 } else {
-                  console.log('Igual a Todas')
+
                     AjaxCall(data,mymap,asignaciones);
+
                     cambio(data,'asignacion',function(d) {
                         return localCond(d,'cuenca') && localCond(d,'ubicacion') && localCond(d,'tipo');
                     },'NOMBRE');
@@ -784,7 +785,7 @@ function switcher(id,mapNdataObj) {
             	 			     //grapher(LineChart,mapNdataObj.ajaxData.produccion);
                          var chart__ = LineChart(mapNdataObj.ajaxData.produccion)
                          //chart__.series[0].update({lineColor:'red'})
-                         //console.log(chart__)
+
                     } else {
                         noDato();
                     }
@@ -801,7 +802,7 @@ function switcher(id,mapNdataObj) {
                           // ----------------- AGREGAR FRAME QUE INCLUYE BOTONES TIPO RADIO --------------------
                           var visor_config = {
                             'radio_names':'reservas',
-                            'title':'Reservas',
+                            'title':'Reserva de hidrocarburos',
                             'options': [
                                 { 'value':'rr_pce_mmbpce', 'text':' PCE' },
                                 { 'value':'rr_aceite_mmb', 'text':' Aceite' },
@@ -855,8 +856,6 @@ function switcher(id,mapNdataObj) {
                             }
                           };
 
-                          //console.log(plot_config)
-
                           $('input[type=radio][name=reservas]').change(function() {
                                 plot_config.yAxis = config_changes.yAxis[this.value];
                                 plot_config.subtitle = config_changes.subtitle[this.value];
@@ -881,7 +880,7 @@ function switcher(id,mapNdataObj) {
 
                               var stack_reservas = new Wrangler(config,groups_);
                               var reservasStacked = stack_reservas.stackData(reservas);
-                              //console.log(reservasStacked)
+
                               var colores = ['rgb(13,180,190)','rgb(46,112,138)','rgb(20,50,90)'];
 
                               reservasStacked = reservasStacked.map(function(d,i) {
@@ -967,8 +966,8 @@ function switcher(id,mapNdataObj) {
                           'name':'pozos',
                           'title':'Actividad física',
                           'options': [
-                              { 'value':'per', 'text':' Perforaciones' },
-                              { 'value':'ops', 'text':' En operación' },
+                              { 'value':'per', 'text':' Perforación de pozos' },
+                              { 'value':'ops', 'text':' Pozos operando' },
                               { 'value':'rep', 'text':' Reparaciones y taponamientos' }
                             ],
                           'height':80
@@ -1067,7 +1066,8 @@ function switcher(id,mapNdataObj) {
 
 
         	 		case id === 'Inversión':
-                    dashboard(mapNdataObj.ajaxData.inv);
+                    var inv_aprob = mapNdataObj.ajaxData.inv;
+                    dashboard(inv_aprob);
 
                     var data = mapNdataObj.ajaxData.inv;
                     data = _.sortBy(data,function(d) { return d.anio; });
@@ -1198,11 +1198,13 @@ function switcher(id,mapNdataObj) {
                                     }
                                   }
                           });
-//console.log(data)
+
                           //pie(pie_act,pie_sub);
                           //grapher(invGeneral.plot, data, sub_wrangler.stackData);
                           //grapher(invPlot2.plot, invPorAnio, function(data) { return data; });
-                          grapher(enConstruccion)
+                          //grapher(enConstruccion)
+                          inversion_aprob(data)
+
                     } else {
                           noDato();
                     }
