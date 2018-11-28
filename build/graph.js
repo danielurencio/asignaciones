@@ -67,17 +67,40 @@ function DatosGrales(data)  {
   var numOnomSize = ASIG_ != 'Todas' ? 2 : 5;
   var subtNumOnom = ASIG_ != 'Todas' ? ASIG_.split(' - ')[1] : 'ASIGNACIONES VIGENTES';
 
+  var order_colors = [
+    'rgb(13,180,190)',
+    'rgb(13,150,190)',
+    'rgb(46,112,138)',
+    'rgb(20,70,110)',
+    'rgb(20,50,90)'
+  ];
+
   d3.select('div#row_a>div#col_1')
   .html(function(d) {
 
-    var tipos_asigs =
-      "<div style='font-weight:700;color:rgb(13,180,190);font-size:1.5em;'>"+ grales.filter((d) => new RegExp('^A-').test(d.NOMBRE)).length +" Extracción</div>"+
-      "<div style='font-weight:700;color:rgb(46,112,138);font-size:1.5em;'>"+ grales.filter((d) => new RegExp('^AE-').test(d.NOMBRE)).length +" Exploración</div>"+
-      "<div style='font-weight:700;color:rgb(20,50,90);font-size:1.5em;'>"+ grales.filter((d) => new RegExp('^AR-').test(d.NOMBRE)).length +" Resguardo</div>"
+    var tipos_ = _.uniq(grales.map((d) => d.TIPO))
+      .map((d) => {
+        let obj = {};
+        obj['num'] = grales.filter((g) => g.TIPO == d).length;
+        obj['tipo'] = d;
+
+        return obj;
+      });
+
+    tipos_ = _.sortBy(tipos_,(d) => -d.num)
+              .map((d,i) => {
+                return '<div style="text-align:center;display:table;font-size:1em;font-weight:700;color:'+ order_colors[i] +'">'+
+                          '<div style="width:2em;text-align:right;display:table-cell;">'+ d.num +'</div>'+
+                          '<div style="padding-left:0.8em;display:table-cell;">'+ d.tipo +'</div>'+
+                        '</div>'
+              }).join('');
+
+    var tipos_asigs = "<div style='display:inline-block;text-align:center;'><div style='display:text-align:center;table-cell;vertical-align:middle;'>"+ tipos_ +"</div></div>";
 
     var _tipo_ = "";
     var color = "";
     var un_tipoAsig = "<div>" + _tipo_ + "</div>";
+
 
     if(ASIG_ != 'Todas') {
         if(ASIG_.split('-')[0] == 'A') {
@@ -122,7 +145,7 @@ function DatosGrales(data)  {
 
 
     var seg = _.sortBy(data.ajaxData.seguimiento.ext,function(d) { return d.anio; }).filter((f) => f.tipo_observacion == 'Real');
-    var gop = Number(d3.sum(seg.filter((f) => f.concepto == 'G_Op').map((d) => d.valor)).toFixed(1)).toLocaleString('es-MX');
+    var gop = Number(d3.sum(seg.filter((f) => f.concepto == 'G_Op').map((d) => d.valor)).toFixed(0)).toLocaleString('es-MX');
 
 
     return "<div style='width:100%;height:100%;background-color:white;position:relative;display:table;table-layout:fixed;'>" +
@@ -159,20 +182,21 @@ function DatosGrales(data)  {
     var seg = data.ajaxData.seguimiento;
 
     if(agregados) {
-        var inv = Object.keys(seg).map((d) => {
-            var inv_ = seg[d].filter((f) => new RegExp(/^I(n|N)/).test(f.concepto) && f.tipo_observacion == 'Real')
-                             .map((d) => d.valor);
 
-            return d3.sum(inv_)
-        });
+          var inv = Object.keys(seg).map((d) => {
+              var inv_ = seg[d].filter((f) => new RegExp(/^I(n|N)/).test(f.concepto) && f.tipo_observacion == 'Real')
+                               .map((d) => d.valor);
 
-        inv = d3.sum(inv);
+              return d3.sum(inv_);
+          });
+
+          inv = d3.sum(inv);
 
     } else {
-      var inv = seg.filter((f) => f.tipo_observacion == 'Real')
-         .map((d) => d.valor);
+          var inv = seg.filter((f) => new RegExp(/^I(n|N)/).test(f.concepto) && f.tipo_observacion == 'Real')
+             .map((d) => d.valor);
 
-      inv = d3.sum(inv);
+          inv = d3.sum(inv);
     }
 
     //var seg = _.sortBy(data.ajaxData.seguimiento.ext,function(d) { return d.anio; }).filter((f) => f.tipo_observacion == 'Real');
@@ -185,7 +209,7 @@ function DatosGrales(data)  {
                   "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
                       "<div style='display:table;width:100%;height:100%;'>" +
                           "<div style='display:table-cell;vertical-align:middle;color:white;color:"+colors_[2]+"'>" +
-                              "<div style='font-size:2em;font-weight:700;'>"+ Number((d3.sum(grales_.map((d) => d.SUPERFICIE_KM2))).toFixed(1)).toLocaleString('es-MX') +"</div>" +
+                              "<div style='font-size:2em;font-weight:700;'>"+ Number((d3.sum(grales_.map((d) => d.SUPERFICIE_KM2))).toFixed(0)).toLocaleString('es-MX') +"</div>" +
                               "<div style='position:relative:;top:-10px;font-size:0.85em;font-weight:600;color:black;'>Kilómetros<sup>2</sup></div>" +
                           "</div>" +
                       "</div>" +
@@ -195,7 +219,7 @@ function DatosGrales(data)  {
                   "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
                       "<div style='display:table;width:100%;height:100%;'>" +
                           "<div style='display:table-cell;vertical-align:middle;color:white;color:"+colors_[3]+"'>" +
-                              "<div style='font-size:2em;font-weight:700;'>"+ Number(inv.toFixed(1)).toLocaleString('es-MX') +"</div>" +
+                              "<div style='font-size:2em;font-weight:700;'>"+ Number(inv.toFixed(0)).toLocaleString('es-MX') +"</div>" +
                               "<div style='position:relative:;top:-10px;font-size:0.85em;font-weight:600;color:"+ colors_[5] +";'> millones de pesos</div>" +
                               "<div style='position:relative:;top:-10px;font-size:0.85em;font-weight:600;color:black;'>Inversión total ejercida</div>" +
                           "</div>" +
@@ -231,10 +255,13 @@ function DatosGrales(data)  {
       var prod = prod[prod.length -1 ];
 
       function fechA(ts) {
-        var f = new Date(ts)
-        var mes = String(f.getMonth() + 1);
-        var anio = f.getFullYear(ts)
-        return meses[mes] + ' - ' + anio;
+        var f = new Date(ts).toISOString();
+        var mes = +f.split('-')[1]-1//String(f.getMonth() + 1);
+        var anio = +f.split('-')[0]//.getFullYear(ts)
+        var ff = new Date(anio,mes)
+        var mes = String(ff.getMonth() +1)
+        var anio = ff.getFullYear();
+        return meses[mes].toLowerCase() + ' - ' + anio;
       }
 
       var _aceite_ = data.ajaxData.produccion.length > 0 ? (+prod.aceite_mbd.toFixed(1)).toLocaleString('es-MX') : 0;
@@ -317,7 +344,7 @@ function DatosGrales(data)  {
                           "<div style='display:table;width:100%;height:100%;'>" +
                               "<div style='display:table-cell;vertical-align:middle;'>" +
                                   "<div style='position:relative:;top:-10px;font-size:1.5em;font-weight:700;color:"+colors_[2]+"'>RESERVAS</div>" +
-                                  "<div style='position:relative:;top:-10px;font-size:1.5em;font-weight:700;color:"+colors_[2]+"'>"
+                                  "<div style='position:relative:;top:-10px;font-size:1.2em;font-weight:700;color:"+colors_[2]+"'>a enero de "
                                               + _fecha_ +"</div>" +
 
                                   "<div style='text-align:center;'>" +
@@ -424,6 +451,7 @@ function DatosGrales_() {
 }
 
 function LineChart(data) {
+
     var asig_id = $('.asignacion>option:selected').attr('id');
 
             var mods = _.uniq( data.map(function(d) { return d.nombre; }) );
@@ -487,11 +515,17 @@ function LineChart(data) {
                       text:'Gas (mmpcd)'
                     },
                     opposite:false,
+                    labels: {
+                      format: '{value:,.0f}'
+                    }
                   },
                   {
                     title: {
                       text:'Aceite (mbd)'
                     },
+                    labels: {
+                      format: '{value:,.0f}'
+                    }
                   }
                 ],
                 credits:false,
@@ -660,11 +694,15 @@ function Wrangler(config, groups_) {
                       var stack = groups.map(function(g) {
                         var group = data.filter(function(d) { return d[config.filter] == g; })
                                         .map(function(d) {
+                                            var isoDate = new Date(d[config.x]).toISOString().split('-');
+                                            var isoYear = isoDate[0];
+                                            var isoMonth = +isoDate[1] - 1;
+                                            var date_ = new Date(isoYear,isoMonth);
 
                                             var type = {
                                                 'nombre': d[config.nombre],
                                                 'id': d[config.id],
-                                                'x': String(d[config.x]).length == '4' ? new Date(d[config.x],0).getTime() : d[config.x],
+                                                'x': String(d[config.x]).length == '4' ? new Date(d[config.x],0).getTime() : date_.getTime(),//d[config.x],
                                                 'y': +d[config.y],
                                                 'name':g,
                                                 'stack':stackName
@@ -737,11 +775,18 @@ function BarChart(config) {
                     gridLineWidth:0,
                     max: config.yMax ? config.yMax : null,
                     stackLabels: {
+                      style: {
+                        fontSize:'1.5em',
+                        fontFamily:'Open Sans'
+                      },
                       enabled:config.stackLabels,
                       formatter:function() {
                         var result = Number(this.total.toFixed(1)).toLocaleString('es-MX');
                         return result;
                       }
+                    },
+                    labels: {
+                      format: '{value:,.0f}'
                     }
                 },
                 xAxis: config.xAxis/*{
@@ -953,9 +998,14 @@ function documentos(data) {
   data = _.sortBy(data,(d) => d.NOMBRE);
 
   var filas = data.map(function(d,i) {
-    var str = '<tr width="100%;">'+
-                 '<td style="padding:3px;width:50%;">'+ d.NOMBRE +'</td>'+
-                 '<td style="padding:3px;width:50%;"><a href="http://localhost:8081/'+d.NOMBRE.split(' - ')[0]+'.pdf" target="_blank" class="hover_hand">Título</a></td>' +
+    var str = '<tr width="100%;" class="hover_doc" style="margin:15px;">'+
+                 '<td style="font-weight:600;padding:5px;width:50%;">'+ d.NOMBRE +'</td>'+
+                 '<td style="padding:5px;width:50%;">'+
+                    //'<a href="http://localhost:8081/'+d.NOMBRE.split(' - ')[0]+'.pdf" target="_blank" class="hover_hand">'+
+                      '<div id="doc_black"><img style="max-height:35px;font-weight:600;" src="doc_black.png"></img>&emsp;Título</div>' +
+                      '<div id="doc_purple"><a class="hover_hand"><img style="max-height:35px;font-weight:600;" src="doc_purple.png"></img><span>&emsp;Título</span></a></div>' +
+                    //'</a>'+
+                 '</td>' +
               '</tr>'
 
     return str;
@@ -973,7 +1023,8 @@ function documentos(data) {
                         '</div>';
 
   var tabla = //table_container +
-   '<div id="scroll_table_" style="width:100%;height:calc(' + $('#visor').css('height') + ' - 30px);overflow:auto;border-bottom:1px solid gray;">' +
+   '<div id="scroll_table_" style="width:100%;height:calc(' + $('#visor').css('height') + ' - 90px - '+
+                            $('#filtro_cont').css('height') +');overflow:auto;border-bottom:1px solid gray;">' +
      '<table style="width:100%;,table-layout:fixed;">' +
        '<tbody id="" style="text-align:center;">' +
        filas +
@@ -986,7 +1037,46 @@ function documentos(data) {
                      tabla +
                   '</div>'
 
-  $('#visor').html(div_table)
+  var visor_config = {
+    'name':'doc',
+    'title':'Documentos asociados',
+    'options': [
+        { 'value':'ext', 'text':' Extracción' },
+        { 'value':'exp', 'text':' Exploración' }
+      ],
+    'height':'60px'
+  };
+
+  var visor = frameVisor_withRadios(visor_config)
+
+  $('#visor').html(visor);
+
+  $('input[type=radio]').each(function() {
+      $(this).parent().css('display','none')
+  })
+
+  $('#visor_chart').html(div_table)
+  $('#visor_holder').parent()
+      //.append('<div id="filtro_cont" style="top:calc(100% - 120px);width:60%; height:110px; background-color:rgba(0,0,0,0.8);position:absolute;"></div>');
+
+  $('#filtro_cont').css('border')
+
+  $('#filtro_cont input').on('input',function(d) {
+      var val = $('#filtro_cont input').val();
+
+      var tds = document.querySelectorAll('tr.hover_doc>td:first-child')
+      tds = Array.prototype.slice.call(tds).map((d) => $(d).text());
+
+      tds = tds.filter((f) => !(new RegExp(val,'i').test(f)));
+
+      $('tr.hover_doc').css('display','table-row')
+
+      var a_l = $('tr.hover_doc').filter((i,f) => {
+          return tds.some((s) => s == $(f).children(':first').text())
+      }).css('display','none')
+
+
+  });
 }
 
 
@@ -1102,7 +1192,7 @@ function CMT(data) {
                 var str__ = '<div style="width:100%; height:100%; display:table; table-layout:fixed">' +
                               '<div style="width:100%;height:20%; ">'+
                                   '<div style="height:50%;width:100%;font-weight:800;color:' + config.color + ';">' + config.titulo + '</div>' +
-                                  '<div style="height:10%;width:100%;font-size:13px;font-weight:300;">Compromiso mínimo en:&emsp;'+
+                                  '<div style="height:10%;width:100%;font-size:13px;font-weight:300;">'+
                                     '<select id="botonera_'+ config.id +'" style="font-weight:700;color:'+ config.color +';">'
                                         + conceptos.map((d) => '<option id="'+ d +'">'+ nombres[d]['nombre'] +'</option>') +
                                     '</select>'+
@@ -1185,7 +1275,12 @@ function CMT(data) {
 
         var visor = frameVisor_withRadios(visor_config)
 
-        //$('#visor').html(visor);
+        $('#visor').html(visor);
+        $('#visor_panel').css('height','auto');
+
+        $('input[type=radio]').each(function() {
+            $(this).parent().css('display','none')
+        })
 
         // ----------------- AGREGAR FRAME QUE INCLUYE BOTONES TIPO RADIO --------------------
 
@@ -1197,7 +1292,7 @@ function CMT(data) {
                                 '<div id="ext" style="width:100%;height:50%;"></div>' +
                              '</div>';
 
-              $('#visor').html(division);
+              $('#visor_chart').html(division);
 
               var config = [
                 {
@@ -1277,13 +1372,13 @@ function CMT(data) {
 
 
               var config = {
-                'titulo': !tipoDisponible.length ? 'Compromiso mínimo' : config_ops.titulo[tipoDisponible[0]],
+                'titulo': !tipoDisponible.length ? '' : config_ops.titulo[tipoDisponible[0]],
                 'id':'x_asig',
                 'color': !tipoDisponible.length ? 'purple' : config_ops.color[tipoDisponible[0]],
                 'data':typeof(data) == 'string' ? JSON.stringify(data) : data
               };
 
-              $('#visor').html(division)
+              $('#visor_chart').html(division)
               $('#visor #x_asig').html(apartado(config,true))
               table_(config,true)
               barplot_cmt(config,true)
@@ -1581,9 +1676,9 @@ function seguimiento(data) {
       Qo: 'Producción de aceite',
       Qg: 'Producción de gas',
       Perf_Des: 'Perforaciones - Desarrollo',
-      Perf_Iny: 'Perforaciones - Inyecciones',
+      Perf_Iny: 'Perforaciones - Inyectores',
       Term_Des: 'Terminaciones - Desarrollo',
-      Term_Iny: 'Terminaciones - Inyecciones',
+      Term_Iny: 'Terminaciones - Inyectores',
       RMA: 'Reparaciones Mayores',
       RME: 'Reparaciones Menores',
       Tap: 'Taponamientos',
@@ -1596,12 +1691,11 @@ function seguimiento(data) {
       AD_SIS_3D_KM2: 'Adquisición sísmica 3D',
       ELECTROMAG: 'Electromagnéticos',
       ESTUDIOS:'Estudios',
-      INV_MMPESOS:'Millones de pesos',
+      INV_MMPESOS:'Inversión (MM pesos)',
       POZOS:'Pozos',
       PROCESADO_KM:'Kilómetros procesados',
-      PROCESADO_KM2:'Kilómetros<sup>2</sup> procesados'
+      PROCESADO_KM2:'Kilómetros cuadrados procesados'
   };
-
 
 
   var visor_config = {
@@ -1624,8 +1718,6 @@ function seguimiento(data) {
       $(this).parent().css('padding',0)
       if(i == 0) $(this).parent().css('padding-right','15px')
   });
-
-
 
 
 // MANEJAR TODA LA LÓGICA DE SEGUIMIENTO SEGÚN EL DATO.
@@ -1670,69 +1762,112 @@ function seguimiento(data) {
   } else {
         // ¿Qué tipo es? Si tenemos anio, entonces se trata de la base de extracción.
         // De lo contrario, es exploración.
-        var tipo_ = Object.keys(data[0]).some((s) => s == 'anio') ? 'ext' : 'exp';
-        tipo_ == 'ext' ? draw(data) : noDato();
+        var tipo = _.uniq(data.map((d) => d.anio)).every((e) => new RegExp(/ \- /).test(e)) ? 'exp' : 'ext';
+        var radios = Array.prototype.slice.call(document.querySelectorAll('input[type=radio]'));
+
+        $('input[type=radio]').each(function(i,d) {
+
+            if(this.getAttribute('value') == tipo) {
+                  $(this).css('display','none');
+                  $(this).parent().css('color','black');
+            } else {
+                  $(this).parent().css('display','none');
+            }
+
+        });
+
+        draw(data);
+
   }
 //////////--------------------------------------------------------------------------------
 // <-- //----------------------------------------------------------------------------------
 ////////------------------------------------------------------------------------------------
 
   function draw(data,type) {
+          var periodos = {
+            ' Planes (Escenario base 2018-2019)':'2018 - 2019',
+            'Real (2018-2021)':'2018 - 2021',
+            'Real (sep 2017 -sep 2018)':'2018 - 2019',
+            'Real a septiembre 2018':'2016 - 2019',
+            'Total Planes (2016-2019)':'2016 - 2019',
+            'Total Planes (2018-2021)':'2018 - 2021'
+          };
 
          if(type) {
-            data = data[type]
+                data = data[type]
 
-            if(type == 'exp') {
+                if(type == 'exp') {
 
-                    var periodos = {
-                      ' Planes (Escenario base 2018-2019)':'2018 - 2019',
-                      'Real (2018-2021)':'2018 - 2021',
-                      'Real (sep 2017 -sep 2018)':'2018 - 2019',
-                      'Real a septiembre 2018':'2016 - 2019',
-                      'Total Planes (2016-2019)':'2016 - 2019',
-                      'Total Planes (2018-2021)':'2018 - 2021'
-                    };
+                        data.forEach((d) => {
+                          if(d.periodo) {
+                            d.anio = periodos[d.periodo];
+                            delete d.periodo;
+                          }
+                        });
 
+                        data = data.filter((f) => f.anio)
 
-                    data.forEach((d) => {
-                      if(d.periodo) {
-                        d.anio = periodos[d.periodo];
-                        delete d.periodo;
-                      }
-                    });
+                        var periodos_ = _.sortBy(_.uniq(data.map((d) => d.anio)));
 
-                    data = data.filter((f) => f.anio)
+                        $('#visor_panel').css('height','auto');
 
-                    var periodos_ = _.uniq(data.map((d) => d.anio));
+                        var str_html = '<div id="extra_panels" style="display:table;width:100%;height:auto;text-align:center;padding:1em;">'+
+                                          '<div style="font-weight:700;padding:.5em;">Periodos:</div>' +
+                                          '<div id="panels_periodos" style="width:100%;display:table;text-align:center;"></div>' +
+                                       '</div>';
 
-                    $('#visor_panel').css('height','auto');
+                        $('#visor_panel').append(str_html);
 
-                    var str_html = '<div id="extra_panels" style="display:table;width:100%;height:auto;text-align:center;padding:1em;">'+
-                                      '<div style="font-weight:700;padding:.5em;">Periodos:</div>' +
-                                      '<div id="panels_periodos" style="width:100%;display:table;text-align:center;"></div>' +
-                                   '</div>';
+                        d3.select('#panels_periodos')
+                          .selectAll('div')
+                        .data(periodos_).enter()
+                          .append('div')
+                          .style('display','table-cell')
+                          .html(function(d,i) {
+                            var check = i == 0 ? ' checked' : '';
+                            return '<div><input type="radio" name="periodos" value="' + d + '"' + check + '></input> ' + d + '</div>';
+                          })
 
-                    $('#visor_panel').append(str_html);
-
-                    d3.select('#panels_periodos')
-                      .selectAll('div')
-                    .data(periodos_).enter()
-                      .append('div')
-                      .style('display','table-cell')
-                      .html(function(d,i) {
-                        var check = i == 0 ? ' checked' : '';
-                        return '<div><input type="radio" name="periodos" value="' + d + '"' + check + '></input> ' + d + '</div>';
-                      })
-
-            }
+                }
 
          } else {
+
+                   data.forEach((d) => {
+                       if(d.periodo) {
+                           d.anio = periodos[d.periodo];
+                           delete d.periodo;
+                       }
+                   });
+
 
          }
 
          var anios = _.sortBy(_.uniq(data.map(function(d) { return String(d.anio); })));
          var tipo_obs = _.uniq(data.map(function(d) { return d.tipo_observacion; }));
          var conceptos = _.uniq(data.map(function(d) { return d.concepto }));
+
+
+         function ordenarConceptos(x) {
+            var arr = [x]
+            var num;
+            if( x == 'Perf_Des') num = 1
+            if( x == 'Perf_Iny') num = 2
+            if( x == 'Term_Des') num = 3
+            if( x == 'Term_Iny') num = 4
+            if( x == 'RMA') num = 5
+            if( x == 'RME') num = 6
+            if( x == 'Tap') num = 7
+            if( x == 'Qo') num = 8
+            if( x == 'Qg') num = 9
+            if( x == 'QgHC') num = 10
+            if( x == 'Inv') num = 11
+            if( x == 'G_Op') num = 12
+            arr.push(num)
+            return arr;
+         }
+
+         conceptos = _.sortBy(conceptos.map(ordenarConceptos),(d) => d[1])
+                      .map((d) => d[0]);
 
          // Esto filtra los conceptos que no tienen valores igual a cero.
          conceptos = conceptos.map((d) => data.filter((f) => f.concepto == d).some((e) => e.valor))
@@ -1785,11 +1920,15 @@ function seguimiento(data) {
           $('input[name=periodos]').on('change',function() {
               var selText = $(this).parent().text();
               selText = selText.substr(1,selText.length);
-              console.log(selText);
+
               var ff = processedData()
-              console.log(ff)
+              var max = d3.max( ff.map((d) => d3.max(d.map((d) => d.valor))) )
+
               chart.series[0].setData(ff[0].map((d) => d.valor ));
               chart.series[1].setData(ff[1].map((d) => d.valor ));
+              chart.xAxis[0].setCategories([selText]);
+              chart.yAxis[0].setExtremes(0,max);
+
               updateTable(ff)
               //cambiar xAxis
           });
@@ -2036,6 +2175,9 @@ function aprovechamiento(data) {
         yAxis: {
             title: {
                 text: 'MMPCD'
+            },
+            labels: {
+              format: '{value:,.0f}'
             }
         },
         legend: {

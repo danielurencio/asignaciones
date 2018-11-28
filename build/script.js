@@ -8,9 +8,41 @@ var HOSTNAME = 'http://172.16.24.57:5000/';
     url: HOSTNAME + 'grales_asig.py',
     success:function(datos_grales) {
         datos_grales = JSON.parse(datos_grales)
-   d3.csv('asignaciones_produccion.csv', function(err,produccion) {
+   d3.json('notas.json', function(err,notas_alPie) {
+     console.log(notas_alPie)
     d3.json('file_.json',function(err,data_) {
+
     	d3.json('shapes.json',function(err,shapes) {
+
+
+//////////////////////////////////////
+            d3.select('#notas_pestana').on('click',function() {
+                var up = d3.select(this).attr('up');
+
+                if(!up) {
+                        d3.select(this).attr('up',1);
+                        $(this).attr('class','notas_up');
+                        $('#notas').attr('class','notas__up');
+                        $('#notas_ocultar,#notas_contenido').css('display','block')
+                }
+
+            });
+
+            $('body').click(function(e) {
+                 if($(e.target).attr('ix') != 'notas') {
+
+                       var up = d3.select('#notas_pestana').attr('up');
+
+                       if(up) {
+                           $('#notas_ocultar,#notas_contenido').css('display','none');
+                           var up = d3.select('#notas_pestana').attr('up',null);
+                           $('#notas_pestana').attr('class','notas_down');
+                           $('#notas').attr('class','notas__down');
+                       }
+
+                 }
+            });
+//////////////////////////////////////
 
 /*------------------------------------------------Highcharts language settings------------------------------------------------------------------*/
 			  Highcharts.setOptions({
@@ -19,7 +51,8 @@ var HOSTNAME = 'http://172.16.24.57:5000/';
             months:['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'],
             rangeSelectorFrom:'De:',
             rangeSelectorTo:'A:',
-            rangeSelectorZoom:''
+            rangeSelectorZoom:'',
+            thousandsSep:','
 			  	}
 			  })
 
@@ -66,14 +99,14 @@ var HOSTNAME = 'http://172.16.24.57:5000/';
 /*======================================================================================================*/
 /*====== Redraw maps when resize event is finished ====================================================*/
 /*====================================================================================================*/
-
+/*
           data_ = JSON.stringify(data_)
               .replace(/M¿xico/g,'México')
               .replace(/Cintur¿n/g,'Cinturón')
               .replace(/Yucat¿n/g,'Yucatán');
 
           data_ = JSON.parse(data_)
-
+*/
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //    -----> ESTO TIENE QUE CAMBIAR!!!!
@@ -235,7 +268,8 @@ var HOSTNAME = 'http://172.16.24.57:5000/';
             'grales':datos_grales,
             'data':data,
             'asignaciones':asignaciones,
-            'mymap':mymap
+            'mymap':mymap,
+            'notas':notas_alPie
           };
 
           function AjaxCall(data,mymap,asignaciones) {
@@ -453,6 +487,7 @@ try {
       		  .duration(500)
       		  .style('opacity',1)
       		  .style('stroke-width',0.5)
+            .style('stroke','white')
 
       		d3.select('div#MAPA path.' + sel_asignacion.split(' - ')[0])
       		  .transition()
@@ -460,6 +495,7 @@ try {
       		  .delay(500)
       		  .style('opacity',1)
       		  .style('stroke-width',5)
+            .style('stroke','#ffc125')
       	});
 
 /*------------------------AGRAGAR URL DE DESCARGA DE TITULO--------------------------------------------*/
@@ -477,7 +513,13 @@ try {
 // Esta función se llama dentro de la fn 'cambio', tiene como objetivo simplificar la sintaxis
 // de su lógica interna.
 function localCond(d,str) {
-        return d[str.toUpperCase()] == $('.' + str + '>option:selected').text();
+    var selected_option = $('.' + str + '>option:selected').text();
+
+    if(selected_option.substr(0,3) != 'Tod') {
+        return d[str.toUpperCase()] == selected_option;
+    } else {
+        return d;
+    }
 };
 
 
@@ -529,6 +571,17 @@ function cambio(data,str,fn,extraParam) {
     var mapName = extraParam ? extraParam : str.toUpperCase();
 
     if(str != 'asignacion') {
+        var asigs_ = data.filter(fn)
+                         .map((d) => JSON.stringify(d))
+
+        asigs_ = _.uniq(asigs_).map((d) => JSON.parse(d))
+                  //.map((d) => '<option id="'+d.ID+'">'+ d.NOMBRE +'</option>');
+
+        asigs_ = asigs_.filter((f) => f.NOMBRE.slice(0,3) == 'Tod')
+                       .concat(_.sortBy(asigs_.filter((f) => f.NOMBRE.slice(0,3) != 'Tod',((d) => d.NOMBRE))))
+                       .map((d) => '<option id="'+d.ID+'">'+ d.NOMBRE +'</option>')
+
+        asigs_ = _.uniq(asigs_).join('');
 
         param = data.filter(fn)
                     .map(function(d) { return d[mapName]; });
@@ -537,11 +590,16 @@ function cambio(data,str,fn,extraParam) {
         param = param.filter((f) => f.slice(0,3) == 'Tod').concat(param.filter((f) => f.slice(0,3) != 'Tod'))
         param = param.map(function(d) { return '<option>' + d + '</option>'; }).join('');
 
+        $('.asignacion').html(asigs_)
+
     } else {
+
         param = data.filter(fn)
                     .map(function(d) { return { 'nombre':d[mapName],'id':d.ID }; });
 
         var nombres = _.uniq( param.map(function(d) { return d.nombre }) );
+
+        nombres = nombres.filter((f) => f.slice(0,3) == 'Tod').concat(nombres.filter((f) => f.slice(0,3) != 'Tod'))
 
         param = nombres.map(function(d) {
             var id = param.filter(function(e) { return e.nombre == d; })[0].id;
@@ -698,7 +756,10 @@ function cambio(data,str,fn,extraParam) {
     		    d3.selectAll('div#botones_>div:not(.espacioBlanco)')
               .attr('class','button');
 
-    		   $(this).attr('class','selectedButton')
+    		   $(this).attr('class','selectedButton');
+
+           $('#notas_contenido').html(mapNdataObj.notas[$('div.selectedButton').attr('id')]);
+
     	});
 
       $.ajax({
@@ -761,6 +822,7 @@ function openInNewTab(url) {
 
 
 function switcher(id,mapNdataObj) {
+          $('#filtro_cont').css('display','none')
   /*
           Object.keys(mapNdataObj.ajaxData.seguimiento).forEach((d) => {
               if(typeof(mapNdataObj.ajaxData.seguimiento[d]) == 'string') {
@@ -770,6 +832,7 @@ function switcher(id,mapNdataObj) {
 */
     		 	switch (true) {
               case id == 'Datos generales':
+
                     grapher(function() {
 
                       DatosGrales(mapNdataObj);
@@ -781,9 +844,22 @@ function switcher(id,mapNdataObj) {
                     break;
 
         	 		case id === 'Producción':
+
                     if(mapNdataObj.ajaxData.produccion.length > 0) {
+
+                        var prod = mapNdataObj.ajaxData.produccion;
+                        prod = JSON.parse(JSON.stringify(prod));
+
+                        prod.forEach((d) => {
+                          let fecha = new Date(d.fecha).toISOString();
+                          let anio = fecha.split('-')[0];
+                          let mes = fecha.split('-')[1];
+
+                          d.fecha = new Date(+anio,+mes - 1);
+                        })
+
             	 			     //grapher(LineChart,mapNdataObj.ajaxData.produccion);
-                         var chart__ = LineChart(mapNdataObj.ajaxData.produccion)
+                         var chart__ = LineChart(prod)
                          //chart__.series[0].update({lineColor:'red'})
 
                     } else {
@@ -796,6 +872,7 @@ function switcher(id,mapNdataObj) {
 
                     var reservas = mapNdataObj.ajaxData.reservas;
                     reservas = _.sortBy(reservas,function (d) { return d.fecha; })
+                    console.log(reservas)
 
                     if(reservas.length > 0) {
 
@@ -881,7 +958,8 @@ function switcher(id,mapNdataObj) {
                               var stack_reservas = new Wrangler(config,groups_);
                               var reservasStacked = stack_reservas.stackData(reservas);
 
-                              var colores = ['rgb(13,180,190)','rgb(46,112,138)','rgb(20,50,90)'];
+                              //var colores = ['rgb(13,180,190)','rgb(46,112,138)','rgb(20,50,90)'];
+                              var colores = ['rgb(20,50,90)','rgb(46,112,138)','rgb(13,180,190)']
 
                               reservasStacked = reservasStacked.map(function(d,i) {
                                 d.color = colores[i];
@@ -904,10 +982,22 @@ function switcher(id,mapNdataObj) {
             	 			break;
 
         	 		case id === 'Pozos':
+
               //===========================================================================================================
               // OJO: Highcharts error #15: www.highcharts.com/errors/15
               //===========================================================================================================
                     if( mapNdataObj.ajaxData.pozos_inv.length > 0) {
+                          console.log(mapNdataObj.ajaxData.pozos_inv)
+
+                          var pozos_ = JSON.parse(JSON.stringify(mapNdataObj.ajaxData.pozos_inv));
+
+                          pozos_.forEach((d) => {
+                            let fecha = new Date(d.fecha).toISOString();
+                            let anio = fecha.split('-')[0];
+                            let mes = fecha.split('-')[1];
+
+                            d.fecha = new Date(+anio,+mes - 1);
+                          })
 
                           var pozos = mapNdataObj.ajaxData.pozos_inv.filter(function(d) {
                             var cond =
@@ -1011,7 +1101,8 @@ function switcher(id,mapNdataObj) {
 
 
                         function removeEdges(stackedPozos) {
-                              var stackedPozos_ = JSON.parse(JSON.stringify(stackedPozos))
+                              var stackedPozos_ = JSON.parse(JSON.stringify(stackedPozos));
+                              console.log(stackedPozos_)
 
                               stackedPozos_.forEach(function(d,i) {
                                  var valid = d.data.filter((f) => f.y).map((d) => d.x);
@@ -1066,6 +1157,7 @@ function switcher(id,mapNdataObj) {
 
 
         	 		case id === 'Inversión':
+
                     var inv_aprob = mapNdataObj.ajaxData.inv;
                     dashboard(inv_aprob);
 
@@ -1212,6 +1304,7 @@ function switcher(id,mapNdataObj) {
             	 			break;
 
         	 		case id === 'Compromiso Mínimo de Trabajo':
+
                     var cmt = mapNdataObj.ajaxData.cmt;
 
                     if(Object.keys(cmt).length) {
@@ -1225,6 +1318,7 @@ function switcher(id,mapNdataObj) {
             	 			break;
 
         	 		case id === 'Aprovechamiento de gas':
+
                     var aprov = mapNdataObj.ajaxData//.aprovechamiento;
 
                     if(aprov.aprovechamiento.length) {
@@ -1237,7 +1331,9 @@ function switcher(id,mapNdataObj) {
             	 			break;
 
         	 		case id === 'Documentos':
+
                     documentos(mapNdataObj.grales);
+                    $('#filtro_cont').css('display','table')
             	 			break;
 
         	 		case id === 'Seguimiento':

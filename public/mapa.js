@@ -25,7 +25,7 @@ function leafletMap(shapes) {
 					attributionControl:false,
 					zoomAnimation:true
 				})
-				.setView([22.0, -97.0], 5.3);
+				.setView([22.0, -97.0], 6.3);
 
 			var asignaciones = L.geoJSON(shapes,{
 				id:function(feature) {
@@ -174,7 +174,7 @@ function Mapa(projection) {
 	      var zoom = d3.behavior.zoom()
 	      				.translate(t)
 	      				.scale(s)
-	      				.scaleExtent([s,s*2])
+	      				.scaleExtent([s,s*3])
 	      				.on('zoom',zoomed)
 
 

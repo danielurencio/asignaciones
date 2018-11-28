@@ -114,9 +114,45 @@ class Header extends Component {
 
 class Visor extends Component {
   render() {
+
+    let notas = {
+      top:'calc(99.7% - 10px)',
+      position:'fixed',
+      marginLeft:'10px',
+      width:'calc(60% - 20px)',
+      height:'0.2%',
+      backgroundColor:'rgba(0,0,0,.9)',
+      zIndex:100,
+      borderRadius:'0px',
+      color:'white',
+      display:'table',
+      textAlign:'center',
+      fontFamily:'Open Sans',
+      fontWeight:700
+    };
+
+    let notas_table = {
+      top:'calc(97.7% - 11px)',
+      marginLeft:'15px',
+      position:'fixed',
+      zIndex:100,
+      height:'2%',
+      width:'4.0%',
+      backgroundColor:'rgba(0,0,0,0.9)',
+      display:'table',
+      textAlign:'center',
+      borderTopRightRadius:'4px',
+      borderTopLeftRadius:'4px',
+      fontFamily:'Open Sans',
+      color:'rgba(255,255,255,1)',
+      fontWeight:600,
+      fontSize:'1em'
+    }
+
     return (
       <div style={{ width:'100%',height:'100%'}}>
         <div style={{ width:'100%',height:this.props.boton_width+'px', top:'0px',position:'relative' }}>
+
            <Botones boton_width={ this.props.boton_width }
            elements={[
              'Datos generales',
@@ -131,12 +167,55 @@ class Visor extends Component {
            ]}/>
         </div>
         <div style={{ width:'100%',height:'calc(100% - '+ this.props.boton_width + 'px)' }}>
+            <div ix='notas' id='notas_pestana' className='notas' style={notas_table}>
+              <div ix='notas' className='notas' style={{ display:'table-cell', verticalAlign:'middle' }}>Notas</div>
+            </div>
+            <div ix='notas' id='notas' className='notas' style={notas}>
+              <div ix='notas' className='notas' id='notas_ocultar' style={{ display:'none', textAlign:'right', fontWeight:800 }}>
+                  <span style={{ color:'WhiteSmoke', backgroundColor:'rgba(255,255,255,0.5)',borderBottomLeftRadius:'5px' }}>&ensp;X&ensp;</span>
+              </div>
+              <div id='notas_contenido' style={{ 'display':'none' }}>En construcción</div>
+            </div>
+
             <div id='bubbles' style={{ width:'100%',height:'0px',backgroundColor:'transparent',zIndex:'20' }}></div>
             {/*<div id='controles' style={{ width:'100%',height:'20px',backgroundColor:'transparent' }}></div>*/}
             <div id='visor_holder' style={{ position:'relative',margin:'10px',width:'calc(100% - 0px)',height:'calc(100% - 0px - 0px - 0px)' }}>
               <div style={{ width:'calc(100% - 20px)',height:'calc(100% - 20px)' }}>
                     <div id='visor' style={{ width:'100%', height:'100%' }}></div>
               </div>
+            </div>
+            <div id="filtro_cont" style={{
+              display:'none',
+              marginLeft:'10px',
+              top:"calc(100% - 120px)",
+              width:"calc(60% - 20px)",
+              height:"110px",
+              backgroundColor:"rgba(13,50,150,0.95)",
+              position:"absolute",
+              borderTopLeftRadius:'3px',
+              borderTopRightRadius:'3px'
+            }}>
+                <div style={{
+                  display:'table-cell',
+                  verticalAlign:'middle',
+                  textAlign:'center',
+                  color:'white',
+                  fontSize:'1.5em',
+                  fontWeight:300
+                }}>
+                <div>Filtrar asignación:</div>
+                <input style={{
+                  backgroundColor:'transparent',
+                  borderTop:'none',
+                  borderRight:'none',
+                  borderLeft:'none',
+                  borderBottom:'1px solid white',
+                  width:'40%',
+                  borderImage:'initial',
+                  background:'url("glass_blue.svg") calc(100% - 0px) 0px no-repeat',
+                  fontWeight:700
+                }}></input>
+                </div>
             </div>
         </div>
       </div>
