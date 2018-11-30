@@ -9,7 +9,7 @@ var HOSTNAME = 'http://172.16.24.57:5000/';
     success:function(datos_grales) {
         datos_grales = JSON.parse(datos_grales)
    d3.json('notas.json', function(err,notas_alPie) {
-     console.log(notas_alPie)
+
     d3.json('file_.json',function(err,data_) {
 
     	d3.json('shapes.json',function(err,shapes) {
@@ -872,7 +872,7 @@ function switcher(id,mapNdataObj) {
 
                     var reservas = mapNdataObj.ajaxData.reservas;
                     reservas = _.sortBy(reservas,function (d) { return d.fecha; })
-                    console.log(reservas)
+                    
 
                     if(reservas.length > 0) {
 
@@ -907,6 +907,11 @@ function switcher(id,mapNdataObj) {
                               type:'datetime',
                               dateTimeLabelFormats: {
                                 year:'%Y'
+                              },
+                              labels: {
+                                style: {
+                                  fontSize:'1.6em'
+                                }
                               }
                             },
                             stackLabels:true,
@@ -987,7 +992,7 @@ function switcher(id,mapNdataObj) {
               // OJO: Highcharts error #15: www.highcharts.com/errors/15
               //===========================================================================================================
                     if( mapNdataObj.ajaxData.pozos_inv.length > 0) {
-                          console.log(mapNdataObj.ajaxData.pozos_inv)
+
 
                           var pozos_ = JSON.parse(JSON.stringify(mapNdataObj.ajaxData.pozos_inv));
 
@@ -1026,7 +1031,7 @@ function switcher(id,mapNdataObj) {
                           'rep': [
                             { 'stackName':'Reparaciones menores','groups':['Reparaciones menores'] },
                             { 'stackName':'Reparaciones mayores','groups':['Reparaciones mayores'] },
-                            { 'stackName':'Taponamientos','groups':['Taponamientos'] }
+                            //{ 'stackName':'Taponamientos','groups':['Taponamientos'] }
                           ]
                         };
 
@@ -1058,7 +1063,7 @@ function switcher(id,mapNdataObj) {
                           'options': [
                               { 'value':'per', 'text':' Perforación de pozos' },
                               { 'value':'ops', 'text':' Pozos operando' },
-                              { 'value':'rep', 'text':' Reparaciones y taponamientos' }
+                              { 'value':'rep', 'text':' Reparaciones' }
                             ],
                           'height':80
                         };
@@ -1102,7 +1107,7 @@ function switcher(id,mapNdataObj) {
 
                         function removeEdges(stackedPozos) {
                               var stackedPozos_ = JSON.parse(JSON.stringify(stackedPozos));
-                              console.log(stackedPozos_)
+
 
                               stackedPozos_.forEach(function(d,i) {
                                  var valid = d.data.filter((f) => f.y).map((d) => d.x);
@@ -1127,6 +1132,11 @@ function switcher(id,mapNdataObj) {
                           },
                           xAxis: {
                             type:'datetime',
+                            labels: {
+                              style: {
+                                fontSize:'1.2em'
+                              }
+                            },
                             dateTimeLabelFormats: {
                               month:'%b \ %Y'
                             }
@@ -1287,6 +1297,11 @@ function switcher(id,mapNdataObj) {
                                     type:'datetime',
                                     dateTimeLabelFormats: {
                                       month:'%b \ %Y'
+                                    },
+                                    labels: {
+                                      style: {
+                                        fontSize:'1.2em'
+                                      }
                                     }
                                   }
                           });

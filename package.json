@@ -7,7 +7,7 @@
     "npm": "^6.4.0",
     "react": "^16.4.0",
     "react-dom": "^16.4.0",
-    "react-scripts": "1.1.4",
+    "react-scripts": "^2.1.1",
     "underscore": "^1.9.1"
   },
   "scripts": {
@@ -29,5 +29,11 @@
   "bugs": {
     "url": "https://github.com/danielurencio/asignaciones/issues"
   },
-  "homepage": "./"
+  "homepage": "./",
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
 }

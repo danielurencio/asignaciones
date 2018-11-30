@@ -89,7 +89,7 @@ function DatosGrales(data)  {
 
     tipos_ = _.sortBy(tipos_,(d) => -d.num)
               .map((d,i) => {
-                return '<div style="text-align:center;display:table;font-size:1em;font-weight:700;color:'+ order_colors[i] +'">'+
+                return '<div style="padding:2px;text-align:center;display:table;font-size:1.1em;font-weight:700;color:'+ order_colors[i] +'">'+
                           '<div style="width:2em;text-align:right;display:table-cell;">'+ d.num +'</div>'+
                           '<div style="padding-left:0.8em;display:table-cell;">'+ d.tipo +'</div>'+
                         '</div>'
@@ -125,7 +125,7 @@ function DatosGrales(data)  {
                       "<div style='width:100%;height:100%;border-right:1px solid gray;display:table;'>" +
                           "<div style='display:table-cell;vertical-align:middle;'>" +
                               "<div style='font-size:"+ numOnomSize +"em;font-weight:800;color:rgb(13,180,190);'>" + numOnom + "</div>" +
-                              "<div style='position:relative:;top:-10px;font-size:1em;font-weight:600;'>"+ subtNumOnom +"</div>" +
+                              "<div style='position:relative:;top:-10px;font-size:1.2em;font-weight:600;'>"+ subtNumOnom +"</div>" +
                           "</div>" +
                       "</div>" +
                   "</div>" +
@@ -145,6 +145,10 @@ function DatosGrales(data)  {
 
 
     var seg = _.sortBy(data.ajaxData.seguimiento.ext,function(d) { return d.anio; }).filter((f) => f.tipo_observacion == 'Real');
+
+    var anio_extent = d3.extent(seg.filter((f) => f.concepto == 'G_Op').map((d) => d.anio)).join(' - ');
+
+    console.log(anio_extent)
     var gop = Number(d3.sum(seg.filter((f) => f.concepto == 'G_Op').map((d) => d.valor)).toFixed(0)).toLocaleString('es-MX');
 
 
@@ -153,8 +157,8 @@ function DatosGrales(data)  {
                   "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
                       "<div style='display:table;width:100%;height:100%;'>" +
                           "<div style='display:table-cell;vertical-align:middle;color:white;color:"+colors_[0]+"'>" +
-                              "<div style='font-size:3em;font-weight:700;'>"+ d3.sum(grales_.map((d) => d.N_CAMPOS_RESERVAS)) +"</div>" +
-                              "<div style='position:relative:;top:-10px;font-size:0.85em;font-weight:600;color:black;'>Campos con reservas</div>" +
+                              "<div style='font-size:4em;font-weight:700;'>"+ d3.sum(grales_.map((d) => d.N_CAMPOS_RESERVAS)) +"</div>" +
+                              "<div style='position:relative:;top:-10px;font-size:1.2em;font-weight:600;color:black;'>campos con reservas</div>" +
                           "</div>" +
                       "</div>" +
                   "</div>" +
@@ -163,9 +167,10 @@ function DatosGrales(data)  {
                   "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
                       "<div style='display:table;width:100%;height:100%;'>" +
                           "<div style='display:table-cell;vertical-align:middle;color:white;color:"+colors_[1]+"'>" +
-                              "<div style='font-size:2em;font-weight:700;'>"+ gop +"</div>" +
-                              "<div style='position:relative:;top:-10px;font-size:0.85em;font-weight:600;color:black;color:"+colors_[4]+";'>millones de pesos</div>" +
-                              "<div style='position:relative:;top:-10px;font-size:0.85em;font-weight:600;color:black'>Gastos ejercidos<br>de operación</div>" +
+                              "<div style='font-size:3em;font-weight:700;'>"+ gop +"</div>" +
+                              "<div style='position:relative:;top:-10px;font-size:1.2em;font-weight:600;color:black;'>millones de pesos</div>" +
+                              "<div style='position:relative:;top:-10px;font-size:1em;font-weight:400;color:"+ colors_[4] +"'>GASTOS DE OPERACIÓN</div>" +
+                              "<div style='position:relative:;top:-10px;font-size:1em;font-weight:400;color:"+ colors_[4] +"'>("+ anio_extent +")</div>" +
                           "</div>" +
                       "</div>" +
                   "</div>" +
@@ -180,12 +185,14 @@ function DatosGrales(data)  {
 
     var agregados = Object.keys(data.ajaxData.seguimiento).every((d) => !+d);
     var seg = data.ajaxData.seguimiento;
+    var anio_extent = d3.extent(seg['ext'].filter((f) => new RegExp(/^I(n|N)/).test(f.concepto) && f.tipo_observacion == 'Real').map((d) => d.anio));
+    anio_extent = anio_extent.join(' - ')
 
     if(agregados) {
 
           var inv = Object.keys(seg).map((d) => {
-              var inv_ = seg[d].filter((f) => new RegExp(/^I(n|N)/).test(f.concepto) && f.tipo_observacion == 'Real')
-                               .map((d) => d.valor);
+              var inv_ = seg[d].filter((f) => new RegExp(/^I(n|N)/).test(f.concepto) && f.tipo_observacion == 'Real');
+              inv_ = inv_.map((d) => d.valor);
 
               return d3.sum(inv_);
           });
@@ -209,8 +216,8 @@ function DatosGrales(data)  {
                   "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
                       "<div style='display:table;width:100%;height:100%;'>" +
                           "<div style='display:table-cell;vertical-align:middle;color:white;color:"+colors_[2]+"'>" +
-                              "<div style='font-size:2em;font-weight:700;'>"+ Number((d3.sum(grales_.map((d) => d.SUPERFICIE_KM2))).toFixed(0)).toLocaleString('es-MX') +"</div>" +
-                              "<div style='position:relative:;top:-10px;font-size:0.85em;font-weight:600;color:black;'>Kilómetros<sup>2</sup></div>" +
+                              "<div style='font-size:3.8em;font-weight:700;'>"+ Number((d3.sum(grales_.map((d) => d.SUPERFICIE_KM2))).toFixed(0)).toLocaleString('es-MX') +"</div>" +
+                              "<div style='position:relative:;top:-10px;font-size:1.2em;font-weight:600;color:black;'>kilómetros<sup>2</sup></div>" +
                           "</div>" +
                       "</div>" +
                   "</div>" +
@@ -219,9 +226,11 @@ function DatosGrales(data)  {
                   "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
                       "<div style='display:table;width:100%;height:100%;'>" +
                           "<div style='display:table-cell;vertical-align:middle;color:white;color:"+colors_[3]+"'>" +
-                              "<div style='font-size:2em;font-weight:700;'>"+ Number(inv.toFixed(0)).toLocaleString('es-MX') +"</div>" +
-                              "<div style='position:relative:;top:-10px;font-size:0.85em;font-weight:600;color:"+ colors_[5] +";'> millones de pesos</div>" +
-                              "<div style='position:relative:;top:-10px;font-size:0.85em;font-weight:600;color:black;'>Inversión total ejercida</div>" +
+                              "<div style='font-size:3em;font-weight:700;'>"+ Number(inv.toFixed(0)).toLocaleString('es-MX') +"</div>" +
+                              "<div style='position:relative:;top:-10px;font-size:1.2em;font-weight:600;color:black;'> millones de pesos</div>" +
+                              "<div style='position:relative:;top:-10px;font-size:1em;font-weight:400;color:"+ colors_[5]+ ";'>INVERSIÓN TOTAL EJERCIDA</div>" +
+                              "<div style='position:relative:;top:-10px;font-size:1em;font-weight:400;color:"+ colors_[5] +";'>("+ anio_extent +")</div>" +
+
                           "</div>" +
                       "</div>" +
                   "</div>" +
@@ -264,31 +273,31 @@ function DatosGrales(data)  {
         return meses[mes].toLowerCase() + ' - ' + anio;
       }
 
-      var _aceite_ = data.ajaxData.produccion.length > 0 ? (+prod.aceite_mbd.toFixed(1)).toLocaleString('es-MX') : 0;
-      var _gas_ = data.ajaxData.produccion.length > 0 ? (+prod.gas_mmpcd.toFixed(1)).toLocaleString('es-MX') : 0;
+      var _aceite_ = data.ajaxData.produccion.length > 0 ? (+prod.aceite_mbd.toFixed(0)).toLocaleString('es-MX') : 0;
+      var _gas_ = data.ajaxData.produccion.length > 0 ? (+prod.gas_mmpcd.toFixed(0)).toLocaleString('es-MX') : 0;
       var _fecha_ = data.ajaxData.produccion.length > 0 ? fechA(prod.fecha) : '-';
 
       return "<div style='width:100%;height:100%;position:relative;display:table;table-layout:fixed;'>" +
                 "<div style='display:table-row;width:100%;height:50%;text-align:center;table-layout:fixed;position:relative;'>" +
-                    "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
+                    "<div style='width:100%;display:table-cell;position:relative;vertical-align:middle;'>" +
                         "<div style='display:table;width:100%;height:100%;'>" +
-                            "<div style='display:table-cell;vertical-align:middle;'>" +
-                                "<div style='position:relative:;top:-10px;font-size:1.5em;font-weight:700;color:"+colors_[0]+"'>PRODUCCIÓN</div>" +
-                                "<div style='position:relative:;top:-10px;font-size:1.5em;font-weight:700;color:"+colors_[0]+"'>"+ _fecha_ +"</div>" +
+                            "<div style='width:100%;display:table-cell;vertical-align:middle;'>" +
+                                "<div style='margin:0px;position:relative:;top:-10px;font-size:2.5em;font-weight:800;color:"+colors_[0]+"'>PRODUCCIÓN</div>" +
+                                "<div style='margin:0px;position:relative:;top:-10px;font-size:1.6em;font-weight:700;color:"+colors_[0]+"'>"+ _fecha_ +"</div>" +
 
-                                "<div style='text-align:center;'>" +
+                                "<div style='width:100%;text-align:center;margin:0px;'>" +
                                   "<div style='display:inline-block;'>" +
 
-                                      "<div style='display:table;font-weight:800;font-size:2.5em;'>" +
+                                      "<div style='margin-top:.2em;display:table;font-weight:800;font-size:3.5em;'>" +
                                           "<div style='display:table-row;'>" +
-                                              "<div style='display:table-cell;text-align:right;'><span style='font-weight:400;font-size:0.4em;'>ACEITE&nbsp;</span></div>" +
+                                              "<div style='display:table-cell;text-align:right;'><span style='font-weight:600;font-size:0.5em;'>ACEITE&emsp;</span></div>" +
                                               "<div style='display:table-cell;text-align:center;'>"+ _aceite_ +"</div>" +
-                                              "<div style='display:table-cell;text-align:left;'><span style='font-weight:400;font-size:0.4em;'>&nbsp;MBD</span></div>" +
+                                              "<div style='display:table-cell;text-align:left;'><span style='font-weight:300;font-size:0.4em;'>&ensp;MBD</span></div>" +
                                           "</div>" +
                                           "<div style='display:table-row;'>" +
-                                              "<div style='display:table-cell;text-align:right;'><span style='font-weight:400;font-size:0.4em;'>GAS&nbsp;</span></div>" +
+                                              "<div style='display:table-cell;text-align:right;'><span style='font-weight:600;font-size:0.5em;'>GAS&emsp;</span></div>" +
                                               "<div style='display:table-cell;text-align:center;'>"+ _gas_ +"</div>" +
-                                              "<div style='display:table-cell;text-align:left;'><span style='font-weight:400;font-size:0.4em;'>&nbsp;MMPCD</span></div>" +
+                                              "<div style='display:table-cell;text-align:left;'><span style='font-weight:300;font-size:0.4em;'>&ensp;MMPCD</span></div>" +
                                           "</div>" +
                                       "</div>" +
 
@@ -316,14 +325,14 @@ function DatosGrales(data)  {
         var _fecha_ = data.ajaxData.reservas.length > 0 ? +(new Date(resv.fecha).getFullYear()) + 1 : '-';
 
         function filas(str_) {
-          var _pce_ = data.ajaxData.reservas.length > 0 ? (+resv_.filter((f) => f.tipo == str_)[0].rr_pce_mmbpce.toFixed(1)).toLocaleString('es-MX') : '0';
-          var _aceite_ = data.ajaxData.reservas.length > 0 ? (+resv_.filter((f) => f.tipo == str_)[0].rr_aceite_mmb.toFixed(1)).toLocaleString('es-MX') : '0';
-          var _gas_ = data.ajaxData.reservas.length > 0 ? (+resv_.filter((f) => f.tipo == str_)[0].rr_gas_natural_mmmpc.toFixed(1)).toLocaleString('es-MX') : '0';
+          var _pce_ = data.ajaxData.reservas.length > 0 ? (+resv_.filter((f) => f.tipo == str_)[0].rr_pce_mmbpce.toFixed(0)).toLocaleString('es-MX') : '0';
+          var _aceite_ = data.ajaxData.reservas.length > 0 ? (+resv_.filter((f) => f.tipo == str_)[0].rr_aceite_mmb.toFixed(0)).toLocaleString('es-MX') : '0';
+          var _gas_ = data.ajaxData.reservas.length > 0 ? (+resv_.filter((f) => f.tipo == str_)[0].rr_gas_natural_mmmpc.toFixed(0)).toLocaleString('es-MX') : '0';
 
 
-          var style = "display:table-cell;text-align:center;padding:5px;"
+          var style = "display:table-cell;text-align:right;padding:5px;"
           var ff =
-          "<div style='border-right:0px solid rgba(255,255,255,.3);"+ style +"font-weight:400;font-size:.8em;color:"+colors_[2]+"'>"+ str_.toUpperCase() + "</div>"+
+          "<div style='border-right:0px solid rgba(255,255,255,.3);"+ style +"font-weight:400;font-size:.9em;color:"+colors_[2]+"'>"+ str_.toUpperCase() + "&ensp;</div>"+
           "<div style='"+ style +"border-right:1px solid rgba(255,255,255,.3);'>"+
             _pce_ +
           "</div>" +
@@ -343,14 +352,14 @@ function DatosGrales(data)  {
                       "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
                           "<div style='display:table;width:100%;height:100%;'>" +
                               "<div style='display:table-cell;vertical-align:middle;'>" +
-                                  "<div style='position:relative:;top:-10px;font-size:1.5em;font-weight:700;color:"+colors_[2]+"'>RESERVAS</div>" +
-                                  "<div style='position:relative:;top:-10px;font-size:1.2em;font-weight:700;color:"+colors_[2]+"'>a enero de "
+                                  "<div style='padding:2px;position:relative:;top:-10px;font-size:2.7em;font-weight:800;color:"+colors_[2]+"'>RESERVAS</div>" +
+                                  "<div style='padding:2px;position:relative:;top:-10px;font-size:1.6em;font-weight:700;color:"+colors_[2]+"'>enero - "
                                               + _fecha_ +"</div>" +
 
                                   "<div style='text-align:center;'>" +
-                                    "<div style='display:inline-block;'>" +
+                                    "<div style='padding:2px;display:inline-block;'>" +
 
-                                        "<div style='display:table;font-weight:800;font-size:1em;'>" +
+                                        "<div style='margin-right:1.5em;margin-top:.8em;display:table;font-weight:800;font-size:1.4em;'>" +
                                             "<div style='display:table-row;text-align:center;font-weight:400;color:"+colors_[2]+"'>" +
                                                 "<div style='display:table-cell;text-align:center;'>"+ '' +"</div>" +
                                                 "<div style='display:table-cell;text-align:center;'>"+ 'PCE' +"</div>" +
@@ -509,22 +518,47 @@ function LineChart(data) {
                 navigator: {
                   enabled:true
                 },
+                xAxis: {
+                  labels:{
+                    style:{
+                      fontSize:'1.2em'
+                    }
+                  }
+                },
                 yAxis: [
                   {
                     title:{
-                      text:'Gas (mmpcd)'
+                      text:'Gas (mmpcd)',
+                      style:{
+                        fontSize:'1.2em',
+                        color:'red'
+                      }
                     },
-                    opposite:false,
+                    opposite:true,
                     labels: {
-                      format: '{value:,.0f}'
+                      align:'left',
+                      format: '{value:,.0f}',
+                      style: {
+                        fontSize:'1.2em'
+                        //color:'red'
+                      }
                     }
                   },
                   {
                     title: {
-                      text:'Aceite (mbd)'
+                      text:'Aceite (mbd)',
+                      style: {
+                        fontSize:'1.2em',
+                        color:'green'
+                      }
                     },
+                    opposite:false,
                     labels: {
-                      format: '{value:,.0f}'
+                      format: '{value:,.0f}',
+                      style:{
+                        fontSize:'1.2em'
+                        //color:'green'
+                      }
                     }
                   }
                 ],
@@ -596,7 +630,7 @@ function LineChart(data) {
                               points.map(function(d) {
 
                                 return '<div style="padding-left:8px;">'
-                                          + '<b style="color:'+ d.color +'">' + d.hidrocarburo + ':</b> ' + d.valor.toFixed(2) +
+                                          + '<b style="color:'+ d.color +'">' + d.hidrocarburo + ':</b> ' + Number(d.valor.toFixed(0)).toLocaleString('es-MX') +
                                        '</div>';
                               }).join('');
                         '</div>';
@@ -765,12 +799,18 @@ function BarChart(config) {
                     text: config.title
                 },
                 subtitle: {
-                    text:config.subtitle
+                    text:config.subtitle,
+                    style: {
+                      fontSize:'1.4em'
+                    }
                 },
                 yAxis: {
                     opposite:config.opposite,
                     title:{
-                      text:config.yAxis
+                      text:config.yAxis,
+                      style:{
+                        fontSize:'1.2em'
+                      }
                     },
                     gridLineWidth:0,
                     max: config.yMax ? config.yMax : null,
@@ -786,7 +826,10 @@ function BarChart(config) {
                       }
                     },
                     labels: {
-                      format: '{value:,.0f}'
+                      format: '{value:,.0f}',
+                      style: {
+                        fontSize:'1.2em'
+                      }
                     }
                 },
                 xAxis: config.xAxis/*{
@@ -796,6 +839,7 @@ function BarChart(config) {
                   }
                 }*/,
                 tooltip: {
+                    pointFormat:'{value:,.0f}',
                     borderColor:'transparent',
                     formatter: function() {
                       var str;
@@ -804,7 +848,7 @@ function BarChart(config) {
                             str = "<div><b>" +
                                           parseDate(this.x) + "</b>:<br> " +
                                           this.points.map(function(d) {
-                                            var content = "  <span style=\"font-weight:700;color:"+d.color+"\">&nbsp;&bull;" + d.key + ": " + (d.y).toFixed(1) + "</span>";
+                                            var content = "  <span style=\"font-weight:700;color:"+d.color+"\">&nbsp;&bull;" + d.key + ": " + Number((d.y).toFixed(1)).toLocaleString('es-MX') + "</span>";
                                             return content;
                                           }).join("<br>") +
                                       "</div>";
@@ -1062,8 +1106,9 @@ function documentos(data) {
   $('#filtro_cont').css('border')
 
   $('#filtro_cont input').on('input',function(d) {
-      var val = $('#filtro_cont input').val();
 
+      var val = $('#filtro_cont input').val();
+      /*
       var tds = document.querySelectorAll('tr.hover_doc>td:first-child')
       tds = Array.prototype.slice.call(tds).map((d) => $(d).text());
 
@@ -1073,6 +1118,55 @@ function documentos(data) {
 
       var a_l = $('tr.hover_doc').filter((i,f) => {
           return tds.some((s) => s == $(f).children(':first').text())
+      }).css('display','none')
+      */
+      function noAccents(str) {
+        var str_ = str//.toLowerCase();
+
+        str_=str_.replace(/á/ig,'a')
+            .replace(/é/ig,'e')
+            .replace(/í/ig,'i')
+            .replace(/ó/ig,'o')
+            .replace(/ú/ig,'u')
+
+        return str_
+      }
+
+      //val = noAccents(val)
+
+      var text = val.split(' ');
+
+      patts = [];
+
+   		text.forEach(function(d) {
+        //var ss = noAccents(d);
+   			var rx = new RegExp(d,'i');
+   			patts.push(rx);
+   		})
+
+      var filas = Array.prototype.slice.call(document.querySelectorAll('tr.hover_doc td:first-child'))
+          .map((d) => {
+            var st = $(d).text();
+            //st = noAccents(st)
+            return st;
+          })
+
+      var str_
+  		function regexCheck(patt) {
+  			return patt.test(str_);
+  		}
+
+      var matches = filas.filter((f) => {
+        str_ = f;
+        return !patts.every(regexCheck)
+      });
+
+      //console.log(matches)
+
+      $('tr.hover_doc').css('display','table-row')
+
+      var a_l = $('tr.hover_doc').filter((i,f) => {
+          return matches.some((s) => s == $(f).children(':first').text());
       }).css('display','none')
 
 
@@ -1170,6 +1264,7 @@ function CMT(data) {
         };
 
 
+
         function apartado(config,a) {
 
                 if(a) {
@@ -1183,10 +1278,13 @@ function CMT(data) {
                 }
 
                 var data = typeof(config.data) == 'string' ? JSON.parse(config.data) : config.data;
-                data = clean_(data)
+
+                //data = clean_(data);
+
                 data = _.sortBy(data,(d) => d.concepto);
 
                 var conceptos = _.uniq(data.map((d) => d.concepto));
+
                 var anios = _.uniq(data.map((d) => d.anio));
 
                 var str__ = '<div style="width:100%; height:100%; display:table; table-layout:fixed">' +
@@ -1251,7 +1349,12 @@ function CMT(data) {
                  opposite:true,
                  title:'',
                  xAxis: {
-                   categories: data[0].data.map((d) => String(d[0]))
+                   categories: data[0].data.map((d) => String(d[0])),
+                   labels: {
+                     style: {
+                       fontSize:'1.1em'
+                     }
+                   }
                  },
                  hideLegend:true,
                  tooltip: "'<div style=\"font-weight:300;font-family:Open Sans;text-align:center;\">'+" +
@@ -2166,18 +2269,31 @@ function aprovechamiento(data) {
             }
         },
         subtitle: {
-            text: 'Millones de pies cúbicos diarios'//document.ontouchstart === undefined ?
-                    //'Click and drag in the plot area to zoom in' : 'Pinch the chart to zoom in'
+            text: 'Millones de pies cúbicos diarios',
+            style: {
+              fontSize: '1.4em'
+            }
         },
         xAxis: {
-            type: 'datetime'
+            type: 'datetime',
+            labels: {
+              style: {
+                fontSize:'1.2em'
+              }
+            }
         },
         yAxis: {
             title: {
-                text: 'MMPCD'
+                text: 'MMPCD',
+                style: {
+                  fontSize:'1.2em'
+                }
             },
             labels: {
-              format: '{value:,.0f}'
+              format: '{value:,.0f}',
+              style: {
+                fontSize:'1.2em'
+              }
             }
         },
         legend: {
@@ -2288,14 +2404,58 @@ function inversion_aprob(data) {
       $('#visor_panel').append('<div style="width:100%;text-align:center;"><select id="inv_select"></select><div>');
 
       function draw_() {
+            let datatemp = JSON.parse(JSON.stringify(data));
             var selectedRadio = $('input[type=radio]:checked');
+///////////////////////////////////////////////////////////////////////////////////////////////
+// TOTALES POR ACTIVIDAD
+///////////////////////////////////////////////////////////////////////////////////////////////
+            var data_ = _.uniq(datatemp.map((d) => d.actividad))
+                .map((act) => {
+                  var actividad = datatemp.filter((f) => f.actividad == act);
+                  var anios = _.uniq(actividad.map((r) => r.anio))
 
-            var subactividades = data.filter((f) => selectedRadio.parent().text() == f.actividad)
+                  var anios = anios.map((a) => {
+                    var monto = datatemp.filter((f) => f.anio == a && f.actividad == act)
+                              .map((d) => d.monto_usd)
+
+                    monto = d3.sum(monto);
+
+                    var obj = {}
+                    obj['anio'] = a;
+                    obj['monto_usd'] = monto;
+                    obj['sub_actividad'] = 'Total'
+                    obj['actividad'] = act
+                    return obj;
+                  });
+
+                  var obj = {};
+
+                  obj['actividad'] = act;
+                  obj['anios'] = anios;
+
+                  return anios;
+                });
+
+            var acum = []
+            for(var i in data_) {
+
+              acum = acum.concat(data_[i])
+            };
+
+            acum = acum.filter((f) => f.actividad == selectedRadio.parent().text())
+            acum = _.sortBy(acum,(d) => d.anio)
+///////////////////////////////////////////////////////////////////////////////////////////////
+// TOTALES POR ACTIVIDAD
+///////////////////////////////////////////////////////////////////////////////////////////////
+            //data = acum.concat(data)
+
+            var subactividades = datatemp.filter((f) => selectedRadio.parent().text() == f.actividad)
                                       .map((d) => d.sub_actividad);
 
-            var subactividades = _.sortBy(_.uniq(subactividades)).map((sub) => {
+            var subactividades = ['Total'].concat(_.sortBy(_.uniq(subactividades))).map((sub) => {
                                        return '<option>' + sub + '</option>';
                                      }).join('');
+            datatemp = acum.concat(datatemp)
 
             $('select#inv_select').html('');
             $('select#inv_select').html(subactividades);
@@ -2306,7 +2466,7 @@ function inversion_aprob(data) {
 
             if(radios.length == 1) radios[0].style.display = 'none';
 
-            var data_selected = data.filter((f) => {
+            var data_selected = datatemp.filter((f) => {
                     let act = selectedRadio.parent().text();
                     let sub = $('select#inv_select>option:selected').text();
                     return act == f.actividad && sub == f.sub_actividad;
@@ -2319,7 +2479,12 @@ function inversion_aprob(data) {
               opposite:false,
               subtitle:'Dólares',
               xAxis: {
-                categories: data_selected.map((d) => String(d[0]))//[]//data[0].data.map((d) => String(d[0]))
+                categories: data_selected.map((d) => String(d[0])),//[]//data[0].data.map((d) => String(d[0]))
+                labels: {
+                  style: {
+                    fontSize:'1.2em'
+                  }
+                }
               },
               hideLegend:true,
               tooltip: "'<div style=\"font-weight:300;font-family:Open Sans;text-align:center;\">'+" +
@@ -2333,7 +2498,7 @@ function inversion_aprob(data) {
 
             $('select#inv_select').on('change',function() {
 
-                  var data_selected = data.filter((f) => {
+                  var data_selected = datatemp.filter((f) => {
                           let act = selectedRadio.parent().text();
                           let sub = $('select#inv_select>option:selected').text();
                           return act == f.actividad && sub == f.sub_actividad;
@@ -2366,7 +2531,7 @@ function inversion_aprob(data) {
               var filas = ff.map(function(d,i) {
                 var str = '<tr width="100%;">'+
                              '<td style="width:50%;">'+ d[0] +'</td>'+
-                             '<td style="width:50%;">'+ (+d[1].toFixed(1)).toLocaleString('es-MX') +'</td>'+
+                             '<td style="width:50%;">'+ (+d[1].toFixed(0)).toLocaleString('es-MX') +'</td>'+
                           '</tr>'
 
                 return str;
