@@ -185,10 +185,11 @@ function DatosGrales(data)  {
 
     var agregados = Object.keys(data.ajaxData.seguimiento).every((d) => !+d);
     var seg = data.ajaxData.seguimiento;
-    var anio_extent = d3.extent(seg['ext'].filter((f) => new RegExp(/^I(n|N)/).test(f.concepto) && f.tipo_observacion == 'Real').map((d) => d.anio));
-    anio_extent = anio_extent.join(' - ')
+
 
     if(agregados) {
+          var anio_extent = d3.extent(seg['ext'].filter((f) => new RegExp(/^I(n|N)/).test(f.concepto) && f.tipo_observacion == 'Real').map((d) => d.anio));
+          anio_extent = anio_extent.join(' - ');
 
           var inv = Object.keys(seg).map((d) => {
               var inv_ = seg[d].filter((f) => new RegExp(/^I(n|N)/).test(f.concepto) && f.tipo_observacion == 'Real');
@@ -200,6 +201,9 @@ function DatosGrales(data)  {
           inv = d3.sum(inv);
 
     } else {
+          var anio_extent = d3.extent(seg.filter((f) => new RegExp(/^I(n|N)/).test(f.concepto) && f.tipo_observacion == 'Real').map((d) => d.anio));
+          anio_extent = anio_extent.join(' - ');
+
           var inv = seg.filter((f) => new RegExp(/^I(n|N)/).test(f.concepto) && f.tipo_observacion == 'Real')
              .map((d) => d.valor);
 
