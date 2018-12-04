@@ -287,7 +287,7 @@ class Botones extends Component {
                                               <div style={{ 'display':'table-cell', verticalAlign:'middle',width:'100%',textAlign:'center',height:'100%',position:'relative' }}>
                                                 {/*<i className={ 'glyphicon glyphicon-' + glyph } style={{ width:'100%',textAlign:'center',fontSize:'2.5em',verticalAlign:'middle' }}></i>*/}
                                                 {
-                                                    <img alt='' src={ i < botones.length - 1 ? dir + '/0' + i + '.svg' : null } style={{ maxWidth:'80%' }}></img>
+                                                    <img alt='' src={ i < botones.length - 1 ? dir + '/0' + i + '.svg' : null } style={{ position:'relative', maxHeight:'35%' }}></img>
                                                 }
                                               </div>
                                             </div>
