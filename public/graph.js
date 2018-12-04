@@ -285,13 +285,13 @@ function DatosGrales(data)  {
                     "<div style='width:100%;display:table-cell;position:relative;vertical-align:middle;'>" +
                         "<div style='display:table;width:100%;height:100%;'>" +
                             "<div style='width:100%;display:table-cell;vertical-align:middle;'>" +
-                                "<div style='margin:0px;position:relative:;top:-10px;font-size:3em;font-weight:800;color:"+colors_[0]+"'>PRODUCCIÓN</div>" +
-                                "<div style='margin:0px;position:relative:;top:-10px;font-size:1.8em;font-weight:700;color:"+colors_[0]+"'>"+ _fecha_ +"</div>" +
+                                "<div style='margin:0px;position:relative:;top:-10px;font-size:2.2em;font-weight:800;color:"+colors_[0]+"'>PRODUCCIÓN</div>" +
+                                "<div style='margin:0px;position:relative:;top:-10px;font-size:1.5em;font-weight:700;color:"+colors_[0]+"'>"+ _fecha_ +"</div>" +
 
                                 "<div style='width:100%;text-align:center;margin:0px;'>" +
                                   "<div style='display:inline-block;'>" +
 
-                                      "<div style='margin-top:.2em;display:table;font-weight:800;font-size:3.5em;'>" +
+                                      "<div style='margin-top:1.1em;display:table;font-weight:800;font-size:2.5em;'>" +
                                           "<div style='display:table-row;'>" +
                                               "<div style='display:table-cell;text-align:right;'><span style='font-weight:600;font-size:0.5em;'>ACEITE&emsp;</span></div>" +
                                               "<div style='display:table-cell;text-align:center;'>"+ _aceite_ +"</div>" +
@@ -355,14 +355,14 @@ function DatosGrales(data)  {
                       "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
                           "<div style='display:table;width:100%;height:100%;'>" +
                               "<div style='display:table-cell;vertical-align:middle;'>" +
-                                  "<div style='padding:2px;position:relative:;top:-10px;font-size:3em;font-weight:800;color:"+colors_[2]+"'>RESERVAS</div>" +
-                                  "<div style='padding:2px;position:relative:;top:-10px;font-size:1.8em;font-weight:700;color:"+colors_[2]+"'>enero - "
+                                  "<div style='padding:2px;position:relative:;top:-10px;font-size:2.2em;font-weight:800;color:"+colors_[2]+"'>RESERVAS</div>" +
+                                  "<div style='padding:2px;position:relative:;top:-10px;font-size:1.5em;font-weight:700;color:"+colors_[2]+"'>enero - "
                                               + _fecha_ +"</div>" +
 
                                   "<div style='text-align:center;'>" +
                                     "<div style='padding:2px;display:inline-block;'>" +
 
-                                        "<div style='margin-right:1.5em;margin-top:.8em;display:table;font-weight:800;font-size:1.8em;'>" +
+                                        "<div style='margin-right:1.5em;margin-top:.8em;display:table;font-weight:800;font-size:1.2em;'>" +
                                             "<div style='display:table-row;text-align:center;font-weight:400;color:"+colors_[2]+"'>" +
                                                 "<div style='display:table-cell;text-align:center;'>"+ '' +"</div>" +
                                                 "<div style='display:table-cell;text-align:center;'>"+ 'PCE' +"</div>" +
