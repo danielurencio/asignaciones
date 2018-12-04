@@ -379,3 +379,7 @@ div.notas__down {
 input:focus {
   outline:none;
 }
+
+html {
+  zoom: .75
+}
