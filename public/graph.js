@@ -2617,7 +2617,7 @@ function frameVisor_withRadios(config) {
                           "<div style='display:inline-block;'>" +
                             "<div>" +
                               "<div style='font-weight:800;font-size:1.5em;'>" + config.title + "</div>" +
-                              "<div style='padding:2px;font-weight:300;font-size:1em'>Última actualización: <span id='last_update'></span></div>" +
+                              //"<div style='padding:2px;font-weight:300;font-size:1em'>Última actualización: <span id='last_update'></span></div>" +
                             "</div>" +
                               "<div style='display:inline-block;'>" +
                                 "<div style='display:table;'>" +
