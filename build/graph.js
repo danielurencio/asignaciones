@@ -1050,7 +1050,7 @@ function documentos(data) {
                  '<td style="padding:5px;width:50%;">'+
                     //'<a href="http://localhost:8081/'+d.NOMBRE.split(' - ')[0]+'.pdf" target="_blank" class="hover_hand">'+
                       '<div id="doc_black"><img style="max-height:35px;font-weight:600;" src="doc_black.png"></img>&emsp;Título</div>' +
-                      '<div id="doc_purple"><a class="hover_hand"><img style="max-height:35px;font-weight:600;" src="doc_purple.png"></img><span>&emsp;Título</span></a></div>' +
+                      '<div id="doc_purple"><a href="http://localhost:8081/'+d.NOMBRE.split(' - ')[0]+'.pdf" target="_blank" class="hover_hand"><img style="max-height:35px;font-weight:600;" src="doc_purple.png"></img><span>&emsp;Título</span></a></div>' +
                     //'</a>'+
                  '</td>' +
               '</tr>'

@@ -356,16 +356,6 @@ var HOSTNAME = 'http://172.16.24.57:5000/';
 */
                     switcher($('.selectedButton').attr('id'),mapNdataObj);
 
-
-                    var botonesHeight = +$('#botones_').css('height').split('px')[0];
-                    var selBoton = +$('.selectedButton img').css('height').split('px')[0];
-
-                    while( selBoton > botonesHeight ) {
-                      var perc = +$('.selectedButton img').css('max-width').split('%')[0]
-                      perc -= 1
-                      $('.selectedButton img').css('max-width',perc+'%')
-                      selBoton = $('.selectedButton img').css('height')
-                    }
                   }
             });
           };
