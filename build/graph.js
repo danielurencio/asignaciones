@@ -148,7 +148,6 @@ function DatosGrales(data)  {
 
     var anio_extent = d3.extent(seg.filter((f) => f.concepto == 'G_Op').map((d) => d.anio)).join(' - ');
 
-    console.log(anio_extent)
     var gop = Number(d3.sum(seg.filter((f) => f.concepto == 'G_Op').map((d) => d.valor)).toFixed(0)).toLocaleString('es-MX');
 
 
@@ -515,7 +514,7 @@ function LineChart(data) {
             };
 
             // Create the chart
-            var chart = Highcharts.StockChart('visor', {
+            var chart = Highcharts.StockChart('visor_chart', {
                 legend: {
                   enabled:false
                 },
@@ -572,7 +571,7 @@ function LineChart(data) {
                     enabled:true
                 },
                 title: {
-                    text: 'Producción de hidrocarburos',
+                    text: '',
                     style: {
                       'font-family':'Open Sans',
                       'font-weight':800,
@@ -1095,9 +1094,9 @@ function documentos(data) {
     'height':'60px'
   };
 
-  var visor = frameVisor_withRadios(visor_config)
+  frameVisor_withRadios(visor_config)
 
-  $('#visor').html(visor);
+  //$('#visor').html(visor);
 
   $('input[type=radio]').each(function() {
       $(this).parent().css('display','none')
@@ -1380,9 +1379,9 @@ function CMT(data) {
           'height':80
         };
 
-        var visor = frameVisor_withRadios(visor_config)
+        frameVisor_withRadios(visor_config)
 
-        $('#visor').html(visor);
+        //$('#visor').html(visor);
         $('#visor_panel').css('height','auto');
 
         $('input[type=radio]').each(function() {
@@ -1812,12 +1811,12 @@ function seguimiento(data) {
         { 'value':'ext', 'text':' Extracción' },
         { 'value':'exp', 'text':' Exploración' }
       ],
-    'height':80
+    'height':95
   };
 
-  var visor = frameVisor_withRadios(visor_config);
+  frameVisor_withRadios(visor_config);
 
-  $('#visor').html(visor);
+  //$('#visor').html(visor);
   $('input[type=radio]').attr('disabled',true);
 
   $('input[type=radio]').each(function(i,d) {
@@ -2259,13 +2258,24 @@ function aprovechamiento(data) {
       return obj_data.aprovechamiento.map((e) => e[0]).some((s) => s == d[0])
     });
 
-    Highcharts.chart('visor', {
+    var visor_config = {
+      'radio_names':'',
+      'title':'Aprovechamiento de gas',
+      'options':[],
+      'height':100
+    };
+
+    frameVisor_withRadios(visor_config);
+    //$('#visor').html(visor);
+
+
+    Highcharts.chart('visor_chart', {
         credits:{ enabled:false },
         chart: {
             zoomType: 'x'
         },
         title: {
-            text: 'Aprovechamiento de gas',
+            text: '',
             style: {
               'font-family':'Open Sans',
               'font-size':'2em',
@@ -2401,9 +2411,9 @@ function inversion_aprob(data) {
         'height':80
       };
 
-      var visor = frameVisor_withRadios(visor_config);
+      frameVisor_withRadios(visor_config);
 
-      $('#visor').html(visor);
+      //$('#visor').html(visor);
       $('#visor_panel').css('height','auto');
       $('#visor_panel').append('<div style="width:100%;text-align:center;"><select id="inv_select"></select><div>');
 
@@ -2600,13 +2610,15 @@ function frameVisor_withRadios(config) {
           return element;
         }).join('');
 
-        var panel_height = 80;
+        config.height = 'auto';
         var visor = "<div style='width:100%;height:100%;'>" +
-                      "<div style='width:100%;height:"+ config.height +"px;' id='visor_panel'>"+
+                      "<div style='width:100%;height:"+ config.height +";' id='visor_panel'>"+
                         "<div style='text-align:center;'>" +
                           "<div style='display:inline-block;'>" +
-                            "<div style='font-weight:800;font-size:2em;'>" + config.title + "</div>" +
-
+                            "<div>" +
+                              "<div style='font-weight:800;font-size:2em;'>" + config.title + "</div>" +
+                              "<div style='padding:2px;font-weight:300;font-size:1em'>Última actualización: <span id='last_update'></span></div>" +
+                            "</div>" +
                               "<div style='display:inline-block;'>" +
                                 "<div style='display:table;'>" +
 
@@ -2621,5 +2633,9 @@ function frameVisor_withRadios(config) {
                       "<div style='width:100%;height:calc(100% - "+ config.height +"px);' id='visor_chart'></div>" +
                     "</div>";
 
-        return visor;
+        //return visor;
+        $('#visor').html(visor);
+
+        var visorP_height = $('#visor_panel').css('height');
+        $('#visor_chart').css('height','calc(100% - '+ visorP_height + ')')
 };

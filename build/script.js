@@ -8,7 +8,40 @@ var HOSTNAME = 'http://172.16.24.57:5000/';
     url: HOSTNAME + 'grales_asig.py',
     success:function(datos_grales) {
         datos_grales = JSON.parse(datos_grales)
-   d3.json('notas.json', function(err,notas_alPie) {
+        $.ajax({
+          type:'GET',
+          dataType:'JSON',
+          url: HOSTNAME + 'grales_asig.py?CONFIG=1',
+          success:function(notas_update) {
+
+            var meses = {
+              '1':'Enero',
+              '2':'Febrero',
+              '3':'Marzo',
+              '4':'Abril',
+              '5':'Mayo',
+              '6':'Junio',
+              '7':'Julio',
+              '8':'Agosto',
+              '9':'Septiembre',
+              '10':'Octubre',
+              '11':'Noviembre',
+              '12':'Diciembre',
+            };
+
+            notas_update = JSON.parse(notas_update);
+
+            var notas_alPie = {};
+            var last_update = {};
+
+            notas_update.forEach((d) => {
+              notas_alPie[d.topic] = d.notes;
+              var isoDate = new Date(d.last_update).toISOString().split('-');
+              
+              var date_update = meses[isoDate[1].replace(/^0/,'')] + ' - ' + isoDate[0];
+              last_update[d.topic] = date_update;
+            });
+
 
     d3.json('file_.json',function(err,data_) {
 
@@ -269,7 +302,8 @@ var HOSTNAME = 'http://172.16.24.57:5000/';
             'data':data,
             'asignaciones':asignaciones,
             'mymap':mymap,
-            'notas':notas_alPie
+            'notas':notas_alPie,
+            'last_update':last_update
           };
 
           function AjaxCall(data,mymap,asignaciones) {
@@ -435,7 +469,7 @@ var HOSTNAME = 'http://172.16.24.57:5000/';
 
 		});
    });
-  });
+ }});
  }});
 });
 
@@ -759,6 +793,7 @@ function cambio(data,str,fn,extraParam) {
     		   $(this).attr('class','selectedButton');
 
            $('#notas_contenido').html(mapNdataObj.notas[$('div.selectedButton').attr('id')]);
+           $('#last_update').html(mapNdataObj.last_update[$('div.selectedButton').attr('id')]);
 
     	});
 
@@ -859,7 +894,19 @@ function switcher(id,mapNdataObj) {
                         })
 
             	 			     //grapher(LineChart,mapNdataObj.ajaxData.produccion);
-                         var chart__ = LineChart(prod)
+
+                         var visor_config = {
+                           'radio_names':'',
+                           'title':'Producción de hidrocarburos',
+                           'options':[],
+                           'height':100
+                         };
+
+                         frameVisor_withRadios(visor_config)
+
+                         //$('#visor').html(visor)
+                         var chart__ = LineChart(prod);
+
                          //chart__.series[0].update({lineColor:'red'})
 
                     } else {
@@ -872,7 +919,7 @@ function switcher(id,mapNdataObj) {
 
                     var reservas = mapNdataObj.ajaxData.reservas;
                     reservas = _.sortBy(reservas,function (d) { return d.fecha; })
-                    
+
 
                     if(reservas.length > 0) {
 
@@ -885,12 +932,12 @@ function switcher(id,mapNdataObj) {
                                 { 'value':'rr_aceite_mmb', 'text':' Aceite' },
                                 { 'value':'rr_gas_natural_mmmpc', 'text':' Gas' }
                               ],
-                            'height':80
+                            'height':109
                           };
 
-                          var visor = frameVisor_withRadios(visor_config)
+                          frameVisor_withRadios(visor_config)
 
-                          $('#visor').html(visor);
+                          //$('#visor').html(visor);
 
                           // ----------------- AGREGAR FRAME QUE INCLUYE BOTONES TIPO RADIO --------------------
 
@@ -1065,11 +1112,11 @@ function switcher(id,mapNdataObj) {
                               { 'value':'ops', 'text':' Pozos operando' },
                               { 'value':'rep', 'text':' Reparaciones' }
                             ],
-                          'height':80
+                          'height':100
                         };
 
-                        var visor = frameVisor_withRadios(visor_config);
-                        $('#visor').html(visor);
+                        frameVisor_withRadios(visor_config);
+                        //$('#visor').html(visor);
 
                         $('input[type=radio][value='+ checkComplete[0] +']').attr('checked',true);
 
