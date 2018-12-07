@@ -143,6 +143,8 @@ function DatosGrales(data)  {
 
     var grales_ = ASIG_ != 'Todas' ? data.grales.filter((d) => d.NOMBRE == ASIG_) : grales;
 
+    var n_campos_reservas = _.uniq(_.flatten(grales.map((d) => d.CAMPOS_CON_RESERVAS ? d.CAMPOS_CON_RESERVAS.split(';') : null)))
+                             .filter((f) => f).length;
 
     var seg = _.sortBy(data.ajaxData.seguimiento.ext,function(d) { return d.anio; }).filter((f) => f.tipo_observacion == 'Real');
 
@@ -156,7 +158,7 @@ function DatosGrales(data)  {
                   "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
                       "<div style='display:table;width:100%;height:100%;'>" +
                           "<div style='display:table-cell;vertical-align:middle;color:white;color:"+colors_[0]+"'>" +
-                              "<div style='font-size:3em;font-weight:700;'>"+ d3.sum(grales_.map((d) => d.N_CAMPOS_RESERVAS)) +"</div>" +
+                              "<div style='font-size:3em;font-weight:700;'>"+ n_campos_reservas +"</div>" +
                               "<div style='position:relative:;top:-10px;font-size:1.2em;font-weight:600;color:black;'>campos con reservas</div>" +
                           "</div>" +
                       "</div>" +

@@ -760,7 +760,7 @@ function cambio(data,str,fn,extraParam) {
 
 
  function speechBubbles(mapNdataObj) {
-     	 $('div.button:not(.selectedButton)').on('mouseover',function() {
+     	 $('div.button:not(.selectedButton), .polygonTooltip').on('mouseover',function() {
 
          		var text = $(this).attr('id');
          		var pos = +$(this).attr('pos');
