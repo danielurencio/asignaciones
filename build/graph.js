@@ -1774,7 +1774,7 @@ function dashboard(data,place) {
 
 
 
-function seguimiento(data) {
+function seguimiento(data,tipo) {
   var agregados = Object.keys(data).every((d) => !+d) //? true : false;
   var tipoDisponible = agregados ? Object.keys(data).map((d) => data[d].length ? d : null).filter((f) => f) : [];
 
@@ -1803,10 +1803,12 @@ function seguimiento(data) {
       PROCESADO_KM2:'Kilómetros cuadrados procesados'
   };
 
+  console.log(tipo)
 
+  var conditional_title = tipo == 'inv' ? 'inversión' : 'actividad';
   var visor_config = {
     'radio_names':'seg',
-    'title':'Seguimiento',
+    'title':'Seguimiento en ' + conditional_title,
     'options': [
         { 'value':'ext', 'text':' Extracción' },
         { 'value':'exp', 'text':' Exploración' }
@@ -1903,7 +1905,7 @@ function seguimiento(data) {
                 data = data[type]
 
                 if(type == 'exp') {
-
+/*
                         data.forEach((d) => {
                           if(d.periodo) {
                             d.anio = periodos[d.periodo];
@@ -1933,7 +1935,7 @@ function seguimiento(data) {
                             var check = i == 0 ? ' checked' : '';
                             return '<div><input type="radio" name="periodos" value="' + d + '"' + check + '></input> ' + d + '</div>';
                           })
-
+*/
                 }
 
          } else {
@@ -1980,6 +1982,13 @@ function seguimiento(data) {
                                               .map((m,i) => m ? conceptos[i] : m)
                                               .filter((f) => f);
 
+         console.log(tipo)
+         if( tipo == 'inv' ) {
+           conceptos = conceptos.filter((f) => f == 'Inv' || f == 'G_Op' )
+         } else if ( tipo == 'act' ) {
+           conceptos = conceptos.filter((f) => f != 'Inv' && f != 'G_Op' )
+         }
+
 
          var c_ = conceptos.map(function(d) { return '<option style="font-size:12px" id='+d+'>' + conceptos_traduccion[d] + '</option>'; });
 
@@ -2005,10 +2014,10 @@ function seguimiento(data) {
 
                     var ff = tipo_obs.map(function(d) {
                         return data.filter(function(f) {
-                          var checked = $('input[type=radio][name=periodos]:checked').parent().text()
-                          checked = checked.substr(1,checked.length);
-                          var add_bool = type == 'exp' ? f.anio == checked : true;
-                          return f.tipo_observacion == d && f.concepto == op_id && add_bool;
+                          //var checked = $('input[type=radio][name=periodos]:checked').parent().text()
+                          //checked = checked.substr(1,checked.length);
+                          //var add_bool = type == 'exp' ? f.anio == checked : true;
+                          return f.tipo_observacion == d && f.concepto == op_id //&& add_bool;
                         })
                     });
 
@@ -2019,7 +2028,7 @@ function seguimiento(data) {
              };
 
 ////////////////////////////////////////////
-          var ff = processedData()
+          var ff = processedData();
           updateTable(ff)
 ////////////////////////////////////////////
 
@@ -2173,7 +2182,7 @@ function seguimiento(data) {
 
                  ff[1].forEach(function(d) {
                    var id = String(d.anio).split(' ').join('_').replace(/(\(|\)|-)/g,'_')
-                   $('#a_' + id).text((+d.valor.toFixed(1)).toLocaleString('es-MX'))
+                   $('#a_' + id).text((d.valor ? +d.valor.toFixed(1) : '').toLocaleString('es-MX'))
                  });
         };
 

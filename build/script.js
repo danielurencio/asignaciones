@@ -1359,7 +1359,10 @@ function switcher(id,mapNdataObj) {
                           //grapher(invGeneral.plot, data, sub_wrangler.stackData);
                           //grapher(invPlot2.plot, invPorAnio, function(data) { return data; });
                           //grapher(enConstruccion)
-                          inversion_aprob(data)
+                          //inversion_aprob(data)
+                          var seg = mapNdataObj.ajaxData.seguimiento;
+
+                          seg.length > 0 || Object.keys(seg).length > 0 ? seguimiento(seg,'inv') : noDato();
 
                     } else {
                           noDato();
@@ -1404,7 +1407,7 @@ function switcher(id,mapNdataObj) {
 
                     var seg = mapNdataObj.ajaxData.seguimiento;
 
-                    seg.length > 0 || Object.keys(seg).length > 0 ? seguimiento(seg) : noDato();
+                    seg.length > 0 || Object.keys(seg).length > 0 ? seguimiento(seg,'act') : noDato();
                     //grapher(enConstruccion)
             	 			break;
     	 	}
