@@ -1777,6 +1777,8 @@ function dashboard(data,place) {
 
 
 function seguimiento(data,tipo) {
+  console.log(data);
+
   var agregados = Object.keys(data).every((d) => !+d) //? true : false;
   var tipoDisponible = agregados ? Object.keys(data).map((d) => data[d].length ? d : null).filter((f) => f) : [];
 
@@ -1804,8 +1806,6 @@ function seguimiento(data,tipo) {
       PROCESADO_KM:'Kilómetros procesados',
       PROCESADO_KM2:'Kilómetros cuadrados procesados'
   };
-
-  console.log(tipo)
 
   var conditional_title = tipo == 'inv' ? 'inversión' : 'actividad';
   var visor_config = {
@@ -1865,7 +1865,7 @@ function seguimiento(data,tipo) {
 
         $('input[type=radio][name=seg]').on('change',function() {
               $('#extra_panels').remove();
-              $('#visor_panel').css('height','80px');
+              //$('#visor_panel').css('height','80px');
               draw(data,this.getAttribute('value'))
         });
 
@@ -1986,15 +1986,15 @@ function seguimiento(data,tipo) {
 
          console.log(tipo)
          if( tipo == 'inv' ) {
-           conceptos = conceptos.filter((f) => f == 'Inv' || f == 'G_Op' )
+           conceptos = conceptos.filter((f) => f == 'Inv' || f == 'G_Op' || f == 'INV_MMPESOS')
          } else if ( tipo == 'act' ) {
-           conceptos = conceptos.filter((f) => f != 'Inv' && f != 'G_Op' )
+           conceptos = conceptos.filter((f) => f != 'Inv' && f != 'G_Op' && f != 'INV_MMPESOS')
          }
 
 
          var c_ = conceptos.map(function(d) { return '<option style="font-size:12px" id='+d+'>' + conceptos_traduccion[d] + '</option>'; });
 
-         var _input_ = type == 'ext' ? "&ensp;<input id='acumulado' type='checkbox'></input>&nbsp;Acumulado" : '';
+         var _input_ = "&ensp;<input id='acumulado' type='checkbox'></input>&nbsp;Acumulado";
          var str =
          "<div style='width:100%;height:100%;'>"+
            "<div style='width:100%;height:30px;display:table;text-align:center;'>" +
