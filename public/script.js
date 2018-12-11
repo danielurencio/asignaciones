@@ -47,7 +47,7 @@ var HOSTNAME = 'http://172.16.24.57:5000/';
 
     	d3.json('shapes.json',function(err,shapes) {
 
-
+console.log(notas_update)
 //////////////////////////////////////
             d3.select('#notas_pestana').on('click',function() {
                 var up = d3.select(this).attr('up');

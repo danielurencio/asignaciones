@@ -118,7 +118,7 @@ function DatosGrales(data)  {
         un_tipoAsig = tipos_asigs;
     }
 
-
+console.log(data)
     return "<div style='width:100%;height:100%;background-color:white;position:relative;display:table;table-layout:fixed;'>" +
               "<div style='display:table-row;width:100%;height:50%;text-align:center;table-layout:fixed;position:relative;'>" +
                   "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
@@ -126,6 +126,9 @@ function DatosGrales(data)  {
                           "<div style='display:table-cell;vertical-align:middle;'>" +
                               "<div style='font-size:"+ numOnomSize +"em;font-weight:800;color:rgb(13,180,190);'>" + numOnom + "</div>" +
                               "<div style='position:relative:;top:-10px;font-size:1.2em;font-weight:600;'>"+ subtNumOnom +"</div>" +
+                              "<div style='position:relative:;top:-10px;font-size:1.2em;font-weight:600;color:gray'>"+
+                                    data.last_update['Datos generales'].toLowerCase() +
+                              "</div>" +
                           "</div>" +
                       "</div>" +
                   "</div>" +
@@ -2236,14 +2239,14 @@ function seguimiento(data,tipo) {
                               name: 'Plan',
                               color: 'rgba(13,180,190,0.6)',
                               data: ff[0].map(function(d) { return d.valor; }),
-                              pointPadding: 0.3,
-                              pointPlacement: -0.2
+                              pointPadding: 0.08,
+                              pointPlacement: 0
                           }, {
                               name: 'Real',
                               color: 'rgba(126,86,134,.9)',
                               data: ff[1].map(function(d) { return d.valor; }),
-                              pointPadding: 0.4,
-                              pointPlacement: -0.2
+                              pointPadding: 0.2,
+                              pointPlacement: 0
                           }]
           });
 
