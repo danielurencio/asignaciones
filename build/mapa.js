@@ -17,8 +17,10 @@ function leafletMap(shapes) {
 
 			var polygonColor = {
 				'Extracción':'rgb(13,180,190)',//'rgb(1,114,158)',
-				'Exploración':'rgb(46,112,138)',
-				'Resguardo':'rgb(20,50,90)'
+				'Extracción temporal':'rgb(46,112,138)',
+				'Resguardo':'rgb(20,50,90)',
+				'Exploración':'rgb(13,150,190)',
+				'Exploración y Extracción':'rgb(20,70,110)'
 			};
 
 			var mymap = L.map('MAPA',{
@@ -61,6 +63,24 @@ function leafletMap(shapes) {
 							zIndex:2
 						};
 
+						case 'Exploración y Extracción': return {
+							color:'white',
+							fillColor:polygonColor['Exploración y Extracción'],
+							weight:0.5,
+							fillOpacity:0.7,
+							className:feature.properties.id,
+							zIndex:2
+						};
+
+						case 'Extracción temporal': return {
+							color:'white',
+							fillColor:polygonColor['Extracción temporal'],
+							weight:0.5,
+							fillOpacity:0.7,
+							className:feature.properties.id,
+							zIndex:2
+						};
+
 					}
 				}
 		  }).addTo(mymap);
@@ -83,9 +103,11 @@ function leafletMap(shapes) {
 			var legendStr =
 				'<div id="mapLegend">' +
 						'<div style="font-weight:800;padding-bottom:5px;">Tipos de Asignación</div>' +
-						'<div style="text-align:center;">' +
+						'<div style="text-align:left;">' +
 							'<span style="color:'+ polygonColor['Extracción'] +'">&block;</span>&ensp;Extracción&ensp;<br>' +
 							'<span style="color:'+ polygonColor['Exploración'] +'">&block;</span>&ensp;Exploración<br>'+
+							'<span style="color:'+ polygonColor['Extracción temporal'] +'">&block;</span>&ensp;Extracción Temporal&ensp;<br>' +
+							'<span style="color:'+ polygonColor['Exploración y Extracción'] +'">&block;</span>&ensp;Exploración y Extracción&ensp;<br>' +
 							'<span style="color:'+ polygonColor['Resguardo'] +'">&block;</span>&ensp;Resguardo&nbsp;'
 						'</div>'
 				'</div>';

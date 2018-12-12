@@ -103,17 +103,18 @@ function DatosGrales(data)  {
 
 
     if(ASIG_ != 'Todas') {
+      console.log(data.grales)
+
+        var tipo_asig_temp = data.grales.filter((f) => f.NOMBRE == ASIG_ )[0].TIPO;
+
         if(ASIG_.split('-')[0] == 'A') {
-          _tipo_ = 'Extracción';
-          color = 'rgb(13,180,190)';
+            color = 'rgb(13,180,190)';
         } else if(ASIG_.split('-')[0] == 'AE') {
-          _tipo_ = 'Exploración';
-          color = 'rgb(46,112,138)';
+            color = 'rgb(46,112,138)';
         } else {
-          _tipo_ = 'Resguardo';
-          color = 'rgb(20,50,90)';
+            color = 'rgb(20,50,90)';
         }
-        un_tipoAsig = '<div style="color:'+color+';font-size:2em;font-weight:700;">' + _tipo_ + '</div>'
+        un_tipoAsig = '<div style="color:'+color+';font-size:2em;font-weight:700;">' + tipo_asig_temp + '</div>'
     } else {
         un_tipoAsig = tipos_asigs;
     }
@@ -187,11 +188,12 @@ console.log(data)
 
     var grales_ = ASIG_ != 'Todas' ? data.grales.filter((d) => d.NOMBRE == ASIG_) : grales;
 
-    var agregados = Object.keys(data.ajaxData.seguimiento).every((d) => !+d);
+    var agregados = Object.keys(data.ajaxData.seguimiento).every((d) => !+d) && Object.keys(data.ajaxData.seguimiento).length > 0;
     var seg = data.ajaxData.seguimiento;
 
 
     if(agregados) {
+          console.log(data)
           var anio_extent = d3.extent(seg['ext'].filter((f) => new RegExp(/^I(n|N)/).test(f.concepto) && f.tipo_observacion == 'Real').map((d) => d.anio));
           anio_extent = anio_extent.join(' - ');
 
