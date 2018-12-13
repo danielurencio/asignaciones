@@ -147,7 +147,7 @@ console.log(data)
 
     var grales_ = ASIG_ != 'Todas' ? data.grales.filter((d) => d.NOMBRE == ASIG_) : grales;
 
-    var n_campos_reservas = _.uniq(_.flatten(grales.map((d) => d.CAMPOS_CON_RESERVAS ? d.CAMPOS_CON_RESERVAS.split(';') : null)))
+    var n_campos_reservas = _.uniq(_.flatten(grales_.map((d) => d.CAMPOS_CON_RESERVAS ? d.CAMPOS_CON_RESERVAS.split(';') : null)))
                              .filter((f) => f).length;
 
     var seg = _.sortBy(data.ajaxData.seguimiento.ext,function(d) { return d.anio; }).filter((f) => f.tipo_observacion == 'Real');
@@ -1219,8 +1219,8 @@ function CMT(data) {
             'ESTUDIOS': { 'nombre':'Estudios', 'unidades':'Número' },
             'INV_MMPESOS': { 'nombre':'Inversión', 'unidades':'Millones de pesos' },
             'POZOS': { 'nombre':'Pozos', 'unidades':'Número' },
-            'PROCESADO_KM': { 'nombre':'Procesado (km)', 'unidades':'KM' },
-            'PROCESADO_KM2': { 'nombre':'Procesado (km<sup>2</sup>)', 'unidades':'KM<sup>2</sup>' }
+            'PROCESADO_KM': { 'nombre':'Procesamiento sísimica 2D', 'unidades':'KM' },
+            'PROCESADO_KM2': { 'nombre':'Procesamiento sísmica 3D', 'unidades':'KM<sup>2</sup>' }
         };
 
 
@@ -1808,8 +1808,8 @@ function seguimiento(data,tipo) {
       ESTUDIOS:'Estudios',
       INV_MMPESOS:'Inversión (MM pesos)',
       POZOS:'Pozos',
-      PROCESADO_KM:'Kilómetros procesados',
-      PROCESADO_KM2:'Kilómetros cuadrados procesados'
+      PROCESADO_KM:'Procesamiento sísmica 2D',
+      PROCESADO_KM2:'Procesamiento sísmica 3D'
   };
 
   var conditional_title = tipo == 'inv' ? 'inversión' : 'actividad';
