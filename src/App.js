@@ -3,7 +3,7 @@ import './App.css';
 
 
 
-const heightHeaderInPixels = 90;
+const heightHeaderInPixels = 73;
 //const heightTailInPixels = 300;
 
 
@@ -55,7 +55,7 @@ class Columns extends Component {
 
         <ColumnSide width='60%'>
             <div style={{width:'100%',height:'100%'}}>
-                <Visor boton_width={60}/>
+                <Visor boton_width={35}/>
             </div>
         </ColumnSide>
 
@@ -71,7 +71,7 @@ class ColumnSide extends Component {
     const columnStyle = {
       width:this.props.width,
       borderRight: this.props.borderRight ? this.props.borderRight : null,
-      height:'calc(100% - 30px)',
+      height:'calc(100% - 20px)',
       display:'table-cell'
     }
 
@@ -89,7 +89,7 @@ class Header extends Component {
   render() {
     const headerStyle = {
       height: heightHeaderInPixels+'px',
-      borderBottom:'1px solid lightGray'
+      borderBottom:'0px solid lightGray'
     };
 
     //const dropdowns = ['Cuenca','Ubicación','Tipo','Asignacion'];
@@ -98,10 +98,10 @@ class Header extends Component {
 
     return (
         <div className='header' style={headerStyle}>
-          <div style={{backgroundColor:'rgb(50,50,50)',height:'30px', position:'fixed', width:'100%', textAlign:'center'}}>
-            <img alt='' src='cnh-logo-white.svg' width='30px' height='30px'></img>
+          <div style={{backgroundColor:'rgb(50,50,50)',height:'20px', position:'fixed', width:'100%', textAlign:'center'}}>
+            <img alt='' src='cnh-logo-white.svg' width='30px' height='20px'></img>
           </div>
-          <div style={{width:'100%',top:'30px',position:'relative',zIndex:2,height:'calc(100% - 30px)' }}>
+          <div style={{width:'100%',top:'20px',position:'relative',zIndex:2,height:'calc(100% - 20px)' }}>
               <DropDownMenu title={ ['Cuenca','Ubicación'] } w_={childrenWidth}/>
               <DropDownMenu title={ ['Tipo','Asignación'] } w_={childrenWidth}/>
               <TextBox w_={childrenWidth}/>
@@ -146,7 +146,7 @@ class Visor extends Component {
       fontFamily:'Open Sans',
       color:'rgba(255,255,255,1)',
       fontWeight:600,
-      fontSize:'1em'
+      fontSize:'0.7em'
     }
 
     return (
@@ -200,7 +200,7 @@ class Visor extends Component {
                   verticalAlign:'middle',
                   textAlign:'center',
                   color:'white',
-                  fontSize:'1.5em',
+                  fontSize:'1em',
                   fontWeight:300
                 }}>
                 <div>Filtrar asignación:</div>
@@ -274,6 +274,7 @@ class Botones extends Component {
                 return (
                     <div id={d} pos={i} className={clase} key={ i + '_' + d } style={{
                                               borderRadius:'2px',
+                                              borderTop: i === (botones.length - 1) ? '0px solid lightGray' : '1px solid lightGray',
                                               borderRight: i === (botones.length - 1) ? null : '1px solid lightGray',
                                               height:'100%',
                                               width: i === (botones.length - 1) ? option_A : option_B,
@@ -287,7 +288,7 @@ class Botones extends Component {
                                               <div style={{ 'display':'table-cell', verticalAlign:'middle',width:'100%',textAlign:'center',height:'100%',position:'relative' }}>
                                                 {/*<i className={ 'glyphicon glyphicon-' + glyph } style={{ width:'100%',textAlign:'center',fontSize:'2.5em',verticalAlign:'middle' }}></i>*/}
                                                 {
-                                                    <img alt='' src={ i < botones.length - 1 ? dir + '/0' + i + '.svg' : null } style={{ position:'relative', maxHeight:'35%' }}></img>
+                                                    <img alt='' src={ i < botones.length - 1 ? dir + '/0' + i + '.svg' : null } style={{ position:'relative', maxHeight:'20%' }}></img>
                                                 }
                                               </div>
                                             </div>
@@ -349,7 +350,7 @@ class DropDownMenu extends Component {
 
   render() {
     return (
-      <div className='header_child' style={{position:'relative',top:'5px',display:'table-cell',textAlign:'center',width:this.props.w_,height:'100%'}}>
+      <div className='header_child' style={{position:'relative',top:'2px',display:'table-cell',textAlign:'center',width:this.props.w_,height:'100%'}}>
         <div style={{display:'table',position:'absoulte',height:'100%', width:'100%', textAlign:'center' }}>
            <div style={{display:'table-cell',verticalAlign:'middle',textAlign:'center'}}>
               <div style={{ position:'relative',top:'-2px' }}>

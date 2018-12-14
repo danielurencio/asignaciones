@@ -64,7 +64,7 @@ function DatosGrales(data)  {
 
   var ASIG_ = $('.asignacion>option:selected').text()
   var numOnom = ASIG_ != 'Todas' ? ASIG_.split(' - ')[0] : grales.length;
-  var numOnomSize = ASIG_ != 'Todas' ? 2 : 5;
+  var numOnomSize = ASIG_ != 'Todas' ? 1.4 : 3;
   var subtNumOnom = ASIG_ != 'Todas' ? ASIG_.split(' - ')[1] : 'ASIGNACIONES VIGENTES';
 
   var order_colors = [
@@ -89,7 +89,7 @@ function DatosGrales(data)  {
 
     tipos_ = _.sortBy(tipos_,(d) => -d.num)
               .map((d,i) => {
-                return '<div style="padding:2px;text-align:center;display:table;font-size:1.1em;font-weight:700;color:'+ order_colors[i] +'">'+
+                return '<div class="lista_tipo_asig" style="color:'+ order_colors[i] +'">'+
                           '<div style="width:2em;text-align:right;display:table-cell;">'+ d.num +'</div>'+
                           '<div style="padding-left:0.8em;display:table-cell;">'+ d.tipo +'</div>'+
                         '</div>'
@@ -123,11 +123,11 @@ console.log(data)
     return "<div style='width:100%;height:100%;background-color:white;position:relative;display:table;table-layout:fixed;'>" +
               "<div style='display:table-row;width:100%;height:50%;text-align:center;table-layout:fixed;position:relative;'>" +
                   "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
-                      "<div style='width:100%;height:100%;border-right:1px solid gray;display:table;'>" +
+                      "<div style='width:100%;height:100%;border-right:1px solid gray;display:table;'> " +
                           "<div style='display:table-cell;vertical-align:middle;'>" +
                               "<div style='font-size:"+ numOnomSize +"em;font-weight:800;color:rgb(13,180,190);'>" + numOnom + "</div>" +
-                              "<div style='position:relative:;top:-10px;font-size:1.2em;font-weight:600;'>"+ subtNumOnom +"</div>" +
-                              "<div style='position:relative:;top:-10px;font-size:1.2em;font-weight:600;color:gray'>"+
+                              "<div class='dato_duro_subt subt_plus'>"+ subtNumOnom +"</div>" +
+                              "<div class='dato_duro_subt subt_plus' style='color:gray;'>"+
                                     data.last_update['Datos generales'].toLowerCase() +
                               "</div>" +
                           "</div>" +
@@ -162,8 +162,8 @@ console.log(data)
                   "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
                       "<div style='display:table;width:100%;height:100%;'>" +
                           "<div style='display:table-cell;vertical-align:middle;color:white;color:"+colors_[0]+"'>" +
-                              "<div style='font-size:3em;font-weight:700;'>"+ n_campos_reservas +"</div>" +
-                              "<div style='position:relative:;top:-10px;font-size:1.2em;font-weight:600;color:black;'>campos con reservas</div>" +
+                              "<div class='dato_duro'>"+ n_campos_reservas +"</div>" +
+                              "<div class='dato_duro_subt'>campos con reservas</div>" +
                           "</div>" +
                       "</div>" +
                   "</div>" +
@@ -172,10 +172,10 @@ console.log(data)
                   "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
                       "<div style='display:table;width:100%;height:100%;'>" +
                           "<div style='display:table-cell;vertical-align:middle;color:white;color:"+colors_[1]+"'>" +
-                              "<div style='font-size:3em;font-weight:700;'>"+ gop +"</div>" +
-                              "<div style='position:relative:;top:-10px;font-size:1.2em;font-weight:600;color:black;'>millones de pesos</div>" +
-                              "<div style='position:relative:;top:-10px;font-size:1em;font-weight:400;color:"+ colors_[4] +"'>GASTOS DE OPERACIÓN</div>" +
-                              "<div style='position:relative:;top:-10px;font-size:1em;font-weight:400;color:"+ colors_[4] +"'>("+ anio_extent +")</div>" +
+                              "<div class='dato_duro'>"+ gop +"</div>" +
+                              "<div class='dato_duro_subt'>millones de pesos</div>" +
+                              "<div class='dato_duro_subt subt_plus' style='font-weight:400;color:"+ colors_[4] +"'>GASTOS DE OPERACIÓN</div>" +
+                              "<div class='dato_duro_subt subt_plus' style='font-weight:400;color:"+ colors_[4] +"'>("+ anio_extent +")</div>" +
                           "</div>" +
                       "</div>" +
                   "</div>" +
@@ -226,8 +226,8 @@ console.log(data)
                   "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
                       "<div style='display:table;width:100%;height:100%;'>" +
                           "<div style='display:table-cell;vertical-align:middle;color:white;color:"+colors_[2]+"'>" +
-                              "<div style='font-size:3em;font-weight:700;'>"+ Number((d3.sum(grales_.map((d) => d.SUPERFICIE_KM2))).toFixed(0)).toLocaleString('es-MX') +"</div>" +
-                              "<div style='position:relative:;top:-10px;font-size:1.2em;font-weight:600;color:black;'>kilómetros<sup>2</sup></div>" +
+                              "<div class='dato_duro'>"+ Number((d3.sum(grales_.map((d) => d.SUPERFICIE_KM2))).toFixed(0)).toLocaleString('es-MX') +"</div>" +
+                              "<div class='dato_duro_subt'>kilómetros<sup>2</sup></div>" +
                           "</div>" +
                       "</div>" +
                   "</div>" +
@@ -235,12 +235,11 @@ console.log(data)
               "<div style='display:table-row;width:100%;height:50%;text-align:center;table-layout:fixed;position:relative;'>" +
                   "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
                       "<div style='display:table;width:100%;height:100%;'>" +
-                          "<div style='display:table-cell;vertical-align:middle;color:white;color:"+colors_[3]+"'>" +
-                              "<div style='font-size:3em;font-weight:700;'>"+ Number(inv.toFixed(0)).toLocaleString('es-MX') +"</div>" +
-                              "<div style='position:relative:;top:-10px;font-size:1.2em;font-weight:600;color:black;'> millones de pesos</div>" +
-                              "<div style='position:relative:;top:-10px;font-size:1em;font-weight:400;color:"+ colors_[5]+ ";'>INVERSIÓN TOTAL EJERCIDA</div>" +
-                              "<div style='position:relative:;top:-10px;font-size:1em;font-weight:400;color:"+ colors_[5] +";'>("+ anio_extent +")</div>" +
-
+                          "<div style='display:table-cell;vertical-align:middle;color:white;color:" + colors_[3] + "'>" +
+                              "<div class='dato_duro'>"+ Number(inv.toFixed(0)).toLocaleString('es-MX') +"</div>" +
+                              "<div class='dato_duro_subt'> millones de pesos</div>" +
+                              "<div class='dato_duro_subt subt_plus' style='font-weight:400;color:"+ colors_[5] + ";'>INVERSIÓN TOTAL EJERCIDA</div>" +
+                              "<div class='dato_duro_subt subt_plus' style='font-weight:400;color:"+ colors_[5] +";'>("+ anio_extent +")</div>" +
                           "</div>" +
                       "</div>" +
                   "</div>" +
@@ -292,13 +291,13 @@ console.log(data)
                     "<div style='width:100%;display:table-cell;position:relative;vertical-align:middle;'>" +
                         "<div style='display:table;width:100%;height:100%;'>" +
                             "<div style='width:100%;display:table-cell;vertical-align:middle;'>" +
-                                "<div style='margin:0px;position:relative:;top:-10px;font-size:2.2em;font-weight:800;color:"+colors_[0]+"'>PRODUCCIÓN</div>" +
-                                "<div style='margin:0px;position:relative:;top:-10px;font-size:1.5em;font-weight:700;color:"+colors_[0]+"'>"+ _fecha_ +"</div>" +
+                                "<div class='titulo_cuadro' style='margin:0px;color:"+colors_[0]+"'>PRODUCCIÓN</div>" +
+                                "<div class='subtitulo_cuadro' style='color:"+colors_[0]+"'>"+ _fecha_ +"</div>" +
 
                                 "<div style='width:100%;text-align:center;margin:0px;'>" +
                                   "<div style='display:inline-block;'>" +
 
-                                      "<div style='margin-top:1.1em;display:table;font-weight:800;font-size:2.5em;'>" +
+                                      "<div class='dato_cuadro'>" +
                                           "<div style='display:table-row;'>" +
                                               "<div style='display:table-cell;text-align:right;'><span style='font-weight:600;font-size:0.5em;'>ACEITE&emsp;</span></div>" +
                                               "<div style='display:table-cell;text-align:center;'>"+ _aceite_ +"</div>" +
@@ -362,14 +361,14 @@ console.log(data)
                       "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
                           "<div style='display:table;width:100%;height:100%;'>" +
                               "<div style='display:table-cell;vertical-align:middle;'>" +
-                                  "<div style='padding:2px;position:relative:;top:-10px;font-size:2.2em;font-weight:800;color:"+colors_[2]+"'>RESERVAS</div>" +
-                                  "<div style='padding:2px;position:relative:;top:-10px;font-size:1.5em;font-weight:700;color:"+colors_[2]+"'>enero - "
+                                  "<div class='titulo_cuadro' style='padding:2px;color:"+colors_[2]+"'>RESERVAS</div>" +
+                                  "<div class='subtitulo_cuadro' style='color:"+colors_[2]+"'>enero - "
                                               + _fecha_ +"</div>" +
 
                                   "<div style='text-align:center;'>" +
                                     "<div style='padding:2px;display:inline-block;'>" +
 
-                                        "<div style='margin-right:1.5em;margin-top:.8em;display:table;font-weight:800;font-size:1.2em;'>" +
+                                        "<div style='margin-right:1.5em;margin-top:.8em;display:table;font-weight:800;font-size:0.8em;'>" +
                                             "<div style='display:table-row;text-align:center;font-weight:400;color:"+colors_[2]+"'>" +
                                                 "<div style='display:table-cell;text-align:center;'>"+ '' +"</div>" +
                                                 "<div style='display:table-cell;text-align:center;'>"+ 'PCE' +"</div>" +
@@ -526,12 +525,12 @@ function LineChart(data) {
                   enabled:false
                 },
                 navigator: {
-                  enabled:true
+                  enabled:false
                 },
                 xAxis: {
                   labels:{
                     style:{
-                      fontSize:'1.2em'
+                      fontSize:'0.9em'
                     }
                   }
                 },
@@ -540,7 +539,7 @@ function LineChart(data) {
                     title:{
                       text:'Gas (mmpcd)',
                       style:{
-                        fontSize:'1.2em',
+                        fontSize:'0.9em',
                         color:'red'
                       }
                     },
@@ -549,7 +548,7 @@ function LineChart(data) {
                       align:'left',
                       format: '{value:,.0f}',
                       style: {
-                        fontSize:'1.2em'
+                        fontSize:'0.9em'
                         //color:'red'
                       }
                     }
@@ -558,7 +557,7 @@ function LineChart(data) {
                     title: {
                       text:'Aceite (mbd)',
                       style: {
-                        fontSize:'1.2em',
+                        fontSize:'0.9em',
                         color:'green'
                       }
                     },
@@ -566,7 +565,7 @@ function LineChart(data) {
                     labels: {
                       format: '{value:,.0f}',
                       style:{
-                        fontSize:'1.2em'
+                        fontSize:'0.9em'
                         //color:'green'
                       }
                     }
@@ -811,7 +810,7 @@ function BarChart(config) {
                 subtitle: {
                     text:config.subtitle,
                     style: {
-                      fontSize:'1.4em'
+                      fontSize:'0.9em'
                     }
                 },
                 yAxis: {
@@ -819,14 +818,14 @@ function BarChart(config) {
                     title:{
                       text:config.yAxis,
                       style:{
-                        fontSize:'1.2em'
+                        fontSize:'0.8em'
                       }
                     },
                     gridLineWidth:0,
                     max: config.yMax ? config.yMax : null,
                     stackLabels: {
                       style: {
-                        fontSize:'1.5em',
+                        fontSize:'1em',
                         fontFamily:'Open Sans'
                       },
                       enabled:config.stackLabels,
@@ -838,7 +837,7 @@ function BarChart(config) {
                     labels: {
                       format: '{value:,.0f}',
                       style: {
-                        fontSize:'1.2em'
+                        fontSize:'1em'
                       }
                     }
                 },
@@ -1052,7 +1051,7 @@ function documentos(data) {
   data = _.sortBy(data,(d) => d.NOMBRE);
 
   var filas = data.map(function(d,i) {
-    var str = '<tr width="100%;" class="hover_doc" style="margin:15px;">'+
+    var str = '<tr width="100%;" class="hover_doc" style="margin:15px;font-size:0.8em;">'+
                  '<td style="font-weight:600;padding:5px;width:50%;">'+ d.NOMBRE +'</td>'+
                  '<td style="padding:5px;width:50%;">'+
                     //'<a href="http://localhost:8081/'+d.NOMBRE.split(' - ')[0]+'.pdf" target="_blank" class="hover_hand">'+
@@ -1253,7 +1252,7 @@ function CMT(data) {
               }
 
               var t = '<div style="width:100%;">' +
-                        '<table style="width:100%;table-layout:fixed;" align="center">' +
+                        '<table style="width:100%;table-layout:fixed;font-size:0.8em;" align="center">' +
                           '<tbody>'+
                             '<tr style="border-bottom:1px solid '+ config.color +';color:'+ config.color +'">' +
                               '<td>Año</td><td>'+ nombres[sel].unidades +'</td>' +
@@ -1262,7 +1261,7 @@ function CMT(data) {
                        '</table>' +
                       '</div>' +
                       '<div style="width:100%;overlfow:auto;">' +
-                        '<table style="width:100%;table-layout:fixed;">' +
+                        '<table style="width:100%;table-layout:fixed;font-size:0.7em;">' +
                           '<tbody>' +
                             rows +
                           '</tbody>' +
@@ -1299,9 +1298,9 @@ function CMT(data) {
 
                 var str__ = '<div style="width:100%; height:100%; display:table; table-layout:fixed">' +
                               '<div style="width:100%;height:20%; ">'+
-                                  '<div style="height:50%;width:100%;font-weight:800;color:' + config.color + ';">' + config.titulo + '</div>' +
+                                  '<div style="font-size:0.8em;height:50%;width:100%;font-weight:800;color:' + config.color + ';">' + config.titulo + '</div>' +
                                   '<div style="height:10%;width:100%;font-size:13px;font-weight:300;">'+
-                                    '<select id="botonera_'+ config.id +'" style="font-weight:700;color:'+ config.color +';">'
+                                    '<select id="botonera_'+ config.id +'" style="font-weight:700;font-size:0.8em;color:'+ config.color +';">'
                                         + conceptos.map((d) => '<option id="'+ d +'">'+ nombres[d]['nombre'] +'</option>') +
                                     '</select>'+
                                   '</div>' +
@@ -1362,7 +1361,7 @@ function CMT(data) {
                    categories: data[0].data.map((d) => String(d[0])),
                    labels: {
                      style: {
-                       fontSize:'1.1em'
+                       fontSize:'0.8em'
                      }
                    }
                  },
@@ -1997,12 +1996,12 @@ function seguimiento(data,tipo) {
          }
 
 
-         var c_ = conceptos.map(function(d) { return '<option style="font-size:12px" id='+d+'>' + conceptos_traduccion[d] + '</option>'; });
+         var c_ = conceptos.map(function(d) { return '<option style="font-size:0.7em;" id='+d+'>' + conceptos_traduccion[d] + '</option>'; });
 
          var _input_ = "&ensp;<input id='acumulado' type='checkbox'></input>&nbsp;Acumulado";
          var str =
          "<div style='width:100%;height:100%;'>"+
-           "<div style='width:100%;height:30px;display:table;text-align:center;'>" +
+           "<div style='width:100%;height:30px;display:table;text-align:center;font-size:0.7em;'>" +
               "<select id='botonera'>" + c_ + "</select>" +
               _input_ +
           "</div>" +
@@ -2174,7 +2173,7 @@ function seguimiento(data,tipo) {
                      '</tr>' +
                     '</thead>' +
                     */
-                      '<tbody id="filas_" style="text-align:center;">' +
+                      '<tbody id="filas_" style="text-align:center;font-size:0.8em;">' +
                       filas +
                       '</tbody>'
                     '</table>'+
@@ -2301,7 +2300,7 @@ function aprovechamiento(data) {
         subtitle: {
             text: 'Millones de pies cúbicos diarios',
             style: {
-              fontSize: '1.4em'
+              fontSize: '0.9em'
             }
         },
         xAxis: {
@@ -2616,7 +2615,7 @@ function inversion_aprob(data) {
 function frameVisor_withRadios(config) {
 
         var options = config.options.map((d,i) => {
-          var style = 'style="display:table-cell;padding-right:1%;"'
+          var style = 'style="display:table-cell;padding-right:1%;font-size:.7em;"'
           var checked = i === 0 ? ' checked' : '';
           var element =
             '<div ' + style + '>' +
@@ -2632,7 +2631,7 @@ function frameVisor_withRadios(config) {
                         "<div style='text-align:center;'>" +
                           "<div style='display:inline-block;'>" +
                             "<div>" +
-                              "<div style='font-weight:800;font-size:1.5em;'>" + config.title + "</div>" +
+                              "<div style='font-weight:800;font-size:1em;'>" + config.title + "</div>" +
                               //"<div style='padding:2px;font-weight:300;font-size:1em'>Última actualización: <span id='last_update'></span></div>" +
                             "</div>" +
                               "<div style='display:inline-block;'>" +

@@ -958,7 +958,7 @@ function switcher(id,mapNdataObj) {
                               },
                               labels: {
                                 style: {
-                                  fontSize:'1.6em'
+                                  fontSize:'1em'
                                 }
                               }
                             },
@@ -1182,7 +1182,7 @@ function switcher(id,mapNdataObj) {
                             type:'datetime',
                             labels: {
                               style: {
-                                fontSize:'1.2em'
+                                fontSize:'1em'
                               }
                             },
                             dateTimeLabelFormats: {
