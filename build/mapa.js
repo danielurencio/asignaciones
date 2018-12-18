@@ -74,7 +74,7 @@ function leafletMap(shapes) {
 
 						case 'Extracción Temporal': return {
 							color:'white',
-							fillColor:polygonColor['Extracción temporal'],
+							fillColor:polygonColor['Extracción Temporal'],
 							weight:0.5,
 							fillOpacity:0.7,
 							className:feature.properties.id,

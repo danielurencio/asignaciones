@@ -533,7 +533,7 @@ function datosAsignacion(data,nombre,projection,mymap,asignaciones) {
                       mymap.flyTo(selected_layer.getCenter(),8);
 
                     	mymap.on('moveend',function(){
-                    		d3.selectAll('div#MAPA path:not(.'+ sel_asignacion.split(' - ')[0] +')')
+                    		d3.selectAll('div#MAPA path')
                     		  .transition()
                     		  .duration(500)
                     		  //.style('opacity',1)
@@ -550,9 +550,10 @@ function datosAsignacion(data,nombre,projection,mymap,asignaciones) {
                     	});
 
               } else {
-                      $('div#MAPA path')
-                          .attr('stroke','white')
-                          .css('opacity',1);
+                      d3.selectAll('div#MAPA path')
+                          .style('stroke','white')
+                          .style('stroke-width','0.3')
+                          .style('opacity','1');
 
                       var filtros_ = ['cuenca','tipo','ubicacion'].map(function(d) {
                             var obj = {}
@@ -570,14 +571,16 @@ function datosAsignacion(data,nombre,projection,mymap,asignaciones) {
 
 
                             $('div#MAPA path')
-                              .attr('stroke','white')
-                              .css('opacity',0.3)
+                              .css('stroke','white')
+                              .css('stroke-width','0.3')
+                              .css('opacity','0.3')
 
                             $('div#MAPA path').filter((i,d) => {
                                 return filtered_layers.some((s) => s == $(d).attr('class').split(' ')[0])
                             })
-                            .attr('stroke','magenta')
-                            .css('opacity',1);
+                            .css('stroke','magenta')
+                            .css('stroke-width','1')
+                            .css('opacity','1');
 
                       }
 
