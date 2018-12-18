@@ -103,7 +103,6 @@ function DatosGrales(data)  {
 
 
     if(ASIG_ != 'Todas') {
-      console.log(data.grales)
 
         var tipo_asig_temp = data.grales.filter((f) => f.NOMBRE == ASIG_ )[0].TIPO;
 
@@ -119,7 +118,7 @@ function DatosGrales(data)  {
         un_tipoAsig = tipos_asigs;
     }
 
-console.log(data)
+
     return "<div style='width:100%;height:100%;background-color:white;position:relative;display:table;table-layout:fixed;'>" +
               "<div style='display:table-row;width:100%;height:50%;text-align:center;table-layout:fixed;position:relative;'>" +
                   "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
@@ -193,7 +192,7 @@ console.log(data)
 
 
     if(agregados) {
-          console.log(data)
+
           var anio_extent = d3.extent(seg['ext'].filter((f) => new RegExp(/^I(n|N)/).test(f.concepto) && f.tipo_observacion == 'Real').map((d) => d.anio));
           anio_extent = anio_extent.join(' - ');
 
@@ -521,6 +520,18 @@ function LineChart(data) {
 
             // Create the chart
             var chart = Highcharts.StockChart('visor_chart', {
+                exporting: {
+                  enabled:true,
+                  filename:'datos',
+                  buttons: {
+                    contextButton:{
+                      menuItems: ['downloadCSV'],
+                      symbol:'url(download.svg)',
+                      symbolX:19,
+                      symbolY:18
+                    }
+                  }
+                },
                 legend: {
                   enabled:false
                 },
@@ -799,8 +810,17 @@ function BarChart(config) {
                     return legend;
                   })()
                 },
-                exporting:{
-                  enabled:false
+                exporting: {
+                  enabled:true,
+                  filename:'datos',
+                  buttons: {
+                    contextButton:{
+                      menuItems: ['downloadCSV'],
+                      symbol:'url(download.svg)',
+                      symbolX:19,
+                      symbolY:18
+                    }
+                  }
                 },
                 credits:false,
                 chart: config.chart,
@@ -1355,7 +1375,7 @@ function CMT(data) {
                  where:'barcmt_' + config.id,
                  chart: { type:'column' },
                  noRange:1,
-                 opposite:true,
+                 opposite:false,
                  title:'',
                  xAxis: {
                    categories: data[0].data.map((d) => String(d[0])),
@@ -1781,7 +1801,6 @@ function dashboard(data,place) {
 
 
 function seguimiento(data,tipo) {
-  console.log(data);
 
   var agregados = Object.keys(data).every((d) => !+d) //? true : false;
   var tipoDisponible = agregados ? Object.keys(data).map((d) => data[d].length ? d : null).filter((f) => f) : [];
@@ -1805,10 +1824,35 @@ function seguimiento(data,tipo) {
       AD_SIS_3D_KM2: 'Adquisición sísmica 3D',
       ELECTROMAG: 'Electromagnéticos',
       ESTUDIOS:'Estudios',
-      INV_MMPESOS:'Inversión (MM pesos)',
+      INV_MMPESOS:'Inversión',
       POZOS:'Pozos',
       PROCESADO_KM:'Procesamiento sísmica 2D',
       PROCESADO_KM2:'Procesamiento sísmica 3D'
+  };
+
+  var conceptos_unidades = {
+      Qo: 'miles de barriles diarios',
+      Qg: 'millones de pies cúbicos diarios',
+      Perf_Des: 'número de pozos',
+      Perf_Iny: 'número de pozos',
+      Term_Des: 'número de pozos',
+      Term_Iny: 'número de pozos',
+      RMA: 'número de reparaciones',
+      RME: 'número de reparaciones',
+      Tap: 'número de taponamientos',
+      Inv: 'millones de pesos',
+      G_Op: 'Gastos de Operación',
+      Np: '',
+      Gp: '',
+      QgHC: 'millones de pies cúbicos diarios',
+      AD_SIS_2D_KM: 'kilómetros',
+      AD_SIS_3D_KM2: 'kilómetros cuadrados',
+      ELECTROMAG: 'número de estudios',
+      ESTUDIOS:'número de estudios',
+      INV_MMPESOS:'millones de pesos',
+      POZOS:'número de pozos',
+      PROCESADO_KM:'kilómetros',
+      PROCESADO_KM2:'kilómetros cuadrados'
   };
 
   var conditional_title = tipo == 'inv' ? 'inversión' : 'actividad';
@@ -1976,6 +2020,14 @@ function seguimiento(data,tipo) {
             if( x == 'QgHC') num = 10
             if( x == 'Inv') num = 11
             if( x == 'G_Op') num = 12
+
+            if( x == 'POZOS' ) num = 1
+            if( x == 'ESTUDIOS' ) num = 2
+            if( x == 'AD_SIS_2D_KM' ) num = 3
+            if( x == 'AD_SIS_3D_KM2' ) num = 4
+            if( x == 'PROCESADO_KM' ) num = 5
+            if( x == 'PROCESADO_KM2' ) num = 6
+            if( x == 'ELECTROMAG' ) num = 7
             arr.push(num)
             return arr;
          }
@@ -1988,7 +2040,7 @@ function seguimiento(data,tipo) {
                                               .map((m,i) => m ? conceptos[i] : m)
                                               .filter((f) => f);
 
-         console.log(tipo)
+
          if( tipo == 'inv' ) {
            conceptos = conceptos.filter((f) => f == 'Inv' || f == 'G_Op' || f == 'INV_MMPESOS')
          } else if ( tipo == 'act' ) {
@@ -2006,7 +2058,7 @@ function seguimiento(data,tipo) {
               _input_ +
           "</div>" +
            "<div style='width:100%; height:calc(100% - 30px)'>" +
-              "<div id='one' style='width:100%;height:50%;'></div>" +
+              "<div id='one' style='width:100%;height:60%;'></div>" +
               "<div id='two' style='width:100%;'></div>" +
            "</div>" +
          "</div>"
@@ -2059,6 +2111,8 @@ function seguimiento(data,tipo) {
 
                chart.series[0].setName('Plan');
                chart.series[1].setName('Real');
+
+               chart.setTitle(null,{ text: 'Actividad Planeada vs Real - ' + conceptos_unidades[$('select#botonera>option:selected').attr('id')] })
 
                if($('#acumulado:checked')[0]) {
                        var ff_acum = JSON.parse(JSON.stringify(ff));
@@ -2163,7 +2217,7 @@ function seguimiento(data,tipo) {
                                        '</div>';
 
                  var tabla = //table_container +
-                  '<div id="scroll_table_" style="width:100%;height:calc(' + $('#one').css('height') + ' - 30px);overflow:auto;border-bottom:1px solid gray;">' +
+                  '<div id="scroll_table_" style="width:100%;height:calc(' + +$('#one').css('height').split('px')[0] *.66 + 'px - 30px);overflow:auto;border-bottom:1px solid gray;">' +
                     '<table style="width:100%;,table-layout:fixed;">' +
                     /*'<thead>' +
                      '<tr style="font-weight:600;text-align:center;border-bottom:1px solid gray;border-top:1px solid gray;">' +
@@ -2195,6 +2249,18 @@ function seguimiento(data,tipo) {
 
 
          var chart = Highcharts.chart('one', {
+                           exporting: {
+                             enabled:true,
+                             filename:'datos',
+                             buttons: {
+                               contextButton:{
+                                 menuItems: ['downloadCSV'],
+                                 symbol:'url(download.svg)',
+                                 symbolX:19,
+                                 symbolY:18
+                               }
+                             }
+                           },
                           chart: {
                               type: 'column'
                           },
@@ -2203,12 +2269,15 @@ function seguimiento(data,tipo) {
                               text: ''
                           },
                           subtitle:{
-                            text:'Actividad Planeada vs Real'
+                            text:'Actividad Planeada vs Real - ' + conceptos_unidades[$('select#botonera>option:selected').attr('id')]
                           },
                           xAxis: {
                               categories: anios//['1998','1999','2000']
                           },
                           yAxis: {
+                              title: {
+                                text:'hola'
+                              },
                               tickInterval:2,
                               min: 0,
                               title: {
@@ -2285,6 +2354,18 @@ function aprovechamiento(data) {
 
 
     Highcharts.chart('visor_chart', {
+        exporting: {
+          enabled:true,
+          filename:'datos',
+          buttons: {
+            contextButton:{
+              menuItems: ['downloadCSV'],
+              symbol:'url(download.svg)',
+              symbolX:19,
+              symbolY:18
+            }
+          }
+        },
         credits:{ enabled:false },
         chart: {
             zoomType: 'x'
@@ -2307,7 +2388,7 @@ function aprovechamiento(data) {
             type: 'datetime',
             labels: {
               style: {
-                fontSize:'1.2em'
+                fontSize:'1em'
               }
             }
         },
@@ -2315,13 +2396,13 @@ function aprovechamiento(data) {
             title: {
                 text: 'MMPCD',
                 style: {
-                  fontSize:'1.2em'
+                  fontSize:'1em'
                 }
             },
             labels: {
               format: '{value:,.0f}',
               style: {
-                fontSize:'1.2em'
+                fontSize:'1em'
               }
             }
         },

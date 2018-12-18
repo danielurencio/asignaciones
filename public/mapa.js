@@ -1,5 +1,5 @@
 function leafletMap(shapes) {
-
+/*
 	   var tipos = ['Resguardo','Exploración','Extracción'];
 
 		 // Estas líneas tienen como proósito cambiar el orden en el que aparecen los shapes.
@@ -14,10 +14,10 @@ function leafletMap(shapes) {
 		 newShapesOrder = _.flatten(newShapesOrder);
 		 shapes.features = newShapesOrder;
 		 // Estas líneas tienen como proósito cambiar el orden en el que aparecen los shapes.
-
+*/
 			var polygonColor = {
 				'Extracción':'rgb(13,180,190)',//'rgb(1,114,158)',
-				'Extracción temporal':'rgb(46,112,138)',
+				'Extracción Temporal':'rgb(46,112,138)',
 				'Resguardo':'rgb(20,50,90)',
 				'Exploración':'rgb(13,150,190)',
 				'Exploración y Extracción':'rgb(20,70,110)'
@@ -72,7 +72,7 @@ function leafletMap(shapes) {
 							zIndex:2
 						};
 
-						case 'Extracción temporal': return {
+						case 'Extracción Temporal': return {
 							color:'white',
 							fillColor:polygonColor['Extracción temporal'],
 							weight:0.5,
@@ -106,7 +106,7 @@ function leafletMap(shapes) {
 						'<div style="text-align:left;">' +
 							'<span style="color:'+ polygonColor['Extracción'] +'">&block;</span>&ensp;Extracción&ensp;<br>' +
 							'<span style="color:'+ polygonColor['Exploración'] +'">&block;</span>&ensp;Exploración<br>'+
-							'<span style="color:'+ polygonColor['Extracción temporal'] +'">&block;</span>&ensp;Extracción Temporal&ensp;<br>' +
+							'<span style="color:'+ polygonColor['Extracción Temporal'] +'">&block;</span>&ensp;Extracción Temporal&ensp;<br>' +
 							'<span style="color:'+ polygonColor['Exploración y Extracción'] +'">&block;</span>&ensp;Exploración y Extracción&ensp;<br>' +
 							'<span style="color:'+ polygonColor['Resguardo'] +'">&block;</span>&ensp;Resguardo&nbsp;'
 						'</div>'

@@ -56,12 +56,17 @@ var HOSTNAME = 'http://172.16.24.57/';
                         $(this).attr('class','notas_up');
                         $('#notas').attr('class','notas__up');
                         $('#notas_ocultar,#notas_contenido').css('display','block')
+                } else {
+                        $('#notas_ocultar,#notas_contenido').css('display','none');
+                        var up = d3.select('#notas_pestana').attr('up',null);
+                        $('#notas_pestana').attr('class','notas_down');
+                        $('#notas').attr('class','notas__down');
                 }
 
             });
 
             $('body').click(function(e) {
-                 if($(e.target).attr('ix') != 'notas') {
+                 if($(e.target).attr('ix') != 'notas' && $(e.target).attr('id') != 'notas_contenido' && !$(e.target).is('b')) {
 
                        var up = d3.select('#notas_pestana').attr('up');
 
@@ -84,7 +89,8 @@ var HOSTNAME = 'http://172.16.24.57/';
             rangeSelectorFrom:'De:',
             rangeSelectorTo:'A:',
             rangeSelectorZoom:'',
-            thousandsSep:','
+            thousandsSep:',',
+            downloadCSV: 'Descargar datos'
 			  	}
 			  })
 
@@ -309,7 +315,7 @@ var HOSTNAME = 'http://172.16.24.57/';
 
           function AjaxCall(data,mymap,asignaciones) {
 
-            datosAsignacion(data,null,null,mymap,asignaciones);
+            //datosAsignacion(data,null,null,mymap,asignaciones);
             $('#visor').html('');
 
             var ID, TIPO, UBICACION, CUENCA;
@@ -368,13 +374,15 @@ var HOSTNAME = 'http://172.16.24.57/';
                   //AjaxCall(data,mymap,asignaciones)
 		      		    cambioAsignacion(data);
                   AjaxCall(data,mymap,asignaciones)
-		      		    datosAsignacion(data,null,null,mymap,asignaciones);
+
               } else {
 
                   AjaxCall(data,mymap,asignaciones);
                   cambioAsignacion(data);
-		      		    datosAsignacion(data,null,null,mymap,asignaciones);
+
               }
+
+              datosAsignacion(data,null,null,mymap,asignaciones);
 		      });
 
 
@@ -393,6 +401,8 @@ var HOSTNAME = 'http://172.16.24.57/';
 
                     //$('.tipo').trigger('change');
               }
+
+              datosAsignacion(data,null,null,mymap,asignaciones);
           });
 
 
@@ -421,6 +431,8 @@ var HOSTNAME = 'http://172.16.24.57/';
                     },'NOMBRE');
                     //$('.asignacion').trigger('change');
                 }
+
+		      		  datosAsignacion(data,null,null,mymap,asignaciones);
           });
 
 
@@ -478,69 +490,107 @@ var HOSTNAME = 'http://172.16.24.57/';
 
 
 function datosAsignacion(data,nombre,projection,mymap,asignaciones) {
-try {
-		var sel_asignacion_obj;
 
-		if(!nombre) { 														// <-- ¿Esto qué?
-			sel_asignacion = $('.asignacion>option:selected').attr('id');
-		} else {
-			sel_asignacion = nombre.split(' - ')[0];   // <-- ¿Esto qué?
-		}
+    //  try {
+      		var sel_asignacion_obj;
 
-      	var sel_asignacion_obj = data.filter(function(d) { return d.ID == sel_asignacion; })[0];
+      		if(!nombre) { 														// <-- ¿Esto qué?
+      			sel_asignacion = $('.asignacion>option:selected').attr('id');
+      		} else {
+      			sel_asignacion = nombre.split(' - ')[0];   // <-- ¿Esto qué?
+      		}
+          //console.log(sel_asignacion)
 
-      	var filas = ['NOMBRE','VIG_ANIOS','VIG_INICIO','VIG_FIN','SUPERFICIE_KM2','TIPO'];
+            	var sel_asignacion_obj = data.filter(function(d) { return d.ID == sel_asignacion; })[0];
+/*
+            	var filas = ['NOMBRE','VIG_ANIOS','VIG_INICIO','VIG_FIN','SUPERFICIE_KM2','TIPO'];
 
-      	for(var i in filas) {
-          var texto = filas[i] == 'VIG_INICIO' || filas[i] == 'VIG_FIN' ?
-                                      parseDate(sel_asignacion_obj[filas[i]],true) : sel_asignacion_obj[filas[i]];
-          texto = '  ' + texto;
+            	for(var i in filas) {
+                var texto = filas[i] == 'VIG_INICIO' || filas[i] == 'VIG_FIN' ?
+                                            parseDate(sel_asignacion_obj[filas[i]],true) : sel_asignacion_obj[filas[i]];
+                texto = '  ' + texto;
 
-      		$('.' + filas[i]).text(texto);
-      	}
+            		$('.' + filas[i]).text(texto);
+            	}
+*/
+             var arr_layers = Object.keys(asignaciones._layers)
+                        .map(function(d) {
+                            var obj = {};
+                            obj['key'] = d;
+                            obj['layer'] = asignaciones._layers[d];
+                            return obj;
+                        });
 
-       var arr_layers = Object.keys(asignaciones._layers)
-                  .map(function(d) {
-                      var obj = {};
-                      obj['key'] = d;
-                      obj['layer'] = asignaciones._layers[d];
-                      return obj;
-                  });
+              var selected_layer = arr_layers.filter(function(d) {
+                if(d.layer.feature.properties.id == sel_asignacion_obj.ID) return d.key;
+              })[0]
+
+              selected_layer = selected_layer ? selected_layer.layer : false;
+
+              if(sel_asignacion != 'Todas') {
+
+                      d3.selectAll('div#MAPA path').transition().duration(800).style('opacity',0.5);
+                      mymap.flyTo(selected_layer.getCenter(),8);
+
+                    	mymap.on('moveend',function(){
+                    		d3.selectAll('div#MAPA path:not(.'+ sel_asignacion.split(' - ')[0] +')')
+                    		  .transition()
+                    		  .duration(500)
+                    		  //.style('opacity',1)
+                    		  .style('stroke-width',0.3)
+                          .style('stroke','white')
+
+                    		d3.select('div#MAPA path.' + sel_asignacion.split(' - ')[0])
+                    		  .transition()
+                    		  .duration(300)
+                    		  .delay(500)
+                    		  .style('opacity',1)
+                    		  .style('stroke-width',5)
+                          .style('stroke','magenta')
+                    	});
+
+              } else {
+                      $('div#MAPA path')
+                          .attr('stroke','white')
+                          .css('opacity',1);
+
+                      var filtros_ = ['cuenca','tipo','ubicacion'].map(function(d) {
+                            var obj = {}
+                            //obj['valor'] =  $('.' + d + '>option:selected').text();
+                            //obj['filtro'] = d;
+                            //return obj;
+                            return [d,$('.' + d + '>option:selected').text()]
+                      }).filter((f) => f[1].substring(0,3) != 'Tod');
 
 
-        var selected_layer = arr_layers.filter(function(d) {
-          if(d.layer.feature.properties.id == sel_asignacion_obj.ID) return d.key;
-        })[0].layer;
+                      if(filtros_.length > 0) {
+                            var filtered_layers = arr_layers.filter((f) => {
+                                                      return filtros_.every((d) => f.layer.feature.properties[d[0]] == d[1]);
+                                                  }).map((d) => d.layer.feature.properties.id);
 
 
-        d3.selectAll('div#MAPA path').transition().duration(800).style('opacity',0);
-        mymap.flyTo(selected_layer.getCenter(),8);
+                            $('div#MAPA path')
+                              .attr('stroke','white')
+                              .css('opacity',0.3)
 
-      	mymap.on('moveend',function(){
-      		d3.selectAll('div#MAPA path:not(.'+ sel_asignacion.split(' - ')[0] +')')
-      		  .transition()
-      		  .duration(500)
-      		  .style('opacity',1)
-      		  .style('stroke-width',0.5)
-            .style('stroke','white')
+                            $('div#MAPA path').filter((i,d) => {
+                                return filtered_layers.some((s) => s == $(d).attr('class').split(' ')[0])
+                            })
+                            .attr('stroke','magenta')
+                            .css('opacity',1);
 
-      		d3.select('div#MAPA path.' + sel_asignacion.split(' - ')[0])
-      		  .transition()
-      		  .duration(300)
-      		  .delay(500)
-      		  .style('opacity',1)
-      		  .style('stroke-width',5)
-            .style('stroke','#ffc125')
-      	});
+                      }
 
-/*------------------------AGRAGAR URL DE DESCARGA DE TITULO--------------------------------------------*/
-      	var URL = 'http://asignaciones.energia.gob.mx/asignaciones/_doc/publico/Asignaciones/';
-      	var tituloLink = URL + sel_asignacion_obj.NOMBRE.split(' - ')[0] + '.pdf';
+              }
 
-      	var fnString = 'openInNewTab("' + tituloLink + '");';
-      	$('#titulo').attr('onclick',fnString)
-/*------------------------AGRAGAR URL DE DESCARGA DE TITULO--------------------------------------------*/
-} catch (err) {}
+      /*------------------------AGRAGAR URL DE DESCARGA DE TITULO--------------------------------------------*/
+            	var URL = 'http://asignaciones.energia.gob.mx/asignaciones/_doc/publico/Asignaciones/';
+            	var tituloLink = URL + sel_asignacion_obj.NOMBRE.split(' - ')[0] + '.pdf';
+
+            	var fnString = 'openInNewTab("' + tituloLink + '");';
+            	$('#titulo').attr('onclick',fnString)
+      /*------------------------AGRAGAR URL DE DESCARGA DE TITULO--------------------------------------------*/
+      //} catch (err) {}
 };
 
 
@@ -873,7 +923,7 @@ function switcher(id,mapNdataObj) {
 
                       DatosGrales(mapNdataObj);
                       try {
-                          datosAsignacion(mapNdataObj.data,null,null,mapNdataObj.mymap,mapNdataObj.asignaciones);
+                          //datosAsignacion(mapNdataObj.data,null,null,mapNdataObj.mymap,mapNdataObj.asignaciones);
                       } catch {}
                     });
 
