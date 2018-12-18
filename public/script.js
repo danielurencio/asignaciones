@@ -551,6 +551,8 @@ function datosAsignacion(data,nombre,projection,mymap,asignaciones) {
 
               } else {
                       d3.selectAll('div#MAPA path')
+                        .transition()
+                        .duration(500)
                           .style('stroke','white')
                           .style('stroke-width','0.3')
                           .style('opacity','1');
@@ -570,17 +572,25 @@ function datosAsignacion(data,nombre,projection,mymap,asignaciones) {
                                                   }).map((d) => d.layer.feature.properties.id);
 
 
-                            $('div#MAPA path')
-                              .css('stroke','white')
-                              .css('stroke-width','0.3')
-                              .css('opacity','0.3')
+                            d3.selectAll('div#MAPA path')
+                              .transition()
+                              .duration(500)
+                              .style('stroke','white')
+                              .style('stroke-width','0.3')
+                              .style('opacity','0.3')
 
-                            $('div#MAPA path').filter((i,d) => {
+                            Array.prototype.slice.call(document.querySelectorAll('div#MAPA path')).filter((d) => {
                                 return filtered_layers.some((s) => s == $(d).attr('class').split(' ')[0])
+                            }).forEach(function(d) {
+
+                              d3.select(d)
+                                .transition()
+                                .duration(1000)
+                                .style('stroke','magenta')
+                                .style('stroke-width','1')
+                                .style('opacity','1');
                             })
-                            .css('stroke','magenta')
-                            .css('stroke-width','1')
-                            .css('opacity','1');
+
 
                       }
 
