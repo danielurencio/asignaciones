@@ -529,14 +529,15 @@ function datosAsignacion(data,nombre,projection,mymap,asignaciones) {
 
               if(sel_asignacion != 'Todas') {
 
-                      d3.selectAll('div#MAPA path').transition().duration(800).style('opacity',0.5);
+                      //d3.selectAll('div#MAPA path').transition().duration(800).style('opacity',0.1);
                       mymap.flyTo(selected_layer.getCenter(),8);
+console.log(arr_layers)
 
                     	mymap.on('moveend',function(){
                     		d3.selectAll('div#MAPA path')
                     		  .transition()
                     		  .duration(500)
-                    		  //.style('opacity',1)
+                    		  .style('opacity',.15)
                     		  .style('stroke-width',0.3)
                           .style('stroke','white')
 
@@ -545,54 +546,57 @@ function datosAsignacion(data,nombre,projection,mymap,asignaciones) {
                     		  .duration(300)
                     		  .delay(500)
                     		  .style('opacity',1)
-                    		  .style('stroke-width',5)
+                    		  .style('stroke-width',3)
                           .style('stroke','magenta')
                     	});
 
               } else {
-                      d3.selectAll('div#MAPA path')
-                        .transition()
-                        .duration(500)
-                          .style('stroke','white')
-                          .style('stroke-width','0.3')
-                          .style('opacity','1');
-
-                      var filtros_ = ['cuenca','tipo','ubicacion'].map(function(d) {
-                            var obj = {}
-                            //obj['valor'] =  $('.' + d + '>option:selected').text();
-                            //obj['filtro'] = d;
-                            //return obj;
-                            return [d,$('.' + d + '>option:selected').text()]
-                      }).filter((f) => f[1].substring(0,3) != 'Tod');
-
-
-                      if(filtros_.length > 0) {
-                            var filtered_layers = arr_layers.filter((f) => {
-                                                      return filtros_.every((d) => f.layer.feature.properties[d[0]] == d[1]);
-                                                  }).map((d) => d.layer.feature.properties.id);
-
-
+                  mymap.flyTo([22.0, -97.0], 6)
+                  mymap.on('moveend',function() {
                             d3.selectAll('div#MAPA path')
                               .transition()
                               .duration(500)
-                              .style('stroke','white')
-                              .style('stroke-width','0.3')
-                              .style('opacity','0.3')
-
-                            Array.prototype.slice.call(document.querySelectorAll('div#MAPA path')).filter((d) => {
-                                return filtered_layers.some((s) => s == $(d).attr('class').split(' ')[0])
-                            }).forEach(function(d) {
-
-                              d3.select(d)
-                                .transition()
-                                .duration(1000)
-                                .style('stroke','magenta')
-                                .style('stroke-width','1')
+                                .style('stroke','white')
+                                //.style('stroke-width','0.3')
                                 .style('opacity','1');
-                            })
+
+                            var filtros_ = ['cuenca','tipo','ubicacion'].map(function(d) {
+                                  var obj = {}
+                                  //obj['valor'] =  $('.' + d + '>option:selected').text();
+                                  //obj['filtro'] = d;
+                                  //return obj;
+                                  return [d,$('.' + d + '>option:selected').text()]
+                            }).filter((f) => f[1].substring(0,3) != 'Tod');
 
 
-                      }
+                            if(filtros_.length > 0) {
+                                  var filtered_layers = arr_layers.filter((f) => {
+                                                            return filtros_.every((d) => f.layer.feature.properties[d[0]] == d[1]);
+                                                        }).map((d) => d.layer.feature.properties.id);
+
+
+                                  d3.selectAll('div#MAPA path')
+                                    .transition()
+                                    .duration(500)
+                                    .style('stroke','white')
+                                    .style('stroke-width','0.3')
+                                    .style('opacity','0.15')
+
+                                  Array.prototype.slice.call(document.querySelectorAll('div#MAPA path')).filter((d) => {
+                                      return filtered_layers.some((s) => s == $(d).attr('class').split(' ')[0])
+                                  }).forEach(function(d) {
+
+                                    d3.select(d)
+                                      .transition()
+                                      .duration(1000)
+                                      .style('stroke','magenta')
+                                      .style('stroke-width','1')
+                                      .style('opacity','1');
+                                  })
+
+
+                            }
+                        })
 
               }
 
