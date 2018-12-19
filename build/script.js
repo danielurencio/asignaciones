@@ -531,7 +531,6 @@ function datosAsignacion(data,nombre,projection,mymap,asignaciones) {
 
                       //d3.selectAll('div#MAPA path').transition().duration(800).style('opacity',0.1);
                       mymap.flyTo(selected_layer.getCenter(),8);
-console.log(arr_layers)
 
                     	mymap.on('moveend',function(){
                     		d3.selectAll('div#MAPA path')
@@ -551,20 +550,16 @@ console.log(arr_layers)
                     	});
 
               } else {
-                  mymap.flyTo([22.0, -97.0], 6)
+                  mymap.flyTo([22.0, -96.0], 6)
                   mymap.on('moveend',function() {
                             d3.selectAll('div#MAPA path')
                               .transition()
                               .duration(500)
                                 .style('stroke','white')
-                                //.style('stroke-width','0.3')
+                                .style('stroke-width','0.3')
                                 .style('opacity','1');
 
                             var filtros_ = ['cuenca','tipo','ubicacion'].map(function(d) {
-                                  var obj = {}
-                                  //obj['valor'] =  $('.' + d + '>option:selected').text();
-                                  //obj['filtro'] = d;
-                                  //return obj;
                                   return [d,$('.' + d + '>option:selected').text()]
                             }).filter((f) => f[1].substring(0,3) != 'Tod');
 
