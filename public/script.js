@@ -1277,11 +1277,11 @@ function switcher(id,mapNdataObj) {
 
 
         	 		case id === 'Inversión':
-
+/*
                     var inv_aprob = mapNdataObj.ajaxData.inv;
                     dashboard(inv_aprob);
 
-                    var data = mapNdataObj.ajaxData.inv;
+                    var data = mapNdataObj.ajaxData.inv; console.log(data)
                     data = _.sortBy(data,function(d) { return d.anio; });
 
 
@@ -1392,7 +1392,7 @@ function switcher(id,mapNdataObj) {
                                     }
                                   }
                           });
-*/
+
                           var invPlot2 = new BarChart({
                                   title:'',
                                   yAxis:'Pesos',
@@ -1421,14 +1421,15 @@ function switcher(id,mapNdataObj) {
                           //grapher(invPlot2.plot, invPorAnio, function(data) { return data; });
                           //grapher(enConstruccion)
                           //inversion_aprob(data)
-                          var seg = mapNdataObj.ajaxData.seguimiento;
+*/
+                          var seg = mapNdataObj.ajaxData.seguimiento;console.log(seg)
 
                           seg.length > 0 || Object.keys(seg).length > 0 ? seguimiento(seg,'inv') : noDato();
-
+/*
                     } else {
                           noDato();
                     }
-
+*/
             	 			break;
 
         	 		case id === 'Compromiso Mínimo de Trabajo':

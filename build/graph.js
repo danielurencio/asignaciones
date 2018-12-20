@@ -1801,7 +1801,7 @@ function dashboard(data,place) {
 
 
 function seguimiento(data,tipo) {
-
+console.log(data)
   var agregados = Object.keys(data).every((d) => !+d) //? true : false;
   var tipoDisponible = agregados ? Object.keys(data).map((d) => data[d].length ? d : null).filter((f) => f) : [];
 
@@ -1895,6 +1895,7 @@ function seguimiento(data,tipo) {
 
 
         // Si es de extracción tomar en cuenta el gas hidrocarburo en el seguimiento
+
         if(data.ext) {
           if(data.ext.length > 0) {
                 data.ext.forEach(function(d,i){
@@ -1920,6 +1921,23 @@ function seguimiento(data,tipo) {
   } else {
         // ¿Qué tipo es? Si tenemos anio, entonces se trata de la base de extracción.
         // De lo contrario, es exploración.
+        console.log(data)
+
+        var esExtraccion = _.uniq(data.map((d) => d.concepto)).some((s) => s == 'Qo');
+
+        if(esExtraccion) {
+
+                data.forEach(function(d,i){
+                    data[i].valor = +data[i].valor.toFixed(1);
+
+                    if(d.concepto == 'QgHC') {
+                        data[i].concepto = 'Qg'
+                    }
+
+                });
+
+        }
+
         var tipo = _.uniq(data.map((d) => d.anio)).every((e) => new RegExp(/ \- /).test(e)) ? 'exp' : 'ext';
         var radios = Array.prototype.slice.call(document.querySelectorAll('input[type=radio]'));
 
