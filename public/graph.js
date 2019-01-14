@@ -1474,14 +1474,14 @@ function CMT(data) {
                     });
 */
 
-                    data = clean_(data);
+                    //data = clean_(data);
 
                     data = _.sortBy(data,(d) => d.concepto);
 
               } else {
                     data = JSON.parse(data[tipoDisponible[0]]);
 
-                    data = clean_(data)
+                    //data = clean_(data)
                     data = _.sortBy(data,(d) => d.concepto);
 
               }
@@ -1801,7 +1801,7 @@ function dashboard(data,place) {
 
 
 function seguimiento(data,tipo) {
-console.log(data)
+
   var agregados = Object.keys(data).every((d) => !+d) //? true : false;
   var tipoDisponible = agregados ? Object.keys(data).map((d) => data[d].length ? d : null).filter((f) => f) : [];
 
@@ -1921,7 +1921,6 @@ console.log(data)
   } else {
         // ¿Qué tipo es? Si tenemos anio, entonces se trata de la base de extracción.
         // De lo contrario, es exploración.
-        console.log(data)
 
         var esExtraccion = _.uniq(data.map((d) => d.concepto)).some((s) => s == 'Qo');
 

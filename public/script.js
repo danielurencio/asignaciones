@@ -46,7 +46,24 @@ var HOSTNAME = 'http://172.16.24.57/';
     d3.json('file_.json',function(err,data_) {
 
     	d3.json('shapes_new.json',function(err,shapes) {
+console.log(shapes)
 
+            shapes.features.forEach(function(d) {
+               var vocales = [
+                 ['á','a'],
+                 ['é','e'],
+                 ['í','i'],
+                 ['ó','o'],
+                 ['ú','u']
+               ];
+
+               vocales.forEach(function(v) {
+                  d.properties.tipo = d.properties.tipo.replace(new RegExp(v[0],'g'),v[1])
+                  d.properties.cuenca = d.properties.cuenca.replace(new RegExp(v[0],'g'),v[1])
+               })
+            })
+
+            console.log(shapes)
 //////////////////////////////////////
             d3.select('#notas_pestana').on('click',function() {
                 var up = d3.select(this).attr('up');
@@ -550,6 +567,7 @@ function datosAsignacion(data,nombre,projection,mymap,asignaciones) {
                     	});
 
               } else {
+
                   mymap.flyTo([22.0, -96.0], 6)
                   mymap.on('moveend',function() {
                             d3.selectAll('div#MAPA path')

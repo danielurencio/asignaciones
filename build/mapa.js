@@ -16,11 +16,11 @@ function leafletMap(shapes) {
 		 // Estas líneas tienen como proósito cambiar el orden en el que aparecen los shapes.
 */
 			var polygonColor = {
-				'Extracción':'rgb(13,180,190)',//'rgb(1,114,158)',
-				'Extracción Temporal':'rgb(46,112,138)',
+				'Extraccion':'rgb(13,180,190)',//'rgb(1,114,158)',
+				'Extraccion Temporal':'rgb(46,112,138)',
 				'Resguardo':'rgb(20,50,90)',
-				'Exploración':'rgb(13,150,190)',
-				'Exploración y Extracción':'rgb(20,70,110)'
+				'Exploracion':'rgb(13,150,190)',
+				'Exploracion y Extraccion':'rgb(20,70,110)'
 			};
 
 			var mymap = L.map('MAPA',{
@@ -45,36 +45,36 @@ function leafletMap(shapes) {
 							className:feature.properties.id
 						};
 
-						case 'Extracción': return {
+						case 'Extraccion': return {
 							color:'white',
-							fillColor:polygonColor['Extracción'],
+							fillColor:polygonColor['Extraccion'],
 							weight:0.5,
 							fillOpacity:0.7,
 							className:feature.properties.id,
 							zIndex:3
 						};
 
-						case 'Exploración': return {
+						case 'Exploracion': return {
 							color:'white',
-							fillColor:polygonColor['Exploración'],
+							fillColor:polygonColor['Exploracion'],
 							weight:0.5,
 							fillOpacity:0.7,
 							className:feature.properties.id,
 							zIndex:2
 						};
 
-						case 'Exploración y Extracción': return {
+						case 'Exploracion y Extraccion': return {
 							color:'white',
-							fillColor:polygonColor['Exploración y Extracción'],
+							fillColor:polygonColor['Exploracion y Extraccion'],
 							weight:0.5,
 							fillOpacity:0.7,
 							className:feature.properties.id,
 							zIndex:2
 						};
 
-						case 'Extracción Temporal': return {
+						case 'Extraccion Temporal': return {
 							color:'white',
-							fillColor:polygonColor['Extracción Temporal'],
+							fillColor:polygonColor['Extraccion Temporal'],
 							weight:0.5,
 							fillOpacity:0.7,
 							className:feature.properties.id,
