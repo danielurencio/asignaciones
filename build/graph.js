@@ -1800,7 +1800,7 @@ function dashboard(data,place) {
 
 
 
-function seguimiento(data,tipo) {
+function seguimiento(data,tipo_) {
 
   var agregados = Object.keys(data).every((d) => !+d) //? true : false;
   var tipoDisponible = agregados ? Object.keys(data).map((d) => data[d].length ? d : null).filter((f) => f) : [];
@@ -2058,7 +2058,7 @@ function seguimiento(data,tipo) {
                                               .filter((f) => f);
 
 
-         if( tipo == 'inv' ) {
+         if( tipo_ == 'inv' ) {
            conceptos = conceptos.filter((f) => f == 'Inv' || f == 'G_Op' || f == 'INV_MMPESOS')
          } else if ( tipo == 'act' ) {
            conceptos = conceptos.filter((f) => f != 'Inv' && f != 'G_Op' && f != 'INV_MMPESOS')

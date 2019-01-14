@@ -1440,8 +1440,8 @@ function switcher(id,mapNdataObj) {
                           //grapher(enConstruccion)
                           //inversion_aprob(data)
 */
-                          var seg = mapNdataObj.ajaxData.seguimiento;console.log(seg)
-
+                          var seg = mapNdataObj.ajaxData.seguimiento;
+                          console.log(seg)
                           seg.length > 0 || Object.keys(seg).length > 0 ? seguimiento(seg,'inv') : noDato();
 /*
                     } else {
