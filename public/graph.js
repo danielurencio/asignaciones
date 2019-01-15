@@ -2,12 +2,12 @@
 function DatosGrales(data)  {
 
   var grales = data.grales;//JSON.parse(JSON.stringify(data.grales));
-  var params = ['cuenca','ubicacion','tipo','asignacion'].map((d) => [d.toUpperCase(),$('.' + d + '>option:selected').text()])
+  var params = ['cuenca','ubicacion','tipo','asignacion'].map(function(d) { return [d.toUpperCase(),$('.' + d + '>option:selected').text()]})
 
-  params = params.filter((f) => f[1].slice(0,3) != 'Tod');
+  params = params.filter(function(f) { return f[1].slice(0,3) != 'Tod' });
 
   params.forEach(function(p) {
-    grales = grales.filter((d) => d[p[0]] == p[1])
+    grales = grales.filter(function(d) { return d[p[0]] == p[1] })
   });
 
 
@@ -78,17 +78,17 @@ function DatosGrales(data)  {
   d3.select('div#row_a>div#col_1')
   .html(function(d) {
 
-    var tipos_ = _.uniq(grales.map((d) => d.TIPO))
-      .map((d) => {
+    var tipos_ = _.uniq(grales.map(function (d) { return d.TIPO }))
+      .map(function (d) {
         let obj = {};
-        obj['num'] = grales.filter((g) => g.TIPO == d).length;
+        obj['num'] = grales.filter(function(g) { return g.TIPO == d }).length;
         obj['tipo'] = d;
 
         return obj;
       });
 
-    tipos_ = _.sortBy(tipos_,(d) => -d.num)
-              .map((d,i) => {
+    tipos_ = _.sortBy(tipos_,function(d) { return -d.num })
+              .map(function(d,i) {
                 return '<div class="lista_tipo_asig" style="color:'+ order_colors[i] +'">'+
                           '<div style="width:2em;text-align:right;display:table-cell;">'+ d.num +'</div>'+
                           '<div style="padding-left:0.8em;display:table-cell;">'+ d.tipo +'</div>'+
@@ -104,7 +104,7 @@ function DatosGrales(data)  {
 
     if(ASIG_ != 'Todas') {
 
-        var tipo_asig_temp = data.grales.filter((f) => f.NOMBRE == ASIG_ )[0].TIPO;
+        var tipo_asig_temp = data.grales.filter(function(f) { return f.NOMBRE == ASIG_ })[0].TIPO;
 
         if(ASIG_.split('-')[0] == 'A') {
             color = 'rgb(13,180,190)';
@@ -144,16 +144,16 @@ function DatosGrales(data)  {
   d3.select('div#row_a>div#col_2')
   .html(function(d) {
 
-    var grales_ = ASIG_ != 'Todas' ? data.grales.filter((d) => d.NOMBRE == ASIG_) : grales;
+    var grales_ = ASIG_ != 'Todas' ? data.grales.filter(function(d) { return d.NOMBRE == ASIG_ }) : grales;
 
-    var n_campos_reservas = _.uniq(_.flatten(grales_.map((d) => d.CAMPOS_CON_RESERVAS ? d.CAMPOS_CON_RESERVAS.split(';') : null)))
-                             .filter((f) => f).length;
+    var n_campos_reservas = _.uniq(_.flatten(grales_.map(function(d) { return d.CAMPOS_CON_RESERVAS ? d.CAMPOS_CON_RESERVAS.split(';') : null })))
+                             .filter(function(f) { return f }).length;
 
-    var seg = _.sortBy(data.ajaxData.seguimiento.ext,function(d) { return d.anio; }).filter((f) => f.tipo_observacion == 'Real');
+    var seg = _.sortBy(data.ajaxData.seguimiento.ext,function(d) { return d.anio; }).filter(function(f) { return f.tipo_observacion == 'Real' });
 
-    var anio_extent = d3.extent(seg.filter((f) => f.concepto == 'G_Op').map((d) => d.anio)).join(' - ');
+    var anio_extent = d3.extent(seg.filter(function(f) { return f.concepto == 'G_Op' }).map(function(d) { return d.anio })).join(' - ');
 
-    var gop = Number(d3.sum(seg.filter((f) => f.concepto == 'G_Op').map((d) => d.valor)).toFixed(0)).toLocaleString('es-MX');
+    var gop = Number(d3.sum(seg.filter(function(f) { return f.concepto == 'G_Op' }).map(function(d) { return d.valor })).toFixed(0)).toLocaleString('es-MX');
 
 
     return "<div style='width:100%;height:100%;background-color:white;position:relative;display:table;table-layout:fixed;'>" +
@@ -185,20 +185,20 @@ function DatosGrales(data)  {
   d3.select('div#row_a>div#col_3')
   .html(function(d) {
 
-    var grales_ = ASIG_ != 'Todas' ? data.grales.filter((d) => d.NOMBRE == ASIG_) : grales;
+    var grales_ = ASIG_ != 'Todas' ? data.grales.filter(function(d) { return d.NOMBRE == ASIG_ }) : grales;
 
-    var agregados = Object.keys(data.ajaxData.seguimiento).every((d) => !+d) && Object.keys(data.ajaxData.seguimiento).length > 0;
+    var agregados = Object.keys(data.ajaxData.seguimiento).every(function(d) { return !+d }) && Object.keys(data.ajaxData.seguimiento).length > 0;
     var seg = data.ajaxData.seguimiento;
 
 
     if(agregados) {
 
-          var anio_extent = d3.extent(seg['ext'].filter((f) => new RegExp(/^I(n|N)/).test(f.concepto) && f.tipo_observacion == 'Real').map((d) => d.anio));
+          var anio_extent = d3.extent(seg['ext'].filter(function(f) { return new RegExp(/^I(n|N)/).test(f.concepto) && f.tipo_observacion == 'Real' }).map(function(d) { return d.anio }));
           anio_extent = anio_extent.join(' - ');
 
-          var inv = Object.keys(seg).map((d) => {
-              var inv_ = seg[d].filter((f) => new RegExp(/^I(n|N)/).test(f.concepto) && f.tipo_observacion == 'Real');
-              inv_ = inv_.map((d) => d.valor);
+          var inv = Object.keys(seg).map(function(d) {
+              var inv_ = seg[d].filter(function(f) { return new RegExp(/^I(n|N)/).test(f.concepto) && f.tipo_observacion == 'Real' });
+              inv_ = inv_.map(function(d) { return d.valor });
 
               return d3.sum(inv_);
           });
@@ -206,11 +206,11 @@ function DatosGrales(data)  {
           inv = d3.sum(inv);
 
     } else {
-          var anio_extent = d3.extent(seg.filter((f) => new RegExp(/^I(n|N)/).test(f.concepto) && f.tipo_observacion == 'Real').map((d) => d.anio));
+          var anio_extent = d3.extent(seg.filter(function(f) { return new RegExp(/^I(n|N)/).test(f.concepto) && f.tipo_observacion == 'Real' }).map(function(d) { return d.anio }));
           anio_extent = anio_extent.join(' - ');
 
-          var inv = seg.filter((f) => new RegExp(/^I(n|N)/).test(f.concepto) && f.tipo_observacion == 'Real')
-             .map((d) => d.valor);
+          var inv = seg.filter(function(f) { return new RegExp(/^I(n|N)/).test(f.concepto) && f.tipo_observacion == 'Real' })
+             .map(function(d) { return d.valor });
 
           inv = d3.sum(inv);
     }
@@ -225,7 +225,7 @@ function DatosGrales(data)  {
                   "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
                       "<div style='display:table;width:100%;height:100%;'>" +
                           "<div style='display:table-cell;vertical-align:middle;color:white;color:"+colors_[2]+"'>" +
-                              "<div class='dato_duro'>"+ Number((d3.sum(grales_.map((d) => d.SUPERFICIE_KM2))).toFixed(0)).toLocaleString('es-MX') +"</div>" +
+                              "<div class='dato_duro'>"+ Number((d3.sum(grales_.map(function(d) { return d.SUPERFICIE_KM2 }))).toFixed(0)).toLocaleString('es-MX') +"</div>" +
                               "<div class='dato_duro_subt'>kilómetros<sup>2</sup></div>" +
                           "</div>" +
                       "</div>" +
@@ -329,13 +329,13 @@ function DatosGrales(data)  {
         var resv_ = _.sortBy(data.ajaxData.reservas,function (d) { return d.fecha; });
         var resv = resv_[resv_.length -1 ];
 
-        var resv_ = resv_.filter((f) => f.fecha == resv.fecha);
+        var resv_ = resv_.filter(function(f) { return f.fecha == resv.fecha });
         var _fecha_ = data.ajaxData.reservas.length > 0 ? +(new Date(resv.fecha).getFullYear()) + 1 : '-';
 
         function filas(str_) {
-          var _pce_ = data.ajaxData.reservas.length > 0 ? (+resv_.filter((f) => f.tipo == str_)[0].rr_pce_mmbpce.toFixed(0)).toLocaleString('es-MX') : '0';
-          var _aceite_ = data.ajaxData.reservas.length > 0 ? (+resv_.filter((f) => f.tipo == str_)[0].rr_aceite_mmb.toFixed(0)).toLocaleString('es-MX') : '0';
-          var _gas_ = data.ajaxData.reservas.length > 0 ? (+resv_.filter((f) => f.tipo == str_)[0].rr_gas_natural_mmmpc.toFixed(0)).toLocaleString('es-MX') : '0';
+          var _pce_ = data.ajaxData.reservas.length > 0 ? (+resv_.filter(function(f) { return f.tipo == str_ })[0].rr_pce_mmbpce.toFixed(0)).toLocaleString('es-MX') : '0';
+          var _aceite_ = data.ajaxData.reservas.length > 0 ? (+resv_.filter(function(f) { return f.tipo == str_ })[0].rr_aceite_mmb.toFixed(0)).toLocaleString('es-MX') : '0';
+          var _gas_ = data.ajaxData.reservas.length > 0 ? (+resv_.filter(function(f) { return f.tipo == str_ })[0].rr_gas_natural_mmmpc.toFixed(0)).toLocaleString('es-MX') : '0';
 
 
           var style = "display:table-cell;text-align:right;padding:5px;"
@@ -650,7 +650,7 @@ function LineChart(data) {
                               points.map(function(d) {
 
                                 return '<div style="padding-left:8px;">'
-                                          + '<b style="color:'+ d.color +'">' + d.hidrocarburo + ':</b> ' + Number(d.valor.toFixed(0)).toLocaleString('es-MX') +
+                                          + '<b style="color:'+ d.color +'">' + d.hidrocarburo + ':</b> ' + Number(d.valor.toFixed(1)).toLocaleString('es-MX') +
                                        '</div>';
                               }).join('');
                         '</div>';
@@ -1049,7 +1049,7 @@ function documentos(data) {
 
                   return [class_.toUpperCase(),txt];
                 })
-                .filter((f) => !new RegExp(/^Tod/).test(f[1]));
+                .filter(function(f) { return !new RegExp(/^Tod/).test(f[1]) });
 
 
   if(selects.length > 0) {
@@ -1062,13 +1062,13 @@ function documentos(data) {
             obj[key] = val;
         }
 
-        Object.keys(obj).forEach((key) => {
-            data = data.filter((f) => f[key] == obj[key])
+        Object.keys(obj).forEach(function(key) {
+            data = data.filter(function(f) { return f[key] == obj[key] })
         });
 
   };
 
-  data = _.sortBy(data,(d) => d.NOMBRE);
+  data = _.sortBy(data,function(d) { return d.NOMBRE });
 
   var filas = data.map(function(d,i) {
     var str = '<tr width="100%;" class="hover_doc" style="margin:15px;font-size:0.8em;">'+
@@ -1174,7 +1174,7 @@ function documentos(data) {
    		})
 
       var filas = Array.prototype.slice.call(document.querySelectorAll('tr.hover_doc td:first-child'))
-          .map((d) => {
+          .map(function(d) {
             var st = $(d).text();
             //st = noAccents(st)
             return st;
@@ -1185,7 +1185,7 @@ function documentos(data) {
   			return patt.test(str_);
   		}
 
-      var matches = filas.filter((f) => {
+      var matches = filas.filter(function(f) {
         str_ = f;
         return !patts.every(regexCheck)
       });
@@ -1194,8 +1194,8 @@ function documentos(data) {
 
       $('tr.hover_doc').css('display','table-row')
 
-      var a_l = $('tr.hover_doc').filter((i,f) => {
-          return matches.some((s) => s == $(f).children(':first').text());
+      var a_l = $('tr.hover_doc').filter(function(i,f) {
+          return matches.some(function(s) { return s == $(f).children(':first').text() });
       }).css('display','none')
 
 
@@ -1209,20 +1209,20 @@ function CMT(data) {
 
         function clean_(data) {
 
-            var a = _.uniq(data.map((d) => d.concepto))
+            var a = _.uniq(data.map(function(d) { return d.concepto }))
                      .map(function(d) {
-                            return data.filter((f) => f.concepto == d)
-                              .map((d) => d.valor)
-                              .every((d) => d) ? d : null;
-                    }).filter((f) => f);
+                            return data.filter(function(f) { return f.concepto == d })
+                              .map(function(d) { return d.valor })
+                              .every(function(d) { return d }) ? d : null;
+                    }).filter(function(f) { return f });
 
-            return data.filter((f) => a.some((d) => d == f.concepto));
+            return data.filter(function(f) { return a.some(function(d) {return d == f.concepto }) });
 
         };
 
 
-        var agregados = Object.keys(data).every((d) => !+d) //? true : false;
-        var tipoDisponible = agregados ? Object.keys(data).map((d) => JSON.parse(data[d]).length ? d : null).filter((f) => f) : [];
+        var agregados = Object.keys(data).every(function(d) { return !+d }) //? true : false;
+        var tipoDisponible = agregados ? Object.keys(data).map(function(d) { return JSON.parse(data[d]).length ? d : null }).filter(function(f) { return f }) : [];
 
         var nombres = {
             'G_Op': { 'nombre':'Gastos de operación', 'unidades':'Millones de pesos' },
@@ -1247,11 +1247,11 @@ function CMT(data) {
 
               var data = typeof(config.data) == 'string' ? JSON.parse(config.data) : config.data;
               var sel = $('#botonera_' + config.id + ">option:selected").attr('id');
-              var sel_data = data.filter((d) => d.concepto == sel);
+              var sel_data = data.filter(function(d) { return d.concepto == sel });
 
               if(a) {
-                    sel_data = _.sortBy(sel_data,(d) => d.concepto).filter((d) => d.valor);
-                    var rows = sel_data.map((d) => {
+                    sel_data = _.sortBy(sel_data,function(d) { return d.concepto }).filter(function(d) { return d.valor });
+                    var rows = sel_data.map(function(d) {
                       var str_ = '<tr style="width:100%;">'+
                                     '<td style="width:50%;padding:0px;">'+ d.anio +'</td>'+
                                     '<td style="width:50%;padding:0px;">'+ d.valor.toLocaleString('es-MX') +'</td>'+
@@ -1260,13 +1260,14 @@ function CMT(data) {
                     }).join('');
               }
               else {
-                    sel_data = _.sortBy(sel_data,(d) => d.concepto).filter((d) => d.valor);
+                    sel_data = _.sortBy(sel_data,function(d) { return d.concepto }).filter(function(d) { return d.valor });
 
-                    var rows = sel_data.map((d) => {
+                    var rows = sel_data.map(function(d) {
                       var str_ = '<tr style="width:100%;">'+
                                     '<td style="width:50%;padding:0px;">'+ d.anio +'</td>'+
-                                    '<td style="width:50%;padding:0px;">'+ d.valor.toLocaleString('es-MX') +'</td>'+
+                                    '<td style="width:50%;padding:0px;">'+ Number(d.valor.toFixed(1)).toLocaleString('es-MX',{ minimumFractionDigits:1 }) +'</td>'+
                                  '</tr>'
+                                 
                       return str_;
                     }).join('');
               }
@@ -1310,18 +1311,18 @@ function CMT(data) {
 
                 //data = clean_(data);
 
-                data = _.sortBy(data,(d) => d.concepto);
+                data = _.sortBy(data,function(d) { return d.concepto });
 
-                var conceptos = _.uniq(data.map((d) => d.concepto));
+                var conceptos = _.uniq(data.map(function(d) { return d.concepto }));
 
-                var anios = _.uniq(data.map((d) => d.anio));
+                var anios = _.uniq(data.map(function(d) { return d.anio }));
 
                 var str__ = '<div style="width:100%; height:100%; display:table; table-layout:fixed">' +
                               '<div style="width:100%;height:20%; ">'+
                                   '<div style="font-size:0.8em;height:50%;width:100%;font-weight:800;color:' + config.color + ';">' + config.titulo + '</div>' +
                                   '<div style="height:10%;width:100%;font-size:13px;font-weight:300;">'+
                                     '<select id="botonera_'+ config.id +'" style="font-weight:700;font-size:0.8em;color:'+ config.color +';">'
-                                        + conceptos.map((d) => '<option id="'+ d +'">'+ nombres[d]['nombre'] +'</option>') +
+                                        + conceptos.map(function(d) { return '<option id="'+ d +'">'+ nombres[d]['nombre'] +'</option>' }) +
                                     '</select>'+
                                   '</div>' +
                               '</div>' +
@@ -1352,14 +1353,14 @@ function CMT(data) {
                var sel = $('select#botonera_'+ config.id +'>option:selected').attr('id');
 
                if(a) {
-                 data = data.filter((f) => f.concepto == sel)
-                            .map((d) => [d.anio,d.valor])
-                            .filter((f) => f[1]);
+                 data = data.filter(function(f) { return f.concepto == sel })
+                            .map(function(d) { return [d.anio,d.valor] })
+                            .filter(function(f) { return f[1] });
                }
                else {
-                 data = data.filter((f) => f.concepto == sel)
-                            .map((d) => [d.anio,d.valor])
-                            .filter((f) => f[1]);
+                 data = data.filter(function(f) { return f.concepto == sel })
+                            .map(function(d) { return [d.anio,d.valor] })
+                            .filter(function(f) { return f[1] });
                }
 
 
@@ -1378,7 +1379,7 @@ function CMT(data) {
                  opposite:false,
                  title:'',
                  xAxis: {
-                   categories: data[0].data.map((d) => String(d[0])),
+                   categories: data[0].data.map(function(d) { return String(d[0]) }),
                    labels: {
                      style: {
                        fontSize:'0.8em'
@@ -1391,7 +1392,7 @@ function CMT(data) {
                           "'</div>'"
                });
 
-               grapher(plot.plot,data,(d) => d)
+               grapher(plot.plot,data,function(d) { return d })
         };
 
         // ----------------- AGREGAR FRAME QUE INCLUYE BOTONES TIPO RADIO --------------------
@@ -1441,7 +1442,7 @@ function CMT(data) {
                 }
               ]
 
-              config.forEach((d) => {
+              config.forEach(function(d) {
                 $('#visor #' + d.id).html(apartado(d));
                 table_(d);
                 barplot_cmt(d);
@@ -1476,13 +1477,13 @@ function CMT(data) {
 
                     //data = clean_(data);
 
-                    data = _.sortBy(data,(d) => d.concepto);
+                    data = _.sortBy(data,function(d) { return d.concepto });
 
               } else {
                     data = JSON.parse(data[tipoDisponible[0]]);
 
                     //data = clean_(data)
-                    data = _.sortBy(data,(d) => d.concepto);
+                    data = _.sortBy(data,function(d) { return d.concepto });
 
               }
 
@@ -1529,18 +1530,18 @@ function CMT(data) {
 function RowPlot(data) {
   this.data = data;
 
-  this.table = () => {
+  this.table = function() {
 
-      this.data = this.data.map((d) => {
+      this.data = this.data.map(function(d) {
         var anio = d.anio;
 
-        var keys = Object.keys(d).map((k) => {
+        var keys = Object.keys(d).map(function(k) {
             var obj = {}
             obj['anio'] = anio;
             obj['concepto'] = k;
             obj['val'] = d[k];
             return obj;
-        }).filter((f) => {
+        }).filter(function(f) {
             return typeof(f.val) != 'string';
         });
 
@@ -1558,18 +1559,18 @@ function RowPlot(data) {
         if(d.concepto.match(/procesado_km2/)) d.concepto = '_procesado_km2';
       })
 
-      var conceptos = _.uniq(this.data.map((d) => d.concepto.split('_real')[0] ));
+      var conceptos = _.uniq(this.data.map(function(d) { return d.concepto.split('_real')[0] }));
 
       this.data = conceptos
-                    .map((d) => {
-                        return this.data.filter((f) => {
+                    .map(function(d) {
+                        return this.data.filter(function(f) {
                             var str = f.concepto;
                             var patt = new RegExp('^' + d);
                             return patt.test(str);
                         });
                     });
 
-        this.data = this.data.filter((d) => d.some((e) => e.val));
+        this.data = this.data.filter(function(d) { return d.some(function(e) { return e.val }) });
 
         var conceptos_dict = {
           'electromag':'Electromagnéticos',
@@ -1613,7 +1614,7 @@ function RowPlot(data) {
              .append('div')
           .style({
             'width':'100%',
-            'height': () => 100 / this.data.length + '%',
+            'height': function() { return 100 / this.data.length + '%' },
             'display':'table-row'
           })
           .each(function(d,j) {
@@ -1632,7 +1633,7 @@ function RowPlot(data) {
 
                 cells_style = cells_style.map(function(d) { return d.join(':'); }).join(';');
 
-                var cells = ['concepto','cmt','avance','avance_pct'].map((d,i) => {
+                var cells = ['concepto','cmt','avance','avance_pct'].map(function(d,i) {
                         var cont = i == 0 ? conceptos_dict[concepto] : '';
                         return '<div id="' + d + '_' + j + '" style="' + cells_style + '">' + cont + '</div>';
                 }).join('');
@@ -1663,7 +1664,7 @@ function RowPlot(data) {
                   noRange:1,
                   hideLegend:true,
                   xAxis: {
-                    categories:original.map((d) => d.anio),
+                    categories:original.map(function(d) { return d.anio }),
                     labels:{
                       enabled:false
                     },
@@ -1675,7 +1676,7 @@ function RowPlot(data) {
                   title:'',
                   subtitle:'',
                   where:'avance_' + j,
-                  yMax: d3.max(original.map((d) => d.val)),
+                  yMax: d3.max(original.map(function(d) { return d.val })),
                   chart: {
                     type:'column',
                     margin:[5,5,5,5]
@@ -1683,7 +1684,7 @@ function RowPlot(data) {
                   noRange:1,
                   hideLegend:true,
                   xAxis: {
-                    categories:real.map((d) => d.anio),
+                    categories:real.map(function(d) { return d.anio }),
                     labels:{
                       enabled:false
                     },
@@ -1693,12 +1694,12 @@ function RowPlot(data) {
 
                 var avanceMeter = new ProgressMeter({
                   where:'avance_pct_' + j,
-                  data: +(( d3.sum(real.map((d) => d.val)) / d3.sum(original.map((d) => d.val)) ) * 100).toFixed(1),
+                  data: +(( d3.sum(real.map(function(d) { return d.val })) / d3.sum(original.map(function(d) { return d.val })) ) * 100).toFixed(1),
                   margin:[0,0,0,0]
                 })
 
-                cmtPlot.plot([{ data:original.map((d) => d.val) }],(data) => data);
-                avancePlot.plot([{ data:real.map((d) => d.val), color:'purple' }],(data) => data);
+                cmtPlot.plot([{ data:original.map(function(d) { return d.val }) }],function(data) { return data });
+                avancePlot.plot([{ data:real.map(function(d) { return d.val }), color:'purple' }], function(data) { return data });
                 avanceMeter.plot();
 
           });
@@ -1802,8 +1803,8 @@ function dashboard(data,place) {
 
 function seguimiento(data,tipo_) {
 
-  var agregados = Object.keys(data).every((d) => !+d) //? true : false;
-  var tipoDisponible = agregados ? Object.keys(data).map((d) => data[d].length ? d : null).filter((f) => f) : [];
+  var agregados = Object.keys(data).every(function(d) { return !+d }) //? true : false;
+  var tipoDisponible = agregados ? Object.keys(data).map(function(d) { return data[d].length ? d : null }).filter(function(f) { return f }) : [];
 
   var conceptos_traduccion = {
       Qo: 'Producción de aceite',
@@ -1910,7 +1911,7 @@ function seguimiento(data,tipo_) {
         }
 
         // Si siempre está disponible la información de extracción, que ésta se visualice primero.
-        tipoDisponible.some((s) => s == 'ext') ? draw(data,'ext') : draw(data,'exp')//noDato();
+        tipoDisponible.some(function(s) { return s == 'ext' }) ? draw(data,'ext') : draw(data,'exp')//noDato();
 
         $('input[type=radio][name=seg]').on('change',function() {
               $('#extra_panels').remove();
@@ -1922,7 +1923,7 @@ function seguimiento(data,tipo_) {
         // ¿Qué tipo es? Si tenemos anio, entonces se trata de la base de extracción.
         // De lo contrario, es exploración.
 
-        var esExtraccion = _.uniq(data.map((d) => d.concepto)).some((s) => s == 'Qo');
+        var esExtraccion = _.uniq(data.map(function(d) { return d.concepto })).some(function(s) { return s == 'Qo' });
 
         if(esExtraccion) {
 
@@ -1937,7 +1938,7 @@ function seguimiento(data,tipo_) {
 
         }
 
-        var tipo = _.uniq(data.map((d) => d.anio)).every((e) => new RegExp(/ \- /).test(e)) ? 'exp' : 'ext';
+        var tipo = _.uniq(data.map(function(d) { return d.anio })).every(function(e) { return new RegExp(/ \- /).test(e) }) ? 'exp' : 'ext';
         var radios = Array.prototype.slice.call(document.querySelectorAll('input[type=radio]'));
 
         $('input[type=radio]').each(function(i,d) {
@@ -2007,7 +2008,7 @@ function seguimiento(data,tipo_) {
 
          } else {
 
-                   data.forEach((d) => {
+                   data.forEach(function(d) {
                        if(d.periodo) {
                            d.anio = periodos[d.periodo];
                            delete d.periodo;
@@ -2049,19 +2050,19 @@ function seguimiento(data,tipo_) {
             return arr;
          }
 
-         conceptos = _.sortBy(conceptos.map(ordenarConceptos),(d) => d[1])
-                      .map((d) => d[0]);
+         conceptos = _.sortBy(conceptos.map(ordenarConceptos),function(d) { return d[1] })
+                      .map(function(d) { return d[0] });
 
          // Esto filtra los conceptos que no tienen valores igual a cero.
-         conceptos = conceptos.map((d) => data.filter((f) => f.concepto == d).some((e) => e.valor))
-                                              .map((m,i) => m ? conceptos[i] : m)
-                                              .filter((f) => f);
+         conceptos = conceptos.map(function(d) { return data.filter(function(f) { return f.concepto == d }).some(function(e) { return e.valor }) })
+                                              .map(function(m,i) { return m ? conceptos[i] : m })
+                                              .filter(function(f) { return f });
 
 
          if( tipo_ == 'inv' ) {
-           conceptos = conceptos.filter((f) => f == 'Inv' || f == 'G_Op' || f == 'INV_MMPESOS')
+           conceptos = conceptos.filter(function(f) { return f == 'Inv' || f == 'G_Op' || f == 'INV_MMPESOS' })
          } else if ( tipo == 'act' ) {
-           conceptos = conceptos.filter((f) => f != 'Inv' && f != 'G_Op' && f != 'INV_MMPESOS')
+           conceptos = conceptos.filter(function(f) { return f != 'Inv' && f != 'G_Op' && f != 'INV_MMPESOS' })
          }
 
 
@@ -2096,8 +2097,8 @@ function seguimiento(data,tipo_) {
                         })
                     });
 
-                    ff[0] = _.sortBy(ff[0], (d) => d.anio)
-                    ff[1] = _.sortBy(ff[1], (d) => d.anio)//.filter((d) => d.valor)
+                    ff[0] = _.sortBy(ff[0], function(d) { return d.anio })
+                    ff[1] = _.sortBy(ff[1], function(d) { return d.anio })//.filter((d) => d.valor)
 
                     return ff;
              };
@@ -2112,10 +2113,10 @@ function seguimiento(data,tipo_) {
               selText = selText.substr(1,selText.length);
 
               var ff = processedData()
-              var max = d3.max( ff.map((d) => d3.max(d.map((d) => d.valor))) )
+              var max = d3.max( ff.map(function(d) { return d3.max(d.map(function(d) { return d.valor })) }) )
 
-              chart.series[0].setData(ff[0].map((d) => d.valor ));
-              chart.series[1].setData(ff[1].map((d) => d.valor ));
+              chart.series[0].setData(ff[0].map(function(d) { return d.valor }));
+              chart.series[1].setData(ff[1].map(function(d) { return d.valor }));
               chart.xAxis[0].setCategories([selText]);
               chart.yAxis[0].setExtremes(0,max);
 
@@ -2134,8 +2135,8 @@ function seguimiento(data,tipo_) {
                if($('#acumulado:checked')[0]) {
                        var ff_acum = JSON.parse(JSON.stringify(ff));
 
-                       ff_acum.map((f) => {
-                         f.forEach((d,i) => {
+                       ff_acum.map(function(f) {
+                         f.forEach(function(d,i) {
                              if(i > 0) {
                                f[i].valor = f[i-1].valor + f[i].valor
                              }
@@ -2143,20 +2144,20 @@ function seguimiento(data,tipo_) {
                          return f;
                        });
 
-                       var max = d3.max( ff_acum.map((d) => d3.max(d.map((d) => d.valor))) );
+                       var max = d3.max( ff_acum.map(function(d) { return d3.max(d.map(function(d) { return d.valor })) }) );
                        chart.yAxis[0].setExtremes(0,max);
 
-                       chart.series[0].setData(ff_acum[0].map((d) => d.valor ));
-                       chart.series[1].setData(ff_acum[1].map((d) => d.valor ));
+                       chart.series[0].setData(ff_acum[0].map(function(d) { return d.valor }));
+                       chart.series[1].setData(ff_acum[1].map(function(d) { return d.valor }));
                        chart.series[0].update({type:'area'});
                        chart.series[1].update({type:'area'});
 
                        updateTable(ff_acum)
                } else {
-                       chart.series[0].setData(ff[0].map(function(d) { return d.valor; }).filter((f) => f))
+                       chart.series[0].setData(ff[0].map(function(d) { return d.valor; }).filter(function (f) { return f }))
                        chart.series[1].setData(ff[1].map(function(d) { return d.valor; }))
 
-                       var max = d3.max( ff.map((d) => d3.max(d.map((d) => d.valor))) );
+                       var max = d3.max( ff.map(function(d) { return d3.max(d.map(function(d) { return d.valor })) }) );
                        chart.yAxis[0].setExtremes(0,max);
                        //chart.yAxis[1].setExtremes(0,yAxis_max);
                        chart.series[0].update({type:'column'});
@@ -2171,8 +2172,8 @@ function seguimiento(data,tipo_) {
                  if(this.checked) {
                          var ff_acum = JSON.parse(JSON.stringify(ff));
 
-                         ff_acum.map((f) => {
-                             f.forEach((d,i) => {
+                         ff_acum.map(function(f) {
+                             f.forEach(function(d,i) {
                                  if(i > 0) {
                                    f[i].valor = f[i-1].valor + f[i].valor
                                  }
@@ -2182,11 +2183,11 @@ function seguimiento(data,tipo_) {
 
 
 
-                         var max = d3.max( ff_acum.map((d) => d3.max(d.map((d) => d.valor))) );
+                         var max = d3.max( ff_acum.map(function(d) { return d3.max(d.map(function(d) { return d.valor })) }) );
                          chart.yAxis[0].setExtremes(0,max);
 
-                         chart.series[0].setData(ff_acum[0].map((d) => d.valor ));
-                         chart.series[1].setData(ff_acum[1].map((d) => d.valor ));
+                         chart.series[0].setData(ff_acum[0].map(function(d) { return d.valor }));
+                         chart.series[1].setData(ff_acum[1].map(function(d) { return d.valor }));
                          chart.series[0].update({type:'area'});
                          chart.series[1].update({type:'area'});
 
@@ -2194,11 +2195,11 @@ function seguimiento(data,tipo_) {
 
                  } else {
 
-                         var max = d3.max( ff.map((d) => d3.max(d.map((d) => d.valor))) );
+                         var max = d3.max( ff.map(function(d) { return d3.max(d.map(function(d) { return d.valor })) }) );
                          chart.yAxis[0].setExtremes(0,max);
 
-                         chart.series[0].setData(ff[0].map((d) => d.valor ));
-                         chart.series[1].setData(ff[1].map((d) => d.valor ));
+                         chart.series[0].setData(ff[0].map(function(d) { return d.valor }));
+                         chart.series[1].setData(ff[1].map(function(d) { return d.valor }));
                          chart.series[0].update({type:'column'});
                          chart.series[1].update({type:'column'});
 
@@ -2214,7 +2215,7 @@ function seguimiento(data,tipo_) {
                    var id = String(d.anio).split(' ').join('_').replace(/(\(|\)|-)/g,'_')
                    var str = '<tr width="100%;">'+
                                 '<td style="width:33.33%;">'+ d.anio +'</td>'+
-                                '<td style="width:33.33%;">'+ (+d.valor.toFixed(1)).toLocaleString('es-MX') +'</td>'+
+                                '<td style="width:33.33%;">'+ (+d.valor.toFixed(1)).toLocaleString('es-MX', { minimumFractionDigits:1 }) +'</td>'+
                                 '<td style="width:33.33%;" id=a_'+ id +'>'+ ' - ' +'</td>'
                              '</tr>'
 
@@ -2259,7 +2260,7 @@ function seguimiento(data,tipo_) {
 
                  ff[1].forEach(function(d) {
                    var id = String(d.anio).split(' ').join('_').replace(/(\(|\)|-)/g,'_')
-                   $('#a_' + id).text((d.valor ? +d.valor.toFixed(1) : '').toLocaleString('es-MX'))
+                   $('#a_' + id).text((d.valor ? +d.valor.toFixed(1) : '').toLocaleString('es-MX',{ minimumFractionDigits:1 }))
                  });
         };
 
@@ -2300,7 +2301,7 @@ function seguimiento(data,tipo_) {
                               title: {
                                   text: ''
                               },
-                              max: d3.max( ff.map((d) => d3.max(d.map((d) => d.valor))) ) //d3.max(ff[0].map(function(d) { return d.valor; })) > d3.max(ff[1].map(function(d) { return d.valor; })) ?
+                              max: d3.max( ff.map(function(d) { return d3.max(d.map(function(d) { return d.valor })) }) ) //d3.max(ff[0].map(function(d) { return d.valor; })) > d3.max(ff[1].map(function(d) { return d.valor; })) ?
                                 //d3.max(ff[0].map(function(d) { return d.valor; })) : d3.max(ff[1].map(function(d) { return d.valor; }))
                           },
                           legend: {
@@ -2345,18 +2346,18 @@ function aprovechamiento(data) {
 
     var obj_data = {}
 
-    obj_data['produccion'] = data.produccion.map((d) => {
+    obj_data['produccion'] = data.produccion.map(function(d) {
        var obj = [d.fecha,+d.gas_mmpcd.toFixed(1)];
        return obj;
     });
 
-    obj_data['aprovechamiento'] = data.aprovechamiento.map((d) => {
+    obj_data['aprovechamiento'] = data.aprovechamiento.map(function(d) {
       var obj = [d.fecha,+d.valor.toFixed(1)];
       return obj;
     });
 
-    obj_data['produccion'] = obj_data['produccion'].filter((d) => {
-      return obj_data.aprovechamiento.map((e) => e[0]).some((s) => s == d[0])
+    obj_data['produccion'] = obj_data['produccion'].filter(function(d) {
+      return obj_data.aprovechamiento.map(function(e) { return e[0] }).some(function(s) { return s == d[0] })
     });
 
     var visor_config = {
@@ -2510,7 +2511,7 @@ function noDato() {
 
 function inversion_aprob(data) {
 
-      var actividades = _.uniq(data.map((d) => d.actividad)).map((d,i) => {
+      var actividades = _.uniq(data.map(function(d) { return d.actividad })).map(function(d,i) {
           var obj = {};
           obj['value'] = 'actividad_' + i;
           obj['text'] = d;
@@ -2536,14 +2537,14 @@ function inversion_aprob(data) {
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // TOTALES POR ACTIVIDAD
 ///////////////////////////////////////////////////////////////////////////////////////////////
-            var data_ = _.uniq(datatemp.map((d) => d.actividad))
-                .map((act) => {
-                  var actividad = datatemp.filter((f) => f.actividad == act);
-                  var anios = _.uniq(actividad.map((r) => r.anio))
+            var data_ = _.uniq(datatemp.map(function(d) { return d.actividad }))
+                .map(function(act) {
+                  var actividad = datatemp.filter(function(f) { return f.actividad == act });
+                  var anios = _.uniq(actividad.map(function(r) { return r.anio }))
 
-                  var anios = anios.map((a) => {
-                    var monto = datatemp.filter((f) => f.anio == a && f.actividad == act)
-                              .map((d) => d.monto_usd)
+                  var anios = anios.map(function(a) {
+                    var monto = datatemp.filter(function(f) { return f.anio == a && f.actividad == act })
+                              .map(function(d) { return d.monto_usd })
 
                     monto = d3.sum(monto);
 
@@ -2569,17 +2570,17 @@ function inversion_aprob(data) {
               acum = acum.concat(data_[i])
             };
 
-            acum = acum.filter((f) => f.actividad == selectedRadio.parent().text())
-            acum = _.sortBy(acum,(d) => d.anio)
+            acum = acum.filter(function(f) { return f.actividad == selectedRadio.parent().text() })
+            acum = _.sortBy(acum,function(d) { return d.anio })
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // TOTALES POR ACTIVIDAD
 ///////////////////////////////////////////////////////////////////////////////////////////////
             //data = acum.concat(data)
 
-            var subactividades = datatemp.filter((f) => selectedRadio.parent().text() == f.actividad)
-                                      .map((d) => d.sub_actividad);
+            var subactividades = datatemp.filter(function(f) { return selectedRadio.parent().text() == f.actividad })
+                                      .map(function(d) { return d.sub_actividad });
 
-            var subactividades = ['Total'].concat(_.sortBy(_.uniq(subactividades))).map((sub) => {
+            var subactividades = ['Total'].concat(_.sortBy(_.uniq(subactividades))).map(function(sub) {
                                        return '<option>' + sub + '</option>';
                                      }).join('');
             datatemp = acum.concat(datatemp)
@@ -2593,11 +2594,11 @@ function inversion_aprob(data) {
 
             if(radios.length == 1) radios[0].style.display = 'none';
 
-            var data_selected = datatemp.filter((f) => {
+            var data_selected = datatemp.filter(function(f) {
                     let act = selectedRadio.parent().text();
                     let sub = $('select#inv_select>option:selected').text();
                     return act == f.actividad && sub == f.sub_actividad;
-            }).map((d) => [d.anio,d.monto_usd])
+            }).map(function(d) { return [d.anio,d.monto_usd] })
 
             var plot = new BarChart({
               where:'inv_barchart',
@@ -2606,7 +2607,7 @@ function inversion_aprob(data) {
               opposite:false,
               subtitle:'Dólares',
               xAxis: {
-                categories: data_selected.map((d) => String(d[0])),//[]//data[0].data.map((d) => String(d[0]))
+                categories: data_selected.map(function(d) { return String(d[0]) }),//[]//data[0].data.map((d) => String(d[0]))
                 labels: {
                   style: {
                     fontSize:'1.2em'
@@ -2619,17 +2620,17 @@ function inversion_aprob(data) {
                        "'</div>'"
             });
 
-            grapher(plot.plot,[{ 'data':data_selected }],(d) => d);
+            grapher(plot.plot,[{ 'data':data_selected }],function(d) { return d });
             updateTable(data_selected);
 
 
             $('select#inv_select').on('change',function() {
 
-                  var data_selected = datatemp.filter((f) => {
+                  var data_selected = datatemp.filter(function(f) {
                           let act = selectedRadio.parent().text();
                           let sub = $('select#inv_select>option:selected').text();
                           return act == f.actividad && sub == f.sub_actividad;
-                  }).map((d) => [d.anio,d.monto_usd]);
+                  }).map(function(d) { return [d.anio,d.monto_usd] });
 
                   var plot = new BarChart({
                     where:'inv_barchart',
@@ -2638,7 +2639,7 @@ function inversion_aprob(data) {
                     opposite:false,
                     subtitle:'Dólares',
                     xAxis: {
-                      categories: data_selected.map((d) => String(d[0]))//[]//data[0].data.map((d) => String(d[0]))
+                      categories: data_selected.map(function(d) { return String(d[0]) })//[]//data[0].data.map((d) => String(d[0]))
                     },
                     hideLegend:true,
                     tooltip: "'<div style=\"font-weight:300;font-family:Open Sans;text-align:center;\">'+" +
@@ -2647,7 +2648,7 @@ function inversion_aprob(data) {
 
                   });
 
-                  grapher(plot.plot,[{ 'data':data_selected }],(d) => d);
+                  grapher(plot.plot,[{ 'data':data_selected }],function(d) { return d });
                   updateTable(data_selected);
 
             });
@@ -2712,7 +2713,7 @@ function inversion_aprob(data) {
 
 function frameVisor_withRadios(config) {
 
-        var options = config.options.map((d,i) => {
+        var options = config.options.map(function(d,i) {
           var style = 'style="display:table-cell;padding-right:1%;font-size:.7em;"'
           var checked = i === 0 ? ' checked' : '';
           var element =
