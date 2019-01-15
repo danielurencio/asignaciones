@@ -2,508 +2,532 @@ var HOSTNAME = 'http://172.16.24.57/';
 
  $(document).ready(function() {
 
-  $.ajax({
-    type:'GET',
-    dataType:'JSON',
-    url: HOSTNAME + 'grales_asig.py',
-    success:function(datos_grales) {
-        datos_grales = JSON.parse(datos_grales)
+   var tipoExplorador = (function(){
+       var ua= navigator.userAgent, tem,
+       M= ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i) || [];
+       if(/trident/i.test(M[1])){
+           tem=  /\brv[ :]+(\d+)/g.exec(ua) || [];
+           return 'IE '+(tem[1] || '');
+       }
+       if(M[1]=== 'Chrome'){
+           tem= ua.match(/\b(OPR|Edge)\/(\d+)/);
+           if(tem!= null) return tem.slice(1).join(' ').replace('OPR', 'Opera');
+       }
+       M= M[2]? [M[1], M[2]]: [navigator.appName, navigator.appVersion, '-?'];
+       if((tem= ua.match(/version\/(\d+)/i))!= null) M.splice(1, 1, tem[1]);
+       return M.join(' ');
+   })();
+
+   if(tipoExplorador.split(' ')[0]) {
+
         $.ajax({
           type:'GET',
           dataType:'JSON',
-          url: HOSTNAME + 'grales_asig.py?CONFIG=1',
-          success:function(notas_update) {
+          url: HOSTNAME + 'grales_asig.py',
+          success:LogicaEntera
+        });
 
-            var meses = {
-              '1':'Enero',
-              '2':'Febrero',
-              '3':'Marzo',
-              '4':'Abril',
-              '5':'Mayo',
-              '6':'Junio',
-              '7':'Julio',
-              '8':'Agosto',
-              '9':'Septiembre',
-              '10':'Octubre',
-              '11':'Noviembre',
-              '12':'Diciembre',
-            };
-
-            notas_update = JSON.parse(notas_update);
-
-            var notas_alPie = {};
-            var last_update = {};
-
-            notas_update.forEach((d) => {
-              notas_alPie[d.topic] = d.notes;
-              var isoDate = new Date(d.last_update).toISOString().split('-');
-
-              var date_update = meses[isoDate[1].replace(/^0/,'')] + ' - ' + isoDate[0];
-              last_update[d.topic] = date_update;
-            });
+    } else {
+        $('body').html('No es explorer')
+    }
 
 
-    d3.json('file_.json',function(err,data_) {
+});
 
-    	d3.json('shapes_new.json',function(err,shapes) {
-console.log(shapes)
+var LogicaEntera = function(datos_grales) {
+    datos_grales = JSON.parse(datos_grales)
+    $.ajax({
+      type:'GET',
+      dataType:'JSON',
+      url: HOSTNAME + 'grales_asig.py?CONFIG=1',
+      success:function(notas_update) {
 
-            shapes.features.forEach(function(d) {
-               var vocales = [
-                 ['á','a'],
-                 ['é','e'],
-                 ['í','i'],
-                 ['ó','o'],
-                 ['ú','u']
-               ];
+        var meses = {
+          '1':'Enero',
+          '2':'Febrero',
+          '3':'Marzo',
+          '4':'Abril',
+          '5':'Mayo',
+          '6':'Junio',
+          '7':'Julio',
+          '8':'Agosto',
+          '9':'Septiembre',
+          '10':'Octubre',
+          '11':'Noviembre',
+          '12':'Diciembre',
+        };
 
-               vocales.forEach(function(v) {
-                  d.properties.tipo = d.properties.tipo.replace(new RegExp(v[0],'g'),v[1])
-                  d.properties.cuenca = d.properties.cuenca.replace(new RegExp(v[0],'g'),v[1])
-               })
-            })
+        notas_update = JSON.parse(notas_update);
 
-            console.log(shapes)
+        var notas_alPie = {};
+        var last_update = {};
+
+        notas_update.forEach(function(d) {
+          notas_alPie[d.topic] = d.notes;
+          var isoDate = new Date(d.last_update).toISOString().split('-');
+
+          var date_update = meses[isoDate[1].replace(/^0/,'')] + ' - ' + isoDate[0];
+          last_update[d.topic] = date_update;
+        });
+
+
+d3.json('file_.json',function(err,data_) {
+
+  d3.json('shapes_new.json',function(err,shapes) {
+
+        shapes.features.forEach(function(d) {
+           var vocales = [
+             ['á','a'],
+             ['é','e'],
+             ['í','i'],
+             ['ó','o'],
+             ['ú','u']
+           ];
+
+           vocales.forEach(function(v) {
+              d.properties.tipo = d.properties.tipo.replace(new RegExp(v[0],'g'),v[1]);
+              d.properties.cuenca = d.properties.cuenca.replace(new RegExp(v[0],'g'),v[1]);
+           });
+
+        });
+
 //////////////////////////////////////
-            d3.select('#notas_pestana').on('click',function() {
-                var up = d3.select(this).attr('up');
+        d3.select('#notas_pestana').on('click',function() {
+            var up = d3.select(this).attr('up');
 
-                if(!up) {
-                        d3.select(this).attr('up',1);
-                        $(this).attr('class','notas_up');
-                        $('#notas').attr('class','notas__up');
-                        $('#notas_ocultar,#notas_contenido').css('display','block')
-                } else {
-                        $('#notas_ocultar,#notas_contenido').css('display','none');
-                        var up = d3.select('#notas_pestana').attr('up',null);
-                        $('#notas_pestana').attr('class','notas_down');
-                        $('#notas').attr('class','notas__down');
-                }
+            if(!up) {
+                    d3.select(this).attr('up',1);
+                    $(this).attr('class','notas_up');
+                    $('#notas').attr('class','notas__up');
+                    $('#notas_ocultar,#notas_contenido').css('display','block')
+            } else {
+                    $('#notas_ocultar,#notas_contenido').css('display','none');
+                    var up = d3.select('#notas_pestana').attr('up',null);
+                    $('#notas_pestana').attr('class','notas_down');
+                    $('#notas').attr('class','notas__down');
+            }
 
-            });
+        });
 
-            $('body').click(function(e) {
-                 if($(e.target).attr('ix') != 'notas' && $(e.target).attr('id') != 'notas_contenido' && !$(e.target).is('b')) {
+        $('body').click(function(e) {
+             if($(e.target).attr('ix') != 'notas' && $(e.target).attr('id') != 'notas_contenido' && !$(e.target).is('b')) {
 
-                       var up = d3.select('#notas_pestana').attr('up');
+                   var up = d3.select('#notas_pestana').attr('up');
 
-                       if(up) {
-                           $('#notas_ocultar,#notas_contenido').css('display','none');
-                           var up = d3.select('#notas_pestana').attr('up',null);
-                           $('#notas_pestana').attr('class','notas_down');
-                           $('#notas').attr('class','notas__down');
-                       }
+                   if(up) {
+                       $('#notas_ocultar,#notas_contenido').css('display','none');
+                       var up = d3.select('#notas_pestana').attr('up',null);
+                       $('#notas_pestana').attr('class','notas_down');
+                       $('#notas').attr('class','notas__down');
+                   }
 
-                 }
-            });
+             }
+        });
 //////////////////////////////////////
 
 /*------------------------------------------------Highcharts language settings------------------------------------------------------------------*/
-			  Highcharts.setOptions({
-			  	lang: {
-			  		shortMonths:['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],
-            months:['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'],
-            rangeSelectorFrom:'De:',
-            rangeSelectorTo:'A:',
-            rangeSelectorZoom:'',
-            thousandsSep:',',
-            downloadCSV: 'Descargar datos'
-			  	}
-			  })
+    Highcharts.setOptions({
+      lang: {
+        shortMonths:['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],
+        months:['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'],
+        rangeSelectorFrom:'De:',
+        rangeSelectorTo:'A:',
+        rangeSelectorZoom:'',
+        thousandsSep:',',
+        downloadCSV: 'Descargar datos'
+      }
+    })
 
 /*------------------------------------------------Highcharts language settings------------------------------------------------------------------*/
 
-    		  var markersANDmap = leafletMap(shapes);
-    		  var asignaciones = markersANDmap[0];
-    		  var mymap = markersANDmap[1];
+      var markersANDmap = leafletMap(shapes);
+      var asignaciones = markersANDmap[0];
+      var mymap = markersANDmap[1];
 
 /*======================================================================================================*/
 /*====== Redraw maps when resize event is finished =====================================================*/
 /*======================================================================================================*/
-		      var rtime;
-		      var timeout = false;
-		      var delta = 200;
-          var mapNdataObj;
+      var rtime;
+      var timeout = false;
+      var delta = 200;
+      var mapNdataObj;
 
-        // Esta función comprueba si el usuario ya terminó de redimensionar la ventana.
-				function resizeend() {
-				    if (new Date() - rtime < delta) {
-				        setTimeout(resizeend, delta);
-				    } else {
-				        timeout = false;
-				        var id_ = $('.selectedButton').attr('id');
-				        switcher(id_,mapNdataObj);
-				    }
-				}
+    // Esta función comprueba si el usuario ya terminó de redimensionar la ventana.
+    function resizeend() {
+        if (new Date() - rtime < delta) {
+            setTimeout(resizeend, delta);
+        } else {
+            timeout = false;
+            var id_ = $('.selectedButton').attr('id');
+            switcher(id_,mapNdataObj);
+        }
+    }
 
 
 
- 			  window.onresize = function() {
- /*----------------------------------Redimensionar los resultados desplegables si es que existen-------------------------------------*/
- 				   if($('div.resultadosDesplegables')[0]) {
- 					       $('div.resultadosDesplegables').css('left',resultadosDesplegablesProperties().x)
- 									   			                      .css('width',resultadosDesplegablesProperties().width - 2);
- 				   }
+    window.onresize = function() {
 /*----------------------------------Redimensionar los resultados desplegables si es que existen-------------------------------------*/
-				   $('#visor').html('')
-				   rtime = new Date();
-				   if ( timeout === false ) {
-					        timeout = true;
-					        setTimeout(resizeend,delta);
-				   }
- 			  }
+       if($('div.resultadosDesplegables')[0]) {
+             $('div.resultadosDesplegables').css('left',resultadosDesplegablesProperties().x)
+                                            .css('width',resultadosDesplegablesProperties().width - 2);
+       }
+/*----------------------------------Redimensionar los resultados desplegables si es que existen-------------------------------------*/
+       $('#visor').html('')
+       rtime = new Date();
+       if ( timeout === false ) {
+              timeout = true;
+              setTimeout(resizeend,delta);
+       }
+    }
 
 /*======================================================================================================*/
 /*====== Redraw maps when resize event is finished ====================================================*/
 /*====================================================================================================*/
 /*
-          data_ = JSON.stringify(data_)
-              .replace(/M¿xico/g,'México')
-              .replace(/Cintur¿n/g,'Cinturón')
-              .replace(/Yucat¿n/g,'Yucatán');
+      data_ = JSON.stringify(data_)
+          .replace(/M¿xico/g,'México')
+          .replace(/Cintur¿n/g,'Cinturón')
+          .replace(/Yucat¿n/g,'Yucatán');
 
-          data_ = JSON.parse(data_)
+      data_ = JSON.parse(data_)
 */
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //    -----> ESTO TIENE QUE CAMBIAR!!!!
 /////////////////////////////////////////////////////////////////////////////////////////////
-          datos_grales = datos_grales.map(function(d) { if(!d.CUENCA) d.CUENCA='En verificación'; return d; });
+      datos_grales = datos_grales.map(function(d) { if(!d.CUENCA) d.CUENCA='En verificación'; return d; });
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //    -----> ESTO TIENE QUE CAMBIAR!!!!
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-          var data = datos_grales;
+      var data = datos_grales;
 
-          //var exp = new Expandir(data,'CUENCA')
+      //var exp = new Expandir(data,'CUENCA')
 
-		      var cuencas = data.map(function(d) {
-		      		return d.CUENCA;
-		      });
+      var cuencas = data.map(function(d) {
+          return d.CUENCA;
+      });
 
 
-          var tipos = _.uniq(data.map((d) => d.TIPO));
-          tipos = ['Todos'].concat(tipos);
+      var tipos = _.uniq(data.map(function(d) { return d.TIPO }));
+      tipos = ['Todos'].concat(tipos);
 
-          var ubicaciones = _.uniq(data.map((d) => d.UBICACION));
-          //ubicaciones = ['Todas'].concat(ubicaciones)
+      var ubicaciones = _.uniq(data.map(function(d) { return d.UBICACION }));
+      //ubicaciones = ['Todas'].concat(ubicaciones)
 
-          var tipos_extras = tipos.map((d,i) => {
+      var tipos_extras = tipos.map(function(d,i) {
+        var obj = {};
+        obj['CUENCA'] = 'Todas';
+        obj['TIPO'] = d;
+        obj['UBICACION'] = 'Todas',
+        obj['NOMBRE'] = 'Todas';
+        obj['ID'] = 'Todas';
+        return obj;
+      });
+
+      var ubicaciones_extras = ubicaciones.map(function(d) {
+        var obj = {};
+        obj['CUENCA'] = 'Todas';
+        obj['UBICACION'] = d;
+        obj['TIPO'] = 'Todas';
+        obj['NOMBRE'] = 'Todas';
+        obj['ID'] = 'Todas';
+        return obj;
+      });
+
+      //ubicaciones.slice(1,ubicaciones.length)
+      var ubicaciones_extras_2 = ubicaciones.map(function(d) {
+        var resultados = _.uniq(data.filter(function(e) {
+          return e.UBICACION == d; }).map( function(m) {
             var obj = {};
-            obj['CUENCA'] = 'Todas';
-            obj['TIPO'] = d;
-            obj['UBICACION'] = 'Todas',
             obj['NOMBRE'] = 'Todas';
             obj['ID'] = 'Todas';
-            return obj;
-          });
-
-          var ubicaciones_extras = ubicaciones.map((d) => {
-            var obj = {};
             obj['CUENCA'] = 'Todas';
             obj['UBICACION'] = d;
-            obj['TIPO'] = 'Todas';
-            obj['NOMBRE'] = 'Todas';
-            obj['ID'] = 'Todas';
-            return obj;
-          });
+            obj['TIPO'] = m.TIPO;
 
-          //ubicaciones.slice(1,ubicaciones.length)
-          var ubicaciones_extras_2 = ubicaciones.map(function(d) {
-            var resultados = _.uniq(data.filter(function(e) {
-              return e.UBICACION == d; }).map( function(m) {
-                var obj = {};
-                obj['NOMBRE'] = 'Todas';
-                obj['ID'] = 'Todas';
-                obj['CUENCA'] = 'Todas';
-                obj['UBICACION'] = d;
-                obj['TIPO'] = m.TIPO;
+            return JSON.stringify(obj);
+          })
+        );
 
-                return JSON.stringify(obj);
-              })
-            );
+        return resultados.map(function(d) { return JSON.parse(d) });
+      });
 
-            return resultados.map((d) => JSON.parse(d));
-          });
+      ubicaciones_extras_2 = _.flatten(ubicaciones_extras_2);
 
-          ubicaciones_extras_2 = _.flatten(ubicaciones_extras_2);
+      function extras_(arr,st,params,special) {
+          let resultado = arr.map(function(d)  {
+              return data.filter(function(f) {
+                  return f[st] == d;
+              }).map(function(m) {
+                  var obj = {};
 
-          function extras_(arr,st,params,special) {
-              let resultado = arr.map(function(d)  {
-                  return data.filter(function(f) {
-                      return f[st] == d;
-                  }).map(function(m) {
-                      var obj = {};
-
-                      for(var p in params) {
-                        if(params[p] == special) {
-                          obj[special] = m[special]
-                        } else {
-                          obj[params[p]] = 'Todas';
-                        }
-                      }
-
-                      obj[st] = m[st];
-                      obj['ID'] = m['ID'];
-                      obj['NOMBRE'] = m['NOMBRE'];
-
-                      return obj;
-                  });
-              });
-
-              resultado = _.flatten(resultado);
-              return resultado;
-          };
-
-          var test_0 = extras_(tipos.slice(1,tipos.length), 'TIPO',['CUENCA','UBICACION']);
-          var test_1 = extras_(ubicaciones,'UBICACION',['CUENCA','TIPO'],'TIPO');
-
-          cuencas = _.uniq(cuencas);
-
-          var cuencas_extras = cuencas.map((d) => {
-            var obj = {};
-            obj['CUENCA'] = d;
-            obj['ID'] = 'Todas';
-            obj['UBICACION'] = 'Todas';
-            obj['TIPO'] = 'Todos';
-            obj['NOMBRE'] = 'Todas';
-            return obj;
-          });
-
-          cuencas = ['Todas'].concat(cuencas);
-
-          var ex_0 = new Expandir(data,'CUENCA').packaged_ops(['UBICACION','TIPO']);
-          var ex_1 = new Expandir(data,'UBICACION').packaged_ops(['TIPO']);
-          var ex_2 = new Expandir(data,'TIPO').packaged_ops();
-          data = data.concat(ex_0,ex_1,ex_2,data)
-
-          //data = data.concat(cuencas_extras,tipos_extras,ubicaciones_extras,ubicaciones_extras_2,test_0,test_1);
-
-
-		      cuencas.forEach(function(d) {
-		      	if(d) {
-		      		$('.cuenca').append('<option>'+ d +'</option>');
-		      	}
-		      });
-
-
-			  asignaciones.on('click',function(event) {
-          //event.layer.setStyle({ background:'red' });
-    				  var id_asignacion = event.layer.feature.properties.id;
-
-    				  var sel_asignacion = data.filter(function(d) {
-                /* Habrá que cambiar NOMBRE por ID */
-                return d.ID == id_asignacion;
-                /* Habrá que cambiar NOMBRE por ID */
-              })[0];
-
-
-              /* -- Sustituir valores de filtros sin detonar eventos --*/
-    				  $('.cuenca').val(sel_asignacion.CUENCA)
-              cambio(data,'ubicacion',function(d) {
-                return localCond(d,'cuenca');
-              });
-
-              $('.ubicacion').val(sel_asignacion.UBICACION)
-              cambio(data,'tipo',function(d) {
-                  return localCond(d,'cuenca') && localCond(d,'ubicacion');
-              });
-
-              $('.tipo').val(sel_asignacion.TIPO)
-              cambio(data,'asignacion',function(d) {
-                  return localCond(d,'cuenca') && localCond(d,'ubicacion') && localCond(d,'tipo');
-              },'NOMBRE');
-
-    				  $('.asignacion').val(sel_asignacion.NOMBRE);
-              /* -- Sustituir valores de filtros sin detonar eventos --*/
-
-              $('.asignacion').trigger('change');
-
-			  });
-
-          mapNdataObj = {
-            'grales':datos_grales,
-            'data':data,
-            'asignaciones':asignaciones,
-            'mymap':mymap,
-            'notas':notas_alPie,
-            'last_update':last_update
-          };
-
-          function AjaxCall(data,mymap,asignaciones) {
-
-            //datosAsignacion(data,null,null,mymap,asignaciones);
-            $('#visor').html('');
-
-            var ID, TIPO, UBICACION, CUENCA;
-            ID = $('.asignacion>option:selected').attr('id');
-            TIPO = $('.tipo>option:selected').text();
-            UBICACION = $('.ubicacion>option:selected').text();
-            CUENCA = $('.cuenca>option:selected').text();
-
-
-            $.ajax({
-                  type:'GET',
-                  dataType:'JSON',
-                  //type:'json',
-                  url:HOSTNAME + 'grales_asig.py',
-                  data:{
-                    ID:ID,
-                    TIPO:TIPO,
-                    UBICACION:UBICACION,
-                    CUENCA:CUENCA
-                  },
-                  success:function(ajaxData) {
-
-                    var noms = [CUENCA,TIPO,UBICACION];
-
-                    for(var k in ajaxData) {
-
-                      ajaxData[k] = JSON.parse(ajaxData[k])/*.map(function(d) {
-                            var name = noms.filter((d) => d.slice(0,3) != 'Tod').join(' - ')// ? 'Todas' : noms.join(' - ')
-                            d['nombre'] = name ? name : 'Nacional'
-                            return d;
-                      })*/
+                  for(var p in params) {
+                    if(params[p] == special) {
+                      obj[special] = m[special]
+                    } else {
+                      obj[params[p]] = 'Todas';
                     }
-
-                    Object.keys(ajaxData.seguimiento).forEach((d) => {
-                      if(typeof(ajaxData.seguimiento[d]) == 'string') ajaxData.seguimiento[d] = JSON.parse(ajaxData.seguimiento[d])
-                    });
-
-                    mapNdataObj['ajaxData'] = ajaxData;
-/*
-                    Object.keys(mapNdataObj.ajaxData.seguimiento).forEach((d) => {
-                      mapNdataObj.ajaxData.seguimiento[d] = JSON.parse(mapNdata.ajaxData.seguimiento[d])
-                    });
-*/
-                    switcher($('.selectedButton').attr('id'),mapNdataObj);
-
                   }
-            });
-          };
 
+                  obj[st] = m[st];
+                  obj['ID'] = m['ID'];
+                  obj['NOMBRE'] = m['NOMBRE'];
 
-          cambioAsignacion(data);
-          speechBubbles(mapNdataObj);
-
-		      $('.cuenca').on('change',function() {
-              if( $('.asignacion>option:selected').attr('ID') != 'Todas' ) {
-                  //AjaxCall(data,mymap,asignaciones)
-		      		    cambioAsignacion(data);
-                  AjaxCall(data,mymap,asignaciones)
-
-              } else {
-
-                  AjaxCall(data,mymap,asignaciones);
-                  cambioAsignacion(data);
-
-              }
-
-              datosAsignacion(data,null,null,mymap,asignaciones);
-		      });
-
-
-          $('.ubicacion').on('change',function() {
-              if( $('.asignacion>option:selected').attr('ID') != 'Todas' ) {
-                  cambio(data,'tipo',function(d) {
-                    return localCond(d,'cuenca') && localCond(d,'ubicacion');
-                  });
-
-                  $('.tipo').trigger('change');
-              } else {
-                    AjaxCall(data,mymap,asignaciones);
-                    cambio(data,'tipo',function(d) {
-                      return localCond(d,'cuenca') && localCond(d,'ubicacion');
-                    });
-
-                    //$('.tipo').trigger('change');
-              }
-
-              datosAsignacion(data,null,null,mymap,asignaciones);
+                  return obj;
+              });
           });
 
+          resultado = _.flatten(resultado);
+          return resultado;
+      };
 
-          $('.tipo').on('change',function() {
-            //
-            // Si las siguientes tres líneas no se incorporan: no se hacen bien los queries. caso VERACRUZ, MARINO, EXTRACCIÒN
-            //
-            cambio(data,'asignacion',function(d) {
-                return localCond(d,'cuenca') && localCond(d,'ubicacion') && localCond(d,'tipo');
-            },'NOMBRE');
+      var test_0 = extras_(tipos.slice(1,tipos.length), 'TIPO',['CUENCA','UBICACION']);
+      var test_1 = extras_(ubicaciones,'UBICACION',['CUENCA','TIPO'],'TIPO');
 
-                if( $('.asignacion>option:selected').attr('ID') != 'Todas' ) {
+      cuencas = _.uniq(cuencas);
 
-                    cambio(data,'asignacion',function(d) {
-                        return localCond(d,'cuenca') && localCond(d,'ubicacion') && localCond(d,'tipo');
-                    },'NOMBRE');
+      var cuencas_extras = cuencas.map(function(d) {
+        var obj = {};
+        obj['CUENCA'] = d;
+        obj['ID'] = 'Todas';
+        obj['UBICACION'] = 'Todas';
+        obj['TIPO'] = 'Todos';
+        obj['NOMBRE'] = 'Todas';
+        return obj;
+      });
 
-                    $('.asignacion').trigger('change');
+      cuencas = ['Todas'].concat(cuencas);
 
-                } else {
+      var ex_0 = new Expandir(data,'CUENCA').packaged_ops(['UBICACION','TIPO']);
+      var ex_1 = new Expandir(data,'UBICACION').packaged_ops(['TIPO']);
+      var ex_2 = new Expandir(data,'TIPO').packaged_ops();
+      data = data.concat(ex_0,ex_1,ex_2,data)
 
-                    AjaxCall(data,mymap,asignaciones);
+      //data = data.concat(cuencas_extras,tipos_extras,ubicaciones_extras,ubicaciones_extras_2,test_0,test_1);
 
-                    cambio(data,'asignacion',function(d) {
-                        return localCond(d,'cuenca') && localCond(d,'ubicacion') && localCond(d,'tipo');
-                    },'NOMBRE');
-                    //$('.asignacion').trigger('change');
+
+      cuencas.forEach(function(d) {
+        if(d) {
+          $('.cuenca').append('<option>'+ d +'</option>');
+        }
+      });
+
+
+    asignaciones.on('click',function(event) {
+      //event.layer.setStyle({ background:'red' });
+          var id_asignacion = event.layer.feature.properties.id;
+
+          var sel_asignacion = data.filter(function(d) {
+            /* Habrá que cambiar NOMBRE por ID */
+            return d.ID == id_asignacion;
+            /* Habrá que cambiar NOMBRE por ID */
+          })[0];
+
+
+          /* -- Sustituir valores de filtros sin detonar eventos --*/
+          $('.cuenca').val(sel_asignacion.CUENCA)
+          cambio(data,'ubicacion',function(d) {
+            return localCond(d,'cuenca');
+          });
+
+          $('.ubicacion').val(sel_asignacion.UBICACION)
+          cambio(data,'tipo',function(d) {
+              return localCond(d,'cuenca') && localCond(d,'ubicacion');
+          });
+
+          $('.tipo').val(sel_asignacion.TIPO)
+          cambio(data,'asignacion',function(d) {
+              return localCond(d,'cuenca') && localCond(d,'ubicacion') && localCond(d,'tipo');
+          },'NOMBRE');
+
+          $('.asignacion').val(sel_asignacion.NOMBRE);
+          /* -- Sustituir valores de filtros sin detonar eventos --*/
+
+          $('.asignacion').trigger('change');
+
+    });
+
+      mapNdataObj = {
+        'grales':datos_grales,
+        'data':data,
+        'asignaciones':asignaciones,
+        'mymap':mymap,
+        'notas':notas_alPie,
+        'last_update':last_update
+      };
+
+      function AjaxCall(data,mymap,asignaciones) {
+
+        //datosAsignacion(data,null,null,mymap,asignaciones);
+        $('#visor').html('');
+
+        var ID, TIPO, UBICACION, CUENCA;
+        ID = $('.asignacion>option:selected').attr('id');
+        TIPO = $('.tipo>option:selected').text();
+        UBICACION = $('.ubicacion>option:selected').text();
+        CUENCA = $('.cuenca>option:selected').text();
+
+
+        $.ajax({
+              type:'GET',
+              dataType:'JSON',
+              //type:'json',
+              url:HOSTNAME + 'grales_asig.py',
+              data:{
+                ID:ID,
+                TIPO:TIPO,
+                UBICACION:UBICACION,
+                CUENCA:CUENCA
+              },
+              success:function(ajaxData) {
+
+                var noms = [CUENCA,TIPO,UBICACION];
+
+                for(var k in ajaxData) {
+
+                  ajaxData[k] = JSON.parse(ajaxData[k])/*.map(function(d) {
+                        var name = noms.filter((d) => d.slice(0,3) != 'Tod').join(' - ')// ? 'Todas' : noms.join(' - ')
+                        d['nombre'] = name ? name : 'Nacional'
+                        return d;
+                  })*/
                 }
 
-		      		  datosAsignacion(data,null,null,mymap,asignaciones);
-          });
+                Object.keys(ajaxData.seguimiento).forEach(function(d) {
+                  if(typeof(ajaxData.seguimiento[d]) == 'string') ajaxData.seguimiento[d] = JSON.parse(ajaxData.seguimiento[d])
+                });
 
-
-		      $('.asignacion').on('change',function() {
-		      		    datosAsignacion(data,null,null,mymap,asignaciones);
-
-                  $('#visor').html('');
-
-                  $.ajax({
-                        type:'GET',
-                        dataType:'JSON',
-                        url:HOSTNAME + 'grales_asig.py',
-                        data:{ ID: $('.asignacion>option:selected').attr('ID') },
-                        success:function(ajaxData) {
-                          var noms = ['cuenca','ubicacion','tipo','asignacion'].map((d) => [d.toUpperCase(),$('.' + d + '>option:selected').text()])
-
-                          for(var k in ajaxData) {
-                            ajaxData[k] = JSON.parse(ajaxData[k])
-                            var isJson = Object.keys(ajaxData[k]).every((d) => !+d);
-
-                            if(isJson) {
-                                Object.keys(ajaxData[k]).forEach((d) => {
-                                    ajaxData[k][d] = JSON.parse(ajaxData[k][d])
-                                })
-                            }
+                mapNdataObj['ajaxData'] = ajaxData;
 /*
-                                ajaxDat[k].map(function(d) {
-                                      var name = noms.filter((d) => d.slice(0,3) != 'Tod').join(' - ')// ? 'Todas' : noms.join(' - ')
-                                      d['nombre'] = name ? name : 'Nacional'
-                                      return d;
-                                })
+                Object.keys(mapNdataObj.ajaxData.seguimiento).forEach((d) => {
+                  mapNdataObj.ajaxData.seguimiento[d] = JSON.parse(mapNdata.ajaxData.seguimiento[d])
+                });
 */
-                          }
+                switcher($('.selectedButton').attr('id'),mapNdataObj);
 
-                          mapNdataObj['ajaxData'] = ajaxData;
+              }
+        });
+      };
 
-                          switcher($('.selectedButton').attr('id'),mapNdataObj);
 
+      cambioAsignacion(data);
+      speechBubbles(mapNdataObj);
+
+      $('.cuenca').on('change',function() {
+          if( $('.asignacion>option:selected').attr('ID') != 'Todas' ) {
+              //AjaxCall(data,mymap,asignaciones)
+              cambioAsignacion(data);
+              AjaxCall(data,mymap,asignaciones)
+
+          } else {
+
+              AjaxCall(data,mymap,asignaciones);
+              cambioAsignacion(data);
+
+          }
+
+          datosAsignacion(data,null,null,mymap,asignaciones);
+      });
+
+
+      $('.ubicacion').on('change',function() {
+          if( $('.asignacion>option:selected').attr('ID') != 'Todas' ) {
+              cambio(data,'tipo',function(d) {
+                return localCond(d,'cuenca') && localCond(d,'ubicacion');
+              });
+
+              $('.tipo').trigger('change');
+          } else {
+                AjaxCall(data,mymap,asignaciones);
+                cambio(data,'tipo',function(d) {
+                  return localCond(d,'cuenca') && localCond(d,'ubicacion');
+                });
+
+                //$('.tipo').trigger('change');
+          }
+
+          datosAsignacion(data,null,null,mymap,asignaciones);
+      });
+
+
+      $('.tipo').on('change',function() {
+        //
+        // Si las siguientes tres líneas no se incorporan: no se hacen bien los queries. caso VERACRUZ, MARINO, EXTRACCIÒN
+        //
+        cambio(data,'asignacion',function(d) {
+            return localCond(d,'cuenca') && localCond(d,'ubicacion') && localCond(d,'tipo');
+        },'NOMBRE');
+
+            if( $('.asignacion>option:selected').attr('ID') != 'Todas' ) {
+
+                cambio(data,'asignacion',function(d) {
+                    return localCond(d,'cuenca') && localCond(d,'ubicacion') && localCond(d,'tipo');
+                },'NOMBRE');
+
+                $('.asignacion').trigger('change');
+
+            } else {
+
+                AjaxCall(data,mymap,asignaciones);
+
+                cambio(data,'asignacion',function(d) {
+                    return localCond(d,'cuenca') && localCond(d,'ubicacion') && localCond(d,'tipo');
+                },'NOMBRE');
+                //$('.asignacion').trigger('change');
+            }
+
+            datosAsignacion(data,null,null,mymap,asignaciones);
+      });
+
+
+      $('.asignacion').on('change',function() {
+              datosAsignacion(data,null,null,mymap,asignaciones);
+
+              $('#visor').html('');
+
+              $.ajax({
+                    type:'GET',
+                    dataType:'JSON',
+                    url:HOSTNAME + 'grales_asig.py',
+                    data:{ ID: $('.asignacion>option:selected').attr('ID') },
+                    success:function(ajaxData) {
+                      var noms = ['cuenca','ubicacion','tipo','asignacion'].map(function(d) { return [d.toUpperCase(),$('.' + d + '>option:selected').text()] })
+
+                      for(var k in ajaxData) {
+                        ajaxData[k] = JSON.parse(ajaxData[k])
+                        var isJson = Object.keys(ajaxData[k]).every(function(d) { return !+d });
+
+                        if(isJson) {
+                            Object.keys(ajaxData[k]).forEach(function(d) {
+                                ajaxData[k][d] = JSON.parse(ajaxData[k][d])
+                            })
                         }
-                  });
-		      });
+/*
+                            ajaxDat[k].map(function(d) {
+                                  var name = noms.filter((d) => d.slice(0,3) != 'Tod').join(' - ')// ? 'Todas' : noms.join(' - ')
+                                  d['nombre'] = name ? name : 'Nacional'
+                                  return d;
+                            })
+*/
+                      }
+
+                      mapNdataObj['ajaxData'] = ajaxData;
+
+                      switcher($('.selectedButton').attr('id'),mapNdataObj);
+
+                    }
+              });
+      });
 
 
-		      $('input.buscador').on('input',function(d) {
-		      		  inputEnBuscador(d,data);
-		      });
+      $('input.buscador').on('input',function(d) {
+            inputEnBuscador(d,data);
+      });
 
-		});
-   });
- }});
- }});
 });
-
-
+});
+}});
+}
 
 
 function datosAsignacion(data,nombre,projection,mymap,asignaciones) {
@@ -579,13 +603,13 @@ function datosAsignacion(data,nombre,projection,mymap,asignaciones) {
 
                             var filtros_ = ['cuenca','tipo','ubicacion'].map(function(d) {
                                   return [d,$('.' + d + '>option:selected').text()]
-                            }).filter((f) => f[1].substring(0,3) != 'Tod');
+                            }).filter(function(f) { return f[1].substring(0,3) != 'Tod' });
 
 
                             if(filtros_.length > 0) {
-                                  var filtered_layers = arr_layers.filter((f) => {
-                                                            return filtros_.every((d) => f.layer.feature.properties[d[0]] == d[1]);
-                                                        }).map((d) => d.layer.feature.properties.id);
+                                  var filtered_layers = arr_layers.filter(function(f) {
+                                                            return filtros_.every(function(d) { return f.layer.feature.properties[d[0]] == d[1] });
+                                                        }).map(function(d) { return d.layer.feature.properties.id });
 
 
                                   d3.selectAll('div#MAPA path')
@@ -595,8 +619,8 @@ function datosAsignacion(data,nombre,projection,mymap,asignaciones) {
                                     .style('stroke-width','0.3')
                                     .style('opacity','0.15')
 
-                                  Array.prototype.slice.call(document.querySelectorAll('div#MAPA path')).filter((d) => {
-                                      return filtered_layers.some((s) => s == $(d).attr('class').split(' ')[0])
+                                  Array.prototype.slice.call(document.querySelectorAll('div#MAPA path')).filter(function(d) {
+                                      return filtered_layers.some(function(s) { return s == $(d).attr('class').split(' ')[0] })
                                   }).forEach(function(d) {
 
                                     d3.select(d)
@@ -687,14 +711,16 @@ function cambio(data,str,fn,extraParam) {
 
     if(str != 'asignacion') {
         var asigs_ = data.filter(fn)
-                         .map((d) => JSON.stringify(d))
+                         .map(function(d) { return JSON.stringify(d) })
 
-        asigs_ = _.uniq(asigs_).map((d) => JSON.parse(d))
+        asigs_ = _.uniq(asigs_).map(function(d) { return JSON.parse(d) })
                   //.map((d) => '<option id="'+d.ID+'">'+ d.NOMBRE +'</option>');
 
-        asigs_ = asigs_.filter((f) => f.NOMBRE.slice(0,3) == 'Tod')
-                       .concat(_.sortBy(asigs_.filter((f) => f.NOMBRE.slice(0,3) != 'Tod',((d) => d.NOMBRE))))
-                       .map((d) => '<option id="'+d.ID+'">'+ d.NOMBRE +'</option>')
+        asigs_ = asigs_.filter(function(f) { return f.NOMBRE.slice(0,3) == 'Tod' })
+                       .concat(_.sortBy(asigs_.filter(function(f) {
+                                                          return f.NOMBRE.slice(0,3) != 'Tod',(function(d) { return d.NOMBRE })
+                                                        }) ))
+                       .map(function(d) { return '<option id="'+d.ID+'">'+ d.NOMBRE +'</option>' })
 
         asigs_ = _.uniq(asigs_).join('');
 
@@ -702,7 +728,7 @@ function cambio(data,str,fn,extraParam) {
                     .map(function(d) { return d[mapName]; });
 
         param = _.uniq(param);
-        param = param.filter((f) => f.slice(0,3) == 'Tod').concat(param.filter((f) => f.slice(0,3) != 'Tod'))
+        param = param.filter(function(f) { return f.slice(0,3) == 'Tod' }).concat(param.filter(function(f) { return f.slice(0,3) != 'Tod' }))
         param = param.map(function(d) { return '<option>' + d + '</option>'; }).join('');
 
         $('.asignacion').html(asigs_)
@@ -714,7 +740,7 @@ function cambio(data,str,fn,extraParam) {
 
         var nombres = _.uniq( param.map(function(d) { return d.nombre }) );
 
-        nombres = nombres.filter((f) => f.slice(0,3) == 'Tod').concat(nombres.filter((f) => f.slice(0,3) != 'Tod'))
+        nombres = nombres.filter(function(f) { return f.slice(0,3) == 'Tod' }).concat(nombres.filter(function(f) { return f.slice(0,3) != 'Tod' }))
 
         param = nombres.map(function(d) {
             var id = param.filter(function(e) { return e.nombre == d; })[0].id;
@@ -892,7 +918,7 @@ function cambio(data,str,fn,extraParam) {
 
                for(var k in data) { data[k] = JSON.parse(data[k]); }
 
-               Object.keys(data.seguimiento).forEach((d) => {
+               Object.keys(data.seguimiento).forEach(function(d) {
                  data.seguimiento[d] = JSON.parse(data.seguimiento[d])
                });
 
@@ -952,9 +978,9 @@ function switcher(id,mapNdataObj) {
                     grapher(function() {
 
                       DatosGrales(mapNdataObj);
-                      try {
+                      //try {
                           //datosAsignacion(mapNdataObj.data,null,null,mapNdataObj.mymap,mapNdataObj.asignaciones);
-                      } catch {}
+                      //} catch {}
                     });
 
                     break;
@@ -966,7 +992,7 @@ function switcher(id,mapNdataObj) {
                         var prod = mapNdataObj.ajaxData.produccion;
                         prod = JSON.parse(JSON.stringify(prod));
 
-                        prod.forEach((d) => {
+                        prod.forEach(function(d) {
                           let fecha = new Date(d.fecha).toISOString();
                           let anio = fecha.split('-')[0];
                           let mes = fecha.split('-')[1];
@@ -1069,7 +1095,7 @@ function switcher(id,mapNdataObj) {
                           $('input[type=radio][name=reservas]').change(function() {
                                 plot_config.yAxis = config_changes.yAxis[this.value];
                                 plot_config.subtitle = config_changes.subtitle[this.value];
-                                new BarChart(plot_config).plot(stack_fn(this.value),(d) => d);
+                                new BarChart(plot_config).plot(stack_fn(this.value),function(d) { return d });
                           });
 
 
@@ -1105,7 +1131,7 @@ function switcher(id,mapNdataObj) {
 
                           var reservasPlot = new BarChart(plot_config);
 
-                          reservasPlot.plot(stack_fn('rr_pce_mmbpce'),(d) => d);
+                          reservasPlot.plot(stack_fn('rr_pce_mmbpce'),function(d) { return d });
 
 
                     } else {
@@ -1124,7 +1150,7 @@ function switcher(id,mapNdataObj) {
 
                           var pozos_ = JSON.parse(JSON.stringify(mapNdataObj.ajaxData.pozos_inv));
 
-                          pozos_.forEach((d) => {
+                          pozos_.forEach(function(d) {
                             let fecha = new Date(d.fecha).toISOString();
                             let anio = fecha.split('-')[0];
                             let mes = fecha.split('-')[1];
@@ -1164,16 +1190,16 @@ function switcher(id,mapNdataObj) {
                         };
 
                         var checkComplete = Object.keys(groups_)
-                              .map((d) => {
-                                  var rs = groups_[d].map((d) => d.groups)
-                                                   .map((k) => {
-                                                     return pozos.filter((f) => k.some((s) => s == f.descriptor))
-                                                                 .map((a) => a.valor).every((e) => !e)
+                              .map(function(d) {
+                                  var rs = groups_[d].map(function(d) { return d.groups })
+                                                   .map(function(k) {
+                                                     return pozos.filter(function(f) { return k.some(function(s) { return s == f.descriptor }) })
+                                                                 .map(function(a) { return a.valor }).every(function(e) { return !e })
                                                    });
 
-                                  rs = rs.every((e) => !e)
+                                  rs = rs.every(function(e) { return !e })
                                   return rs ? d : null
-                              }).filter((f) => f);
+                              }).filter(function(f) { return f });
 /*
                         var groups_ = [
                           { 'stackName':'Perforaciones','groups':['Perforaciones desarrollo'] },
@@ -1201,11 +1227,11 @@ function switcher(id,mapNdataObj) {
 
                         $('input[type=radio][value='+ checkComplete[0] +']').attr('checked',true);
 
-                        var noEstan = Object.keys(groups_).filter((f) => checkComplete.some((s) => s != f))
+                        var noEstan = Object.keys(groups_).filter(function(f) { return checkComplete.some(function(s) { return s != f }) })
 
                         if(noEstan.length < 3) {
                                       noEstan
-                                            .forEach((d) => {
+                                            .forEach(function(d) {
                                               var el = document.querySelector('input[type=radio][value='+ d +']');
                                               el.disabled = true;
                                               $(el).parent().css('color','lightGray');
@@ -1238,11 +1264,11 @@ function switcher(id,mapNdataObj) {
 
 
                               stackedPozos_.forEach(function(d,i) {
-                                 var valid = d.data.filter((f) => f.y).map((d) => d.x);
+                                 var valid = d.data.filter(function(f) { return f.y }).map(function(d) { return d.x });
                                  var max = d3.max(valid);
                                  var min = d3.min(valid);
 
-                                 var a = d.data.filter((f) => f.x >= min).filter((f) => f.x <= max);
+                                 var a = d.data.filter(function(f) { return f.x >= min }).filter(function(f) { return f.x <= max });
                                  stackedPozos_[i].data = a;
                               })
 
