@@ -63,7 +63,7 @@ var LogicaEntera = function(datos_grales) {
 
         var notas_alPie = {};
         var last_update = {};
-
+console.log(notas_update)
         notas_update.forEach(function(d) {
           notas_alPie[d.topic] = d.notes;
           var isoDate = new Date(d.last_update).toISOString().split('-');
@@ -1469,7 +1469,7 @@ function switcher(id,mapNdataObj) {
                           //inversion_aprob(data)
 */
                           var seg = mapNdataObj.ajaxData.seguimiento;
-                          console.log(seg)
+
                           seg.length > 0 || Object.keys(seg).length > 0 ? seguimiento(seg,'inv') : noDato();
 /*
                     } else {

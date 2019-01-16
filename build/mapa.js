@@ -104,10 +104,10 @@ function leafletMap(shapes) {
 				'<div id="mapLegend">' +
 						'<div style="font-weight:800;padding-bottom:5px;">Tipos de Asignación</div>' +
 						'<div style="text-align:left;">' +
-							'<span style="color:'+ polygonColor['Extracción'] +'">&block;</span>&ensp;Extracción&ensp;<br>' +
-							'<span style="color:'+ polygonColor['Exploración'] +'">&block;</span>&ensp;Exploración<br>'+
-							'<span style="color:'+ polygonColor['Extracción Temporal'] +'">&block;</span>&ensp;Extracción Temporal&ensp;<br>' +
-							'<span style="color:'+ polygonColor['Exploración y Extracción'] +'">&block;</span>&ensp;Exploración y Extracción&ensp;<br>' +
+							'<span style="color:'+ polygonColor['Extraccion'] +'">&block;</span>&ensp;Extracción&ensp;<br>' +
+							'<span style="color:'+ polygonColor['Exploracion'] +'">&block;</span>&ensp;Exploración<br>'+
+							'<span style="color:'+ polygonColor['Extraccion Temporal'] +'">&block;</span>&ensp;Extracción Temporal&ensp;<br>' +
+							'<span style="color:'+ polygonColor['Exploracion y Extraccion'] +'">&block;</span>&ensp;Exploración y Extracción&ensp;<br>' +
 							'<span style="color:'+ polygonColor['Resguardo'] +'">&block;</span>&ensp;Resguardo&nbsp;'
 						'</div>'
 				'</div>';
