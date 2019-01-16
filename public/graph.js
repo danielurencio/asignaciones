@@ -1267,7 +1267,7 @@ function CMT(data) {
                                     '<td style="width:50%;padding:0px;">'+ d.anio +'</td>'+
                                     '<td style="width:50%;padding:0px;">'+ Number(d.valor.toFixed(1)).toLocaleString('es-MX',{ minimumFractionDigits:1 }) +'</td>'+
                                  '</tr>'
-                                 
+
                       return str_;
                     }).join('');
               }
@@ -1859,7 +1859,7 @@ function seguimiento(data,tipo_) {
   var conditional_title = tipo == 'inv' ? 'inversión' : 'actividad';
   var visor_config = {
     'radio_names':'seg',
-    'title':'Seguimiento en ' + conditional_title,
+    'title':'Seguimiento de ' + conditional_title,
     'options': [
         { 'value':'ext', 'text':' Extracción' },
         { 'value':'exp', 'text':' Exploración' }

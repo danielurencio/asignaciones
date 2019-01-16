@@ -159,11 +159,11 @@ class Visor extends Component {
              'Producción',
              'Reservas',
              'Pozos',
-             'Inversión',
+             'Seguimiento de inversión',
              'Compromiso Mínimo de Trabajo',
              'Aprovechamiento de gas',
              'Documentos',
-             'Seguimiento'
+             'Seguimiento de actividad'
            ]}/>
         </div>
         <div style={{ width:'100%',height:'calc(100% - '+ this.props.boton_width + 'px)' }}>
