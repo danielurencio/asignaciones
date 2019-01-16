@@ -26,7 +26,7 @@ Expandir.prototype = {
     objReturn: function objReturn(st) {
         var keys = Object.keys(this.categories);
         var obj_ = {};
-        for (k in keys) {
+        for (var k in keys) {
             if (keys[k] != st) obj_[keys[k]] = this.categories[keys[k]];
         }
         return obj_;
@@ -82,7 +82,7 @@ Expandir.prototype = {
 
     packaged_ops: function packaged_ops(arr) {
         var _this4 = this;
-
+        var pack;
         if (arr) {
             pack = arr.map(function (d) {
                 return _this4.opciones(d);

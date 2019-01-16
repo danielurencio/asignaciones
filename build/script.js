@@ -18,6 +18,8 @@ var HOSTNAME = 'http://172.16.24.57/';
        return M.join(' ');
    })();
 
+  console.log(tipoExplorador)
+
    if(tipoExplorador.split(' ')[0]) {
 
         $.ajax({
@@ -73,7 +75,7 @@ var LogicaEntera = function(datos_grales) {
 
 d3.json('file_.json',function(err,data_) {
 
-  d3.json('shapes_new.json',function(err,shapes) {
+  d3.json('shapes.json',function(err,shapes) {
 
         shapes.features.forEach(function(d) {
            var vocales = [
@@ -1320,7 +1322,7 @@ function switcher(id,mapNdataObj) {
             	 			break;
 
 
-        	 		case id === 'Inversión':
+        	 		case id === 'Seguimiento de inversión':
 /*
                     var inv_aprob = mapNdataObj.ajaxData.inv;
                     dashboard(inv_aprob);
@@ -1509,7 +1511,7 @@ function switcher(id,mapNdataObj) {
                     $('#filtro_cont').css('display','table')
             	 			break;
 
-        	 		case id === 'Seguimiento':
+        	 		case id === 'Seguimiento de actividad':
 
                     var seg = mapNdataObj.ajaxData.seguimiento;
 
