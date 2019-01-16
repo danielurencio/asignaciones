@@ -1,4 +1,5 @@
-var HOSTNAME = 'http://172.16.24.57/';
+var produccion = false;
+var HOSTNAME = produccion ? 'https://asignaciones.hidrocarburos.gob.mx/' : 'http://172.16.24.57/';
 
  $(document).ready(function() {
 
@@ -20,19 +21,31 @@ var HOSTNAME = 'http://172.16.24.57/';
 
   console.log(tipoExplorador)
 
-   if(tipoExplorador.split(' ')[0]) {
+   if(tipoExplorador.split(' ')[0] != 'IE') {
 
-        $.ajax({
-          type:'GET',
-          dataType:'JSON',
-          url: HOSTNAME + 'grales_asig.py',
-          success:LogicaEntera
-        });
+            $.ajax({
+              type:'GET',
+              dataType:'JSON',
+              url: HOSTNAME + 'grales_asig.py',
+              success:LogicaEntera
+            });
 
     } else {
-        $('body').html('No es explorer')
+            $('div#lamina .content>*').css('display','none');
+            $('div#lamina p#IE').css('display','block');
+            //$('body').html('No es explorer')
     }
 
+    $('.contacto').on('click', function() {
+           $('div#lamina').css('visibility','visible');
+           $('div#lamina img').css('display','none');
+           $('div#lamina p:not(#IE)').css('display','block')
+           $('div#lamina div#cerrar').css('display','block')
+    });
+
+    $('div#cerrar>div').on('click',function() {
+          $('div#lamina').css('visibility','hidden');
+    })
 
 });
 
@@ -63,7 +76,7 @@ var LogicaEntera = function(datos_grales) {
 
         var notas_alPie = {};
         var last_update = {};
-console.log(notas_update)
+
         notas_update.forEach(function(d) {
           notas_alPie[d.topic] = d.notes;
           var isoDate = new Date(d.last_update).toISOString().split('-');
@@ -640,7 +653,7 @@ function datosAsignacion(data,nombre,projection,mymap,asignaciones) {
               }
 
       /*------------------------AGRAGAR URL DE DESCARGA DE TITULO--------------------------------------------*/
-            	var URL = 'http://asignaciones.energia.gob.mx/asignaciones/_doc/publico/Asignaciones/';
+            	var URL = 'https://asignaciones.energia.gob.mx/asignaciones/_doc/publico/Asignaciones/';
             	var tituloLink = URL + sel_asignacion_obj.NOMBRE.split(' - ')[0] + '.pdf';
 
             	var fnString = 'openInNewTab("' + tituloLink + '");';
@@ -926,8 +939,10 @@ function cambio(data,str,fn,extraParam) {
 
                mapNdataObj['ajaxData'] = data;
 
-    	         $('#botones_>div').filter(function(i,d) { return i === 0 })
-                        .click();
+    	         $('#botones_>div').filter(function(i,d) { return i === 0 }).click();
+
+               $('div#lamina').css('visibility','hidden')
+
           }
       });
 

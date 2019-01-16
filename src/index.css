@@ -482,3 +482,58 @@ div.subtitulo_cuadro {
   font-size:1.1em;
   font-weight:700;
 }
+
+img.contacto:hover {
+  opacity:1;
+  cursor:pointer;
+}
+
+div#lamina {
+  position:fixed;
+  width:100%;
+  height:100%;
+  background-color:rgba(0,0,0,0.9);
+  z-index:2000;
+  visibility:visible;
+  color:white;
+  font-weight: 400;
+}
+
+.espere {
+
+ width:50%;
+ height:30%;
+ position:absolute;
+ left:25%;
+ top:35%;
+ border-radius:5px;
+}
+
+.contenedor {
+    display: table;
+    height: 100%;
+    position: absolute;
+    overflow: hidden;
+    width: 100%;
+
+}
+
+.helper {
+    #position: absolute;
+    #top: 50%;
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.content {
+    #position: relative;
+    #top: -0%;
+    margin: 0 auto;
+    text-align:center;
+    font-weight:600;
+    font-size:18px;
+}
+
+div#cerrar>div:hover {
+  cursor:pointer;
+}

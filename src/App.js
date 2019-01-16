@@ -94,7 +94,7 @@ class Header extends Component {
 
     //const dropdowns = ['Cuenca','Ubicación','Tipo','Asignacion'];
     const dropdowns = ['Nivel','Cuenca/Ubicación','Tipo/Asignación','Buscar'];
-    const childrenWidth = '20%';// ( 100 / (dropdowns.length + 1) ) + '%';
+    const childrenWidth = '31.25%';// ( 100 / (dropdowns.length + 1) ) + '%';
 
     return (
         <div className='header' style={headerStyle}>
@@ -105,6 +105,8 @@ class Header extends Component {
               <DropDownMenu title={ ['Cuenca','Ubicación'] } w_={childrenWidth}/>
               <DropDownMenu title={ ['Tipo','Asignación'] } w_={childrenWidth}/>
               <TextBox w_={childrenWidth}/>
+              <Contacto w_='6%'/>
+              {/*<div style={{ width:childrenWidth }}>hola</div>*/}
           </div>
       </div>
     )
@@ -392,6 +394,31 @@ class TextBox extends Component {
                 <div>
                   <div style={{ fontWeight:'800' }}>Buscar</div>
                   <input className='buscador' style={{ minWidth:'60%',maxWidth:'60%',border:'none',borderBottom:'1px solid gray',background:'url(glass_.svg) no-repeat calc(100% - 0px) 0px' }}></input>
+                </div>
+              </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+}
+
+
+
+class Contacto extends Component {
+  render() {
+    return (
+      <div className='header_child' style={{display:'table-cell',textAlign:'center',width:this.props.w_}}>
+        <div style={{display:'table',position:'absoulte',height:'100%', width:'100%', textAlign:'center'}}>
+           <div style={{display:'table-cell',verticalAlign:'middle',textAlign:'center', height:'100%', width:'100%'}}>
+              <div style={{ display:'table',width:'100%',height:'100%' }}>
+                <div style={{ width:'100%',height:'100%' }}>
+                  <div style={{ fontWeight:'600', fontSize:'0.8em', height:'20%' }}>Versión BETA</div>
+                  <div style={{ width:'100%', display:'table',height:'80%' }}>
+                    <div style={{ display: 'table-cell', verticalAlign:'middle', width:'100%', textAlign: 'center', height: '100%', position: 'relative' }}>
+                      <img className='contacto' src='contacto.png' style={{ maxWidth:'2em', opacity:'0.5'}}></img>
+                    </div>
+                  </div>
                 </div>
               </div>
           </div>

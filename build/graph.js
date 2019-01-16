@@ -1071,12 +1071,19 @@ function documentos(data) {
   data = _.sortBy(data,function(d) { return d.NOMBRE });
 
   var filas = data.map(function(d,i) {
+
+    var prefijo = d.NOMBRE.split(' - ')[0];
+
+    if(d.NOMBRE.split(' - ')[1] == 'Campo Bacal') {
+      prefijo += '_'
+    }
+
     var str = '<tr width="100%;" class="hover_doc" style="margin:15px;font-size:0.8em;">'+
                  '<td style="font-weight:600;padding:5px;width:50%;">'+ d.NOMBRE +'</td>'+
                  '<td style="padding:5px;width:50%;">'+
                     //'<a href="http://localhost:8081/'+d.NOMBRE.split(' - ')[0]+'.pdf" target="_blank" class="hover_hand">'+
                       '<div id="doc_black"><img style="max-height:35px;font-weight:600;" src="doc_black.png"></img>&emsp;Título</div>' +
-                      '<div id="doc_purple"><a href="http://172.16.24.57:8081/'+d.NOMBRE.split(' - ')[0]+'.pdf" target="_blank" class="hover_hand"><img style="max-height:35px;font-weight:600;" src="doc_purple.png"></img><span>&emsp;Título</span></a></div>' +
+                      '<div id="doc_purple"><a href="https://asignaciones.energia.gob.mx/_doc/publico/Asignaciones/'+ prefijo +'.pdf" target="_blank" class="hover_hand"><img style="max-height:35px;font-weight:600;" src="doc_purple.png"></img><span>&emsp;Título</span></a></div>' +
                     //'</a>'+
                  '</td>' +
               '</tr>'
@@ -1861,8 +1868,8 @@ function seguimiento(data,tipo_) {
     'radio_names':'seg',
     'title':'Seguimiento de ' + conditional_title,
     'options': [
-        { 'value':'ext', 'text':' Extracción' },
-        { 'value':'exp', 'text':' Exploración' }
+        { 'value':'ext', 'text':' Plan de extracción' },
+        { 'value':'exp', 'text':' Plan de exploración' }
       ],
     'height':95
   };
@@ -1938,7 +1945,24 @@ function seguimiento(data,tipo_) {
 
         }
 
-        var tipo = _.uniq(data.map(function(d) { return d.anio })).every(function(e) { return new RegExp(/ \- /).test(e) }) ? 'exp' : 'ext';
+
+        var tipo = _.uniq(data.map(function(d) { return d.concepto; })).some(function(s) {
+                var result =
+
+                'AD_SIS_2D_KM' == s ||
+                'AD_SIS_3D_KM2' == s ||
+                'ELECTROMAG' == s ||
+                'ESTUDIOS' == s ||
+                'INV_MMPESOS' == s ||
+                'POZOS' == s ||
+                'PROCESADO_KM' == s ||
+                'PROCESADO_KM2' == s
+
+                return result;
+
+        }) ? 'exp' : 'ext';
+
+
         var radios = Array.prototype.slice.call(document.querySelectorAll('input[type=radio]'));
 
         $('input[type=radio]').each(function(i,d) {
