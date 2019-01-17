@@ -21,7 +21,9 @@ var HOSTNAME = produccion ? 'https://asignaciones.hidrocarburos.gob.mx/' : 'http
 
   console.log(tipoExplorador)
 
-   if(tipoExplorador.split(' ')[0] != 'IE' && tipoExplorador.split(' ')[0] != 'Edge') {
+   var explorador = tipoExplorador.split(' ')[0];
+
+   if(explorador != 'IE' && explorador != 'Edge' && explorador != 'Safari') {
 
             $.ajax({
               type:'GET',
