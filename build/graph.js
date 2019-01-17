@@ -1863,7 +1863,7 @@ function seguimiento(data,tipo_) {
       PROCESADO_KM2:'kilómetros cuadrados'
   };
 
-  var conditional_title = tipo == 'inv' ? 'inversión' : 'actividad';
+  var conditional_title = tipo_ == 'inv' ? 'inversión' : 'actividad';
   var visor_config = {
     'radio_names':'seg',
     'title':'Seguimiento de ' + conditional_title,
