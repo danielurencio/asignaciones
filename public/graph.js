@@ -1839,28 +1839,28 @@ function seguimiento(data,tipo_) {
   };
 
   var conceptos_unidades = {
-      Qo: 'miles de barriles diarios',
-      Qg: 'millones de pies cúbicos diarios',
-      Perf_Des: 'número de pozos',
-      Perf_Iny: 'número de pozos',
-      Term_Des: 'número de pozos',
-      Term_Iny: 'número de pozos',
-      RMA: 'número de reparaciones',
-      RME: 'número de reparaciones',
-      Tap: 'número de taponamientos',
-      Inv: 'millones de pesos',
-      G_Op: 'Gastos de Operación',
+      Qo: 'Miles de barriles diarios',
+      Qg: 'Millones de pies cúbicos diarios',
+      Perf_Des: 'Número de pozos',
+      Perf_Iny: 'Número de pozos',
+      Term_Des: 'Número de pozos',
+      Term_Iny: 'Número de pozos',
+      RMA: 'Número de reparaciones',
+      RME: 'Número de reparaciones',
+      Tap: 'Número de taponamientos',
+      Inv: 'Millones de pesos',
+      G_Op: 'Millones de pesos',
       Np: '',
       Gp: '',
-      QgHC: 'millones de pies cúbicos diarios',
-      AD_SIS_2D_KM: 'kilómetros',
-      AD_SIS_3D_KM2: 'kilómetros cuadrados',
-      ELECTROMAG: 'número de estudios',
-      ESTUDIOS:'número de estudios',
-      INV_MMPESOS:'millones de pesos',
-      POZOS:'número de pozos',
-      PROCESADO_KM:'kilómetros',
-      PROCESADO_KM2:'kilómetros cuadrados'
+      QgHC: 'Millones de pies cúbicos diarios',
+      AD_SIS_2D_KM: 'Kilómetros',
+      AD_SIS_3D_KM2: 'Kilómetros cuadrados',
+      ELECTROMAG: 'Número de estudios',
+      ESTUDIOS:'Número de estudios',
+      INV_MMPESOS:'Millones de pesos',
+      POZOS:'Número de pozos',
+      PROCESADO_KM:'Kilómetros',
+      PROCESADO_KM2:'Kilómetros cuadrados'
   };
 
   var conditional_title = tipo_ == 'inv' ? 'inversión' : 'actividad';
@@ -2082,10 +2082,9 @@ function seguimiento(data,tipo_) {
                                               .map(function(m,i) { return m ? conceptos[i] : m })
                                               .filter(function(f) { return f });
 
-
          if( tipo_ == 'inv' ) {
            conceptos = conceptos.filter(function(f) { return f == 'Inv' || f == 'G_Op' || f == 'INV_MMPESOS' })
-         } else if ( tipo == 'act' ) {
+         } else if ( tipo_ == 'act' ) {
            conceptos = conceptos.filter(function(f) { return f != 'Inv' && f != 'G_Op' && f != 'INV_MMPESOS' })
          }
 
@@ -2154,7 +2153,7 @@ function seguimiento(data,tipo_) {
                chart.series[0].setName('Plan');
                chart.series[1].setName('Real');
 
-               chart.setTitle(null,{ text: 'Actividad Planeada vs Real - ' + conceptos_unidades[$('select#botonera>option:selected').attr('id')] })
+               chart.setTitle(null,{ text: conceptos_unidades[$('select#botonera>option:selected').attr('id')] })
 
                if($('#acumulado:checked')[0]) {
                        var ff_acum = JSON.parse(JSON.stringify(ff));
@@ -2311,7 +2310,7 @@ function seguimiento(data,tipo_) {
                               text: ''
                           },
                           subtitle:{
-                            text:'Actividad Planeada vs Real - ' + conceptos_unidades[$('select#botonera>option:selected').attr('id')]
+                            text:conceptos_unidades[$('select#botonera>option:selected').attr('id')]
                           },
                           xAxis: {
                               categories: anios//['1998','1999','2000']
