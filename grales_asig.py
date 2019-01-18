@@ -223,7 +223,7 @@ class Service():
         conn_str = "oracle://durencio:daniel2017@172.16.120.3:1521/" + self.bd_service
 
         df = self.connectionResult(query,self.connStr)
-
+        df['fecha'] = pd.to_datetime(df.fecha)
         #for i in ['nombre']:
         #    if i in df.columns.tolist():
         #        df[i] = df[i].str.decode('latin1').str.encode('utf-8')
@@ -404,6 +404,7 @@ class Service():
         conn_str = "oracle://cmde_raw:raw17@172.16.120.3:1521/cnih"
         df = self.connectionResult(query,self.connStr)
 
+        df['fecha'] = pd.to_datetime(df.fecha)
         #for i in ['nombre','concepto']:
         #    if i in df.columns.tolist():
         #        df[i] = df[i].str.decode('latin1').str.encode('utf-8')
