@@ -43,6 +43,8 @@ var HOSTNAME = produccion ? 'https://asignaciones.hidrocarburos.gob.mx/' : 'http
            $('div#lamina img').css('display','none');
            $('div#lamina p:not(#IE)').css('display','block')
            $('div#lamina div#cerrar').css('display','block')
+           $('div#lamina #cargando').css('display','none')
+
     });
 
     $('div#cerrar>div').on('click',function() {
@@ -1031,7 +1033,7 @@ function switcher(id,mapNdataObj) {
                          frameVisor_withRadios(visor_config)
 
                          //$('#visor').html(visor)
-                         var chart__ = LineChart(prod);
+                         var chart__ = LineChart(prod,mapNdataObj);
 
                          //chart__.series[0].update({lineColor:'red'})
 
@@ -1044,8 +1046,7 @@ function switcher(id,mapNdataObj) {
         	 		case id === 'Reservas':
 
                     var reservas = mapNdataObj.ajaxData.reservas;
-                    reservas = _.sortBy(reservas,function (d) { return d.fecha; })
-
+                    reservas = _.sortBy(reservas,function (d) { return d.fecha; });
 
                     if(reservas.length > 0) {
 
@@ -1089,7 +1090,7 @@ function switcher(id,mapNdataObj) {
                             },
                             stackLabels:true,
                             tooltip:'"<div><b>" +' +
-                                          '(new Date(this.x).getFullYear() + 1) + "</b>:<br> " +' +
+                                          '(new Date(this.x).getFullYear()) + "</b>:<br> " +' +
                                           'this.points.map(function(d) { '+
                                               'var key = d.key;' +
                                               'var key = "<span style=\'font-weight:800;color:" + d.color + "\'>"+ d.key.toUpperCase() + "</span>";' +
@@ -1114,7 +1115,7 @@ function switcher(id,mapNdataObj) {
                           $('input[type=radio][name=reservas]').change(function() {
                                 plot_config.yAxis = config_changes.yAxis[this.value];
                                 plot_config.subtitle = config_changes.subtitle[this.value];
-                                new BarChart(plot_config).plot(stack_fn(this.value),function(d) { return d });
+                                new BarChart(plot_config).plot(stack_fn(this.value),function(d) { return d },reservas);
                           });
 
 
@@ -1150,7 +1151,7 @@ function switcher(id,mapNdataObj) {
 
                           var reservasPlot = new BarChart(plot_config);
 
-                          reservasPlot.plot(stack_fn('rr_pce_mmbpce'),function(d) { return d });
+                          reservasPlot.plot(stack_fn('rr_pce_mmbpce'),function(d) { return d },reservas);
 
 
                     } else {
@@ -1320,14 +1321,17 @@ function switcher(id,mapNdataObj) {
 
                         var pozosPlot = new BarChart(chartConfig_);
                     //if(pozos.length > 0) {
-                        grapher(pozosPlot.plot,stackedPozos,removeEdges);
+                        //grapher(pozosPlot.plot,stackedPozos,removeEdges);
                         //pozosPlot.plot(removeEdges(stackedPozos),(d) => d)
+                        pozosPlot.plot(stackedPozos,removeEdges,pozos)
 
                         $('input[type=radio]').on('change',function() {
                               var categoria = $('input[type=radio]:checked').val();
                               var stack_pozos = new Wrangler(config, groups_[categoria]);
                               var stackedPozos = stack_pozos.stackData(pozos);
-                              grapher(pozosPlot.plot,stackedPozos,removeEdges);
+                              //grapher(pozosPlot.plot,stackedPozos,removeEdges);
+                              pozosPlot.plot(stackedPozos,removeEdges,pozos)
+
                         });
 
                     } else {

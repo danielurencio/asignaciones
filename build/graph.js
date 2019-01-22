@@ -525,7 +525,12 @@ function LineChart(data) {
                   filename:'datos',
                   buttons: {
                     contextButton:{
-                      menuItems: ['downloadCSV'],
+                      menuItems: [
+                        {
+                          textKey:'downloadCSV',
+                          onclick:function() { descargarDatos(data) }
+                        }
+                      ],
                       symbol:'url(download.svg)',
                       symbolX:19,
                       symbolY:18
@@ -794,9 +799,9 @@ function Wrangler(config, groups_) {
 }
 
 
-function BarChart(config) {
+function BarChart(config,pozos) {
       // Los parámetros de este prototipo pueden cambiar el título, orientación de las barras y demás.
-      this.plot = function(data,fn) {
+      this.plot = function(data,fn,reservas) {
             var stack_ = fn(data);
             Highcharts.chart(config.where, {
                 legend: {
@@ -813,14 +818,21 @@ function BarChart(config) {
                 exporting: {
                   enabled:true,
                   filename:'datos',
+
                   buttons: {
                     contextButton:{
-                      menuItems: ['downloadCSV'],
+                      menuItems: [
+                        {
+                        textKey:'downloadCSV',
+                        onclick:function() { descargarDatos(reservas) }
+                        }
+                      ],
                       symbol:'url(download.svg)',
                       symbolX:19,
                       symbolY:18
                     }
                   }
+
                 },
                 credits:false,
                 chart: config.chart,
@@ -1213,6 +1225,7 @@ function documentos(data) {
 
 
 function CMT(data) {
+        var data_descarga = JSON.parse(JSON.stringify(data));
 
         function clean_(data) {
 
@@ -1355,7 +1368,7 @@ function CMT(data) {
                 return str__;
         };
 
-        function barplot_cmt(config,a) {
+        function barplot_cmt(config,a,data_descarga) {
                var data = typeof(config.data) == 'string' ? JSON.parse(config.data) : config.data;
                var sel = $('select#botonera_'+ config.id +'>option:selected').attr('id');
 
@@ -1399,7 +1412,8 @@ function CMT(data) {
                           "'</div>'"
                });
 
-               grapher(plot.plot,data,function(d) { return d })
+               //grapher(plot.plot,data,function(d) { return d })
+               plot.plot(data,function(d) { return d; },data_descarga)
         };
 
         // ----------------- AGREGAR FRAME QUE INCLUYE BOTONES TIPO RADIO --------------------
@@ -1452,7 +1466,7 @@ function CMT(data) {
               config.forEach(function(d) {
                 $('#visor #' + d.id).html(apartado(d));
                 table_(d);
-                barplot_cmt(d);
+                barplot_cmt(d,null,data_descarga);
 
               });
 
@@ -1461,7 +1475,7 @@ function CMT(data) {
                 var id = $(this).attr('id').split('_')[1];
                 var conf = config.filter(function(d) { return d.id == id })
                 table_(conf[0])
-                barplot_cmt(conf[0])
+                barplot_cmt(conf[0],null,data_descarga)
               });
 
         } else if(!agregados || tipoDisponible.length == 1){
@@ -1521,13 +1535,13 @@ function CMT(data) {
               $('#visor_chart').html(division)
               $('#visor #x_asig').html(apartado(config,true))
               table_(config,true)
-              barplot_cmt(config,true)
+              barplot_cmt(config,true,data_descarga)
 
               $('#botonera_x_asig').on('change',function() {
                 var id = $(this).attr('id')//.split('_')[1];
                 //var conf = config.filter(function(d) { return d.id == id })
                 table_(config,true)
-                barplot_cmt(config,true)
+                barplot_cmt(config,true,data_descarga)
               })
         }
 
@@ -2295,7 +2309,12 @@ function seguimiento(data,tipo_) {
                              filename:'datos',
                              buttons: {
                                contextButton:{
-                                 menuItems: ['downloadCSV'],
+                                 menuItems: [{
+                                   textKey:'downloadCSV',
+                                   onclick:function() {
+                                     descargarDatos(data)
+                                   }
+                                 }],
                                  symbol:'url(download.svg)',
                                  symbolX:19,
                                  symbolY:18
@@ -2400,7 +2419,12 @@ function aprovechamiento(data) {
           filename:'datos',
           buttons: {
             contextButton:{
-              menuItems: ['downloadCSV'],
+              menuItems: [
+                {
+                textKey:'downloadCSV',
+                onclick:function() { descargarDatos(obj_data) }
+                }
+              ],
               symbol:'url(download.svg)',
               symbolX:19,
               symbolY:18
@@ -2776,3 +2800,456 @@ function frameVisor_withRadios(config) {
         var visorP_height = $('#visor_panel').css('height');
         $('#visor_chart').css('height','calc(100% - '+ visorP_height + ')')
 };
+
+
+
+
+function descargarDatos(data) {
+        var conceptos_traduccion = {
+            Qo: 'Producción de aceite',
+            Qg: 'Producción de gas',
+            Perf_Des: 'Perforaciones - Desarrollo',
+            Perf_Iny: 'Perforaciones - Inyectores',
+            Term_Des: 'Terminaciones - Desarrollo',
+            Term_Iny: 'Terminaciones - Inyectores',
+            RMA: 'Reparaciones Mayores',
+            RME: 'Reparaciones Menores',
+            Tap: 'Taponamientos',
+            Inv: 'Inversión',
+            G_Op: 'Gastos de Operación',
+            Np: 'Producción acumulada de aceite',
+            Gp: 'Producción acumulada de gas',
+            QgHC: 'Producción de gas hidrocarburo',
+            AD_SIS_2D_KM: 'Adquisición sísmica 2D',
+            AD_SIS_3D_KM2: 'Adquisición sísmica 3D',
+            ELECTROMAG: 'Electromagnéticos',
+            ESTUDIOS:'Estudios',
+            INV_MMPESOS:'Inversión',
+            POZOS:'Pozos',
+            PROCESADO_KM:'Procesamiento sísmica 2D',
+            PROCESADO_KM2:'Procesamiento sísmica 3D'
+        };
+
+        var conceptos_unidades = {
+            Qo: 'Miles de barriles diarios',
+            Qg: 'Millones de pies cúbicos diarios',
+            Perf_Des: 'Número de pozos',
+            Perf_Iny: 'Número de pozos',
+            Term_Des: 'Número de pozos',
+            Term_Iny: 'Número de pozos',
+            RMA: 'Número de reparaciones',
+            RME: 'Número de reparaciones',
+            Tap: 'Número de taponamientos',
+            Inv: 'Millones de pesos',
+            G_Op: 'Millones de pesos',
+            Np: '',
+            Gp: '',
+            QgHC: 'Millones de pies cúbicos diarios',
+            AD_SIS_2D_KM: 'Kilómetros',
+            AD_SIS_3D_KM2: 'Kilómetros cuadrados',
+            ELECTROMAG: 'Número de estudios',
+            ESTUDIOS:'Número de estudios',
+            INV_MMPESOS:'Millones de pesos',
+            POZOS:'Número de pozos',
+            PROCESADO_KM:'Kilómetros',
+            PROCESADO_KM2:'Kilómetros cuadrados'
+        };
+
+        var nombres_cmt = {
+            'G_Op': { 'nombre':'Gastos de operación', 'unidades':'Millones de pesos' },
+            'Perf':{ 'nombre':'Perforaciones', 'unidades':'Número' },
+            'Qg': { 'nombre':'Producción de gas', 'unidades':'MMPCD' },
+            'Qo':{ 'nombre':'Producción de aceite', 'unidades':'MBD' },
+            'RMA':{ 'nombre':'Reparaciones mayores', 'unidades':'Número' },
+            'Term': { 'nombre':'Terminaciones', 'unidades':'Número' },
+            'Inv': { 'nombre':'Inversión', 'unidades':'Millones de pesos'},
+            'AD_SIS_2D_KM': { 'nombre':'Adquisición sísmica 2D', 'unidades':'KM' },
+            'AD_SIS_3D_KM2': { 'nombre':'Adquisición sísmica 3D', 'unidades':'KM2' },
+            'ELECTROMAG': { 'nombre':'Electromagneticos', 'unidades':'Número' },
+            'ESTUDIOS': { 'nombre':'Estudios', 'unidades':'Número' },
+            'INV_MMPESOS': { 'nombre':'Inversión', 'unidades':'Millones de pesos' },
+            'POZOS': { 'nombre':'Pozos', 'unidades':'Número' },
+            'PROCESADO_KM': { 'nombre':'Procesamiento sísimica 2D', 'unidades':'KM' },
+            'PROCESADO_KM2': { 'nombre':'Procesamiento sísmica 3D', 'unidades':'KM2' }
+        };
+
+        var data = _.sortBy(data,function(d) { return d.fecha });
+        var seleccion = $('.selectedButton').attr('id');
+
+        var filtros = ['cuenca','ubicacion','tipo','asignacion'].map(function(d) {
+            var texto = $('.' + d + '>option:selected').text().toUpperCase();
+            var result = texto.substring(0,3) == 'TOD' ? null : d.toUpperCase() + ': ' + quitarAcentos(texto);
+            return result;
+        }).filter(function(d) { return d }).join('\n');
+
+
+        if(seleccion == 'Producción') {
+              var arr = [];
+              var data = JSON.parse(JSON.stringify(data)).map(function(d) {
+                  var obj = {};
+                  obj.fecha = d.fecha;
+                  obj.aceite_mbd = d.aceite_mbd;
+                  obj.gas_mmpcd = d.gas_mmpcd;
+
+                  return obj;
+              });
+console.log(data)
+              arr.push(header(seleccion,filtros,'FECHA,ACEITE_MBD,GAS_MMPCD').join('\n'));
+
+              for(var i=0 in data) {
+                  var row = [];
+
+                  for(var k in data[i]) {
+
+                      if(k == 'fecha') {
+                        var fecha = new Date(data[i][k]);
+                        var month = String(fecha.getMonth() + 1);
+                        month = month.length == 1 ? '0' + month : month;
+                        data[i][k] = month + '/' + fecha.getFullYear();
+                      }
+
+                      row.push(data[i][k]);
+                  }
+
+                  row = row.join(',');
+                  arr.push(row);
+              }
+
+              arr = arr.join('\n');
+              download(arr,seleccion);
+
+
+
+        } else if(seleccion == 'Reservas') {
+              var data = JSON.parse(JSON.stringify(data))
+              var arr = [];
+              arr.push(header(seleccion,filtros,'FECHA,TIPO,ACEITE_MMB,GAS_MMMPC,PCE_MMBPCE').join('\n'));
+
+              for(var i=0 in data) {
+                  var row = [];
+
+                  for(var k in data[i]) {
+
+                      if(k == 'fecha') {
+                        //var month = String(data[i][k].getMonth() + 1);
+                        //month = month.length == 1 ? '0' + month : month;
+                        data[i][k] = new Date(data[i][k]).getFullYear();
+
+                      } else if(k == 'tipo') {
+                        //data[i][k] = data[i][k].toUpperCase();
+                      }
+
+                      row.push(data[i][k]);
+                  }
+
+                  row = row.join(',');
+                  arr.push(row);
+              }
+
+              arr = arr.join('\n');
+              download(arr,seleccion);
+
+
+        } else if(seleccion == 'Pozos') {
+              var data = JSON.parse(JSON.stringify(data)).filter(function(d) {
+                  return [
+                    'Perforaciones desarrollo',
+                    'Terminaciones desarrollo',
+                    'Pozos operando',
+                    'Reparaciones menores',
+                    'Reparaciones mayores'
+                  ].some(function(s) {
+                      return d.descriptor == s;
+                  })
+
+              })
+
+              data.forEach(function(d) {
+                  var fecha = d.fecha.split('-')
+                  d.fecha = fecha[1] + '/' + fecha[0]
+                  delete d.id;
+                  delete d.nombre;
+              })
+
+              var data = data.map(function(d) {
+                var obj = {};
+                obj.fecha = d.fecha;
+                obj.descriptor = d.descriptor;
+                obj.valor = d.valor;
+
+                return obj;
+              })
+
+              var arr = [];
+              arr.push(header(seleccion,filtros,'FECHA,CONCEPTO,VALOR').join('\n'));
+
+              for(var i=0 in data) {
+                  var row = [];
+
+                  for(var k in data[i]) {
+                      row.push(data[i][k]);
+                  }
+
+                  row = row.join(',');
+                  arr.push(row);
+              }
+
+              arr = arr.join('\n');
+              download(arr,seleccion);
+
+
+        } else if(seleccion == 'Seguimiento de inversión') {
+              var tipo_plan = $('input[name=seg]:checked').parent().text();
+
+              var data = JSON.parse(JSON.stringify(data))
+                            .filter(function(d) {
+                                return d.concepto == 'Inv' || d.concepto == 'G_Op' || d.concepto == 'INV_MMPESOS';
+                            });
+
+              data = data.map(function(d) {
+                var obj = {};
+                obj.anio = d.anio;
+                obj.concepto = d.concepto;
+                obj.valor = d.valor;
+                obj.tipo_valor = d.tipo_observacion == 'Plan' ? 'PLANEADO' : 'EJECUTADO';//quitarAcentos(tipo_plan.toUpperCase());
+                return obj;
+              });
+
+              var arr = [];
+              arr.push(header(seleccion,filtros,'FECHA,CONCEPTO,VALOR,TIPO_VALOR,UNIDAD,TIPO_PLAN').join('\n'));
+
+
+              for(var i=0 in data) {
+                  var row = [];
+
+                  data[i].unidades = quitarAcentos(conceptos_unidades[data[i].concepto].toUpperCase());
+                  data[i].concepto = quitarAcentos(conceptos_traduccion[data[i].concepto].toUpperCase());
+                  data[i].plan = quitarAcentos(tipo_plan.toUpperCase());
+
+
+                  for(var k in data[i]) {
+
+                      row.push(data[i][k]);
+                  }
+
+                  row = row.join(',');
+                  arr.push(row);
+              }
+
+              arr = arr.join('\n');
+              download(arr,seleccion);
+
+
+
+        } else if(seleccion == 'Compromiso Mínimo de Trabajo') {
+                var columnas;
+
+                if(typeof(data[0]) == 'string') {
+                  columnas = 'FECHA,CONCEPTO,VALOR,TIPO,UNIDAD';
+
+                  var data = JSON.parse(JSON.stringify(data))
+                      data = data
+                                    .map(function(d,i) {
+                                        var result = JSON.parse(d);
+
+                                        if(result.length) {
+                                            var tipo;
+
+                                            if(i === 0) {
+                                                tipo = 'EXTRACCION'
+                                            } else {
+                                                tipo = 'EXPLORACION'
+                                            }
+
+                                            result.forEach(function(e) {
+                                                e.tipo = tipo;
+                                                e.unidades = quitarAcentos(nombres_cmt[e.concepto].unidades.toUpperCase());
+                                                e.concepto = quitarAcentos(nombres_cmt[e.concepto].nombre.toUpperCase());
+                                            });
+
+                                        }
+
+                                        return result;
+
+                                    });
+
+                      data = data[0].concat(data[1]);
+
+                } else {
+                    columnas = 'FECHA,CONCEPTO,VALOR,UNIDAD';
+
+                    data.forEach(function(d) {
+                        //d.tipo = quitarAcentos($('input[type=radio]:checked').parent().text().toUpperCase())
+                        d.unidades = quitarAcentos(nombres_cmt[d.concepto].unidades.toUpperCase());
+                        d.concepto = quitarAcentos(nombres_cmt[d.concepto].nombre.toUpperCase());
+                    })
+                };
+
+
+
+                var arr = [];
+                arr.push(header(seleccion,filtros,columnas).join('\n'));
+
+                for(var i=0 in data) {
+                    var row = [];
+
+                    for(var k in data[i]) {
+
+                        row.push(data[i][k]);
+                    }
+
+                    row = row.join(',');
+                    arr.push(row);
+                }
+
+                arr = arr.join('\n');
+                download(arr,seleccion);
+
+        } else if(seleccion == 'Aprovechamiento de gas') {
+                var data = JSON.parse(JSON.stringify(data))
+                data = _.sortBy(data,function(d) { return d[0]; })
+                              .map(function(d,i) {
+
+                                    var concepto;
+
+                                    if(i === 0) {
+                                        concepto = 'GAS PRODUCIDO';
+                                    } else {
+                                        concepto = 'GAS NO APROVECHADO';
+                                    }
+
+                                    result = d.map(function(e) {
+                                        var obj = {}
+                                        var fecha = new Date(e[0]);
+                                        var mes = String(fecha.getMonth() + 1);
+                                        mes = mes.length == 1 ? '0' + mes : mes;
+                                        var anio = fecha.getFullYear();
+
+                                        fecha = mes + '/' + anio;
+
+                                        obj.fecha = fecha;
+                                        obj.concepto = concepto;
+                                        obj.volumen = e[1];
+
+                                        return obj;
+
+                                    });
+
+                                    return result;
+
+                              });
+
+                data = data[0].concat(data[1]);
+                data = _.sortBy(data,function(d) { return d.fecha });
+
+
+                var arr = [];
+                arr.push(header(seleccion,filtros,'FECHA,CONCEPTO,MMPCD').join('\n'));
+
+                for(var i=0 in data) {
+                    var row = [];
+
+                    for(var k in data[i]) {
+                        row.push(data[i][k]);
+                    }
+
+                    row = row.join(',');
+                    arr.push(row);
+                }
+
+                arr = arr.join('\n');
+                download(arr,seleccion);
+
+        } else if(seleccion == 'Seguimiento de actividad') {
+                var data = JSON.parse(JSON.stringify(data))
+                              .filter(function(d) {
+                                  return d.concepto != 'Inv' && d.concepto != 'G_Op' && d.concepto != 'INV_MMPESOS';
+                              });
+
+                data = data.map(function(d) {
+                  var obj = {};
+                  obj.anio = d.anio;
+                  obj.concepto = d.concepto;
+                  obj.valor = d.valor;
+                  obj.tipo_valor = d.tipo_observacion == 'Plan' ? 'PLANEADO' : 'EJECUTADO';//quitarAcentos(tipo_plan.toUpperCase());
+                  return obj;
+                });
+
+                var arr = [];
+                arr.push(header(seleccion,filtros,'FECHA,TIPO,CONCEPTO,VALOR,UNIDAD,PLAN').join('\n'));
+                var tipo_plan = $('input[name=seg]:checked').parent().text();
+
+                for(var i=0 in data) {
+                    var row = [];
+
+                    data[i].unidades = quitarAcentos(conceptos_unidades[data[i].concepto].toUpperCase());
+                    data[i].concepto = quitarAcentos(conceptos_traduccion[data[i].concepto].toUpperCase());
+                    data[i].plan = quitarAcentos(tipo_plan.toUpperCase())
+
+                    for(var k in data[i]) {
+
+                        row.push(data[i][k]);
+                    }
+
+                    row = row.join(',');
+                    arr.push(row);
+                }
+
+                arr = arr.join('\n');
+                download(arr,seleccion);
+
+        }
+
+        function download(csv,sel) {
+
+              var sel_ = quitarAcentos(sel)
+                            .replace(/ /g,'_');
+
+              var csvFile = new Blob(["\ufeff", csv], {
+                  'type': 'text/csv'
+              });
+
+              if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+                  window.navigator.msSaveOrOpenBlob(csvFile,"info.csv");
+              } else {
+                  var downloadLink = document.createElement("a");
+                  downloadLink.download = "ASIGNACIONES_" + sel_ + ".csv";
+                  downloadLink.href = window.URL.createObjectURL(csvFile);
+                  downloadLink.style.display = "none";
+                  document.body.appendChild(downloadLink);
+                  downloadLink.click();
+                  $("a[download]").remove();
+              }
+
+        }
+
+
+        function quitarAcentos(txt) {
+          return txt.toUpperCase()
+                        .replace('Á','A')
+                        .replace('É','E')
+                        .replace('Í','I')
+                        .replace('Ó','O')
+                        .replace('Ú','U');
+        };
+
+
+
+        function header(sel,filtros,names) {
+          var sel_ = quitarAcentos(sel);
+
+          var fecha = new Date();
+          var Header = [
+              "COMISION NACIONAL DE HIDROCARBUROS",
+              "ASIGNACIONES",
+              sel_,
+              filtros,
+              "Fecha de descarga: " + fecha.toLocaleString('es-MX').replace(", ", " - "),
+              "\n",
+              names
+          ];
+
+          return Header;
+        }
+
+}
