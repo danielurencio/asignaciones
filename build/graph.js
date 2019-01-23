@@ -1827,7 +1827,6 @@ function seguimiento(data,tipo_) {
   var agregados = Object.keys(data).every(function(d) { return !+d }) //? true : false;
   var tipoDisponible = agregados ? Object.keys(data).map(function(d) { return data[d].length ? d : null }).filter(function(f) { return f }) : [];
 
-  console.log(data)
 
   var conceptos_traduccion = {
       Qo: 'Producción de aceite',
@@ -2193,7 +2192,7 @@ function seguimiento(data,tipo_) {
                        chart.series[0].update({type:'area'});
                        chart.series[1].update({type:'area'});
 
-                       updateTable(ff_acum)
+                       updateTable(ff_acum);
                } else {
                        chart.series[0].setData(ff[0].map(function(d) { return d.valor; }))//.filter(function (f) { return f }))
                        chart.series[1].setData(ff[1].map(function(d) { return d.valor; }))
