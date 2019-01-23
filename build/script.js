@@ -80,6 +80,7 @@ var LogicaEntera = function(datos_grales) {
 
         var notas_alPie = {};
         var last_update = {};
+        var sources = {};
 
         notas_update.forEach(function(d) {
           notas_alPie[d.topic] = d.notes;
@@ -87,6 +88,7 @@ var LogicaEntera = function(datos_grales) {
 
           var date_update = meses[isoDate[1].replace(/^0/,'')] + ' - ' + isoDate[0];
           last_update[d.topic] = date_update;
+          sources[d.topic] = d.source;
         });
 
 
@@ -129,11 +131,25 @@ d3.json('file_.json',function(err,data_) {
         });
 
         $('body').click(function(e) {
-             if($(e.target).attr('ix') != 'notas' && $(e.target).attr('id') != 'notas_contenido' && !$(e.target).is('b')) {
+             if(
+               $(e.target).attr('ix') != 'notas' &&
+               $(e.target).attr('id') != 'notas_contenido' &&
+               $(e.target).attr('id') != 'notasTexto' &&
+               $(e.target).attr('id') != 'notasHeader' &&
+               $(e.target).attr('id') != 'notasSource' &&
+               $(e.target).attr('id') != 'notasFecha' &&
+               !$(e.target).is('b') &&
+               !$(e.target).is('i') &&
+               !$(e.target).is('ul') &&
+               !$(e.target).is('li') &&
+               !$(e.target).is('a') &&
+               !$(e.target).is('span')
+             ) {
 
                    var up = d3.select('#notas_pestana').attr('up');
 
                    if(up) {
+                       $('.source,#fechaActualizacion').css('display','none');
                        $('#notas_ocultar,#notas_contenido').css('display','none');
                        var up = d3.select('#notas_pestana').attr('up',null);
                        $('#notas_pestana').attr('class','notas_down');
@@ -373,7 +389,8 @@ d3.json('file_.json',function(err,data_) {
         'asignaciones':asignaciones,
         'mymap':mymap,
         'notas':notas_alPie,
-        'last_update':last_update
+        'last_update':last_update,
+        'sources':sources
       };
 
       function AjaxCall(data,mymap,asignaciones) {
@@ -917,9 +934,10 @@ function cambio(data,str,fn,extraParam) {
               .attr('class','button');
 
     		   $(this).attr('class','selectedButton');
-
-           $('#notas_contenido').html(mapNdataObj.notas[$('div.selectedButton').attr('id')]);
-           $('#last_update').html(mapNdataObj.last_update[$('div.selectedButton').attr('id')]);
+           // PEGAR NOTAS
+           $('#notas_contenido #notasTexto').html(mapNdataObj.notas[$('div.selectedButton').attr('id')]);
+           $('#notasFecha>span').html(mapNdataObj.last_update[$('div.selectedButton').attr('id')]);
+           $('#notasSource>span').html(mapNdataObj.sources[$('div.selectedButton').attr('id')]);
 
     	});
 

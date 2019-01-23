@@ -176,7 +176,21 @@ class Visor extends Component {
               <div ix='notas' className='notas' id='notas_ocultar' style={{ display:'none', textAlign:'right', fontWeight:800 }}>
                   <span style={{ color:'WhiteSmoke', backgroundColor:'rgba(255,255,255,0.5)',borderBottomLeftRadius:'5px' }}>&ensp;X&ensp;</span>
               </div>
-              <div id='notas_contenido' style={{ 'display':'none' }}>En construcción</div>
+
+
+              <div id='notas_contenido' style={{ 'display':'none' }}>
+                      <div id='notasHeader'>
+                          <div id='notasSource'>
+                              <i>Fuente: </i>
+                              <span></span>
+                          </div>
+                          <div id='notasFecha'>
+                              <i>Fecha de actualización: </i>
+                              <span></span>
+                          </div>
+                      </div>
+                      <div id='notasTexto'></div>
+              </div>
             </div>
 
             <div id='bubbles' style={{ width:'100%',height:'0px',backgroundColor:'transparent',zIndex:'20' }}></div>

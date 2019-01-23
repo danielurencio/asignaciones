@@ -3176,7 +3176,7 @@ console.log(data)
                 });
 
                 var arr = [];
-                arr.push(header(seleccion,filtros,'FECHA,TIPO,CONCEPTO,VALOR,UNIDAD,PLAN').join('\n'));
+                arr.push(header(seleccion,filtros,'FECHA,TIPO,VALOR,CONCEPTO,UNIDAD,PLAN').join('\n'));
                 var tipo_plan = $('input[name=seg]:checked').parent().text();
 
                 for(var i=0 in data) {
