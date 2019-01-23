@@ -2893,7 +2893,7 @@ function descargarDatos(data) {
 
                   return obj;
               });
-console.log(data)
+
               arr.push(header(seleccion,filtros,'FECHA,ACEITE_MBD,GAS_MMPCD').join('\n'));
 
               for(var i=0 in data) {
@@ -2923,7 +2923,7 @@ console.log(data)
         } else if(seleccion == 'Reservas') {
               var data = JSON.parse(JSON.stringify(data))
               var arr = [];
-              arr.push(header(seleccion,filtros,'FECHA,TIPO,ACEITE_MMB,GAS_MMMPC,PCE_MMBPCE').join('\n'));
+              arr.push(header(seleccion,filtros,'FECHA,TIPO,PCE_MMBPCE,ACEITE_MMB,GAS_MMBPCE').join('\n'));
 
               for(var i=0 in data) {
                   var row = [];
@@ -2933,7 +2933,7 @@ console.log(data)
                       if(k == 'fecha') {
                         //var month = String(data[i][k].getMonth() + 1);
                         //month = month.length == 1 ? '0' + month : month;
-                        data[i][k] = new Date(data[i][k]).getFullYear();
+                        data[i][k] = new Date(data[i][k]).getFullYear() + 1;
 
                       } else if(k == 'tipo') {
                         //data[i][k] = data[i][k].toUpperCase();
