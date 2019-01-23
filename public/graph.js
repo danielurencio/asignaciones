@@ -1827,6 +1827,8 @@ function seguimiento(data,tipo_) {
   var agregados = Object.keys(data).every(function(d) { return !+d }) //? true : false;
   var tipoDisponible = agregados ? Object.keys(data).map(function(d) { return data[d].length ? d : null }).filter(function(f) { return f }) : [];
 
+  console.log(data)
+
   var conceptos_traduccion = {
       Qo: 'Producción de aceite',
       Qg: 'Producción de gas',
@@ -2140,6 +2142,7 @@ function seguimiento(data,tipo_) {
                     return ff;
              };
 
+
 ////////////////////////////////////////////
           var ff = processedData();
           updateTable(ff)
@@ -2150,6 +2153,7 @@ function seguimiento(data,tipo_) {
               selText = selText.substr(1,selText.length);
 
               var ff = processedData()
+
               var max = d3.max( ff.map(function(d) { return d3.max(d.map(function(d) { return d.valor })) }) )
 
               chart.series[0].setData(ff[0].map(function(d) { return d.valor }));
@@ -2191,7 +2195,7 @@ function seguimiento(data,tipo_) {
 
                        updateTable(ff_acum)
                } else {
-                       chart.series[0].setData(ff[0].map(function(d) { return d.valor; }).filter(function (f) { return f }))
+                       chart.series[0].setData(ff[0].map(function(d) { return d.valor; }))//.filter(function (f) { return f }))
                        chart.series[1].setData(ff[1].map(function(d) { return d.valor; }))
 
                        var max = d3.max( ff.map(function(d) { return d3.max(d.map(function(d) { return d.valor })) }) );
@@ -3143,7 +3147,7 @@ function descargarDatos(data) {
                               });
 
                 data = data[0].concat(data[1]);
-                
+
                 data = _.sortBy(data,function(d) { return d.fecha });
 
 
