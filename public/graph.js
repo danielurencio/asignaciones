@@ -3107,6 +3107,7 @@ function descargarDatos(data) {
 
         } else if(seleccion == 'Aprovechamiento de gas') {
                 var data = JSON.parse(JSON.stringify(data))
+
                 data = _.sortBy(data,function(d) { return d[0]; })
                               .map(function(d,i) {
 
@@ -3121,6 +3122,8 @@ function descargarDatos(data) {
                                     result = d.map(function(e) {
                                         var obj = {}
                                         var fecha = new Date(e[0]);
+                                        //fecha = new Date(fecha.setMonth(fecha.getMonth() + 1))
+                                        fecha = new Date(moment(fecha).add(1,'months').calendar())
                                         var mes = String(fecha.getMonth() + 1);
                                         mes = mes.length == 1 ? '0' + mes : mes;
                                         var anio = fecha.getFullYear();
@@ -3140,6 +3143,7 @@ function descargarDatos(data) {
                               });
 
                 data = data[0].concat(data[1]);
+                
                 data = _.sortBy(data,function(d) { return d.fecha });
 
 
