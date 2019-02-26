@@ -160,7 +160,7 @@ class Visor extends Component {
              'Datos generales',
              'Producción',
              'Reservas',
-             'Pozos',
+             'Actividad física',
              'Seguimiento de inversión',
              'Compromiso Mínimo de Trabajo',
              'Aprovechamiento de gas',

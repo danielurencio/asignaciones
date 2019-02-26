@@ -75,6 +75,14 @@ function DatosGrales(data)  {
     'rgb(20,50,90)'
   ];
 
+  var order_colors = [
+    'rgb(13,180,190)',
+    'rgb(67,64,138)',
+    'rgb(0,150,255)',
+    'rgb(181,0,190)',
+    'rgb(148,11,203)'//'rgb(4,203,102)',
+  ];
+
   d3.select('div#row_a>div#col_1')
   .html(function(d) {
 
@@ -87,7 +95,27 @@ function DatosGrales(data)  {
         return obj;
       });
 
-    tipos_ = _.sortBy(tipos_,function(d) { return -d.num })
+    for(var i in tipos_) {
+      if(tipos_[i].tipo == 'Extraccion' || tipos_[i].tipo == 'Extracción') {
+          tipos_[i].orden = 1;
+
+      } else if (tipos_[i].tipo == 'Exploracion' || tipos_[i].tipo == 'Exploración') {
+          tipos_[i].orden = 2;
+
+      } else if(tipos_[i].tipo == 'Exploracion y Extraccion' || tipos_[i].tipo == 'Exploración y Extracción') {
+          tipos_[i].orden = 3;
+
+      } else if(tipos_[i].tipo == 'Extraccion Temporal' || tipos_[i].tipo == 'Extracción Temporal') {
+          tipos_[i].orden = 4;
+
+      } else if(tipos_[i].tipo == 'Resguardo') {
+          tipos_[i].orden = 5;
+      }
+
+    }
+
+
+    tipos_ = _.sortBy(tipos_,function(d) { return d.orden })
               .map(function(d,i) {
                 return '<div class="lista_tipo_asig" style="color:'+ order_colors[i] +'">'+
                           '<div style="width:2em;text-align:right;display:table-cell;">'+ d.num +'</div>'+
@@ -803,6 +831,7 @@ function BarChart(config,pozos) {
       // Los parámetros de este prototipo pueden cambiar el título, orientación de las barras y demás.
       this.plot = function(data,fn,reservas) {
             var stack_ = fn(data);
+
             Highcharts.chart(config.where, {
                 legend: {
                   enabled: (function() {
@@ -926,14 +955,14 @@ function BarChart(config,pozos) {
                           var b;
                           b = [
                             {
-                              type:'month',
-                              count:6,
-                              text:'6m'
-                            },
-                            {
                               type:'year',
                               count:1,
                               text:'12m'
+                            },
+                            {
+                              type:'year',
+                              count:2,
+                              text:'24m'
                             },
                             {
                               type:'all',
@@ -944,7 +973,8 @@ function BarChart(config,pozos) {
                         var cond = config.timebuttons ? b : null;
                         return cond;
                     }
-                  )()
+                  )(),
+                  selected:0
                 }
             });
 
@@ -2354,7 +2384,8 @@ function seguimiento(data,tipo_) {
                           },
                           tooltip: {
                               shared: true,
-                              borderColor:'transparent'
+                              borderColor:'transparent',
+                              valueDecimals:1
                           },
                           plotOptions: {
                               series: {

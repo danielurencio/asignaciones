@@ -17,10 +17,10 @@ function leafletMap(shapes) {
 */
 			var polygonColor = {
 				'Extraccion':'rgb(13,180,190)',//'rgb(1,114,158)',
-				'Extraccion Temporal':'rgb(46,112,138)',
-				'Resguardo':'rgb(20,50,90)',
-				'Exploracion':'rgb(13,150,190)',
-				'Exploracion y Extraccion':'rgb(20,70,110)'
+				'Extraccion Temporal':'rgb(181,0,190)',//'rgb(255,159,0)',//'rgb(46,112,138)',
+				'Resguardo':'rgb(148,11,203)',//'rgb(4,203,102)',//'rgb(20,50,90)',
+				'Exploracion':'rgb(67,64,138)',//'rgb(13,150,190)',
+				'Exploracion y Extraccion':'rgb(0,150,255)'//'rgb(20,70,110)'
 			};
 
 			var mymap = L.map('MAPA',{
@@ -93,7 +93,7 @@ function leafletMap(shapes) {
 			});
 
 
-			var OpenStreetMap_BlackAndWhite = L.tileLayer('http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png',{//'http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png', {
+			var OpenStreetMap_BlackAndWhite = L.tileLayer('http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png',{
 																	maxZoom: 18,
 																	attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 			}).addTo(mymap);
@@ -106,8 +106,8 @@ function leafletMap(shapes) {
 						'<div style="text-align:left;">' +
 							'<span style="color:'+ polygonColor['Extraccion'] +'">&block;</span>&ensp;Extracción&ensp;<br>' +
 							'<span style="color:'+ polygonColor['Exploracion'] +'">&block;</span>&ensp;Exploración<br>'+
-							'<span style="color:'+ polygonColor['Extraccion Temporal'] +'">&block;</span>&ensp;Extracción Temporal&ensp;<br>' +
 							'<span style="color:'+ polygonColor['Exploracion y Extraccion'] +'">&block;</span>&ensp;Exploración y Extracción&ensp;<br>' +
+							'<span style="color:'+ polygonColor['Extraccion Temporal'] +'">&block;</span>&ensp;Extracción Temporal&ensp;<br>' +
 							'<span style="color:'+ polygonColor['Resguardo'] +'">&block;</span>&ensp;Resguardo&nbsp;'
 						'</div>'
 				'</div>';
