@@ -14,10 +14,11 @@ warnings.filterwarnings('ignore')
 
 class Service():
     def __init__(self):
-        self.connStr = 'mssql+pyodbc://estadistica:Hola1234.@172.16.200.98\\UMBRACODB/cmde_public?driver=SQL+Server'
+        self.connStr = 'mssql+pyodbc://daniel.urencio:Hola12345@UMBRACOSQL03\\CNHSQLU03:49730/estadisticas?driver=SQL+Server'
         self.engine = create_engine(self.connStr)
         self.params = cgi.FieldStorage()
         self.ID = self.params.getvalue('ID')
+        self.CONFIG = self.params.getvalue('CONFIG')
         self.CUENCA = self.params.getvalue('CUENCA')
         self.UBICACION = self.params.getvalue('UBICACION')
         self.TIPO = self.params.getvalue('TIPO')
@@ -29,20 +30,32 @@ class Service():
         ]
 
         self.queries = {
-            'produccion': "SELECT FECHA,SUM(ACEITE_MBD) AS ACEITE_MBD,SUM(GAS_MMPCD) AS GAS_MMPCD FROM ( " +\
-                            "SELECT A.*,B.TIPO,B.CUENCA,B.UBICACION FROM CMDE_PUBLIC.ASIGNACIONES_PRODUCCION A " +\
-                            "LEFT JOIN CMDE_RAW.ASIGNACIONES_GRALES B " +\
-                            "ON A.ID = B.ID " +\
-                           ") " + self.conditionalQuery() +\
-                           "GROUP BY FECHA",
+#            'produccion_': "SELECT FECHA,SUM(ACEITE_MBD) AS ACEITE_MBD,SUM(GAS_MMPCD) AS GAS_MMPCD FROM ( " +\
+#                            "SELECT A.*,B.TIPO,B.CUENCA,B.UBICACION FROM CMDE_PUBLIC.ASIGNACIONES_PRODUCCION A " +\
+#                            "LEFT JOIN CMDE_RAW.ASIGNACIONES_GRALES B " +\
+#                            "ON A.ID = B.ID " +\
+#                           ") " + self.conditionalQuery() +\
+#                           "GROUP BY FECHA",
 
-            'pozos_inv': "SELECT FECHA,DESCRIPTOR,SUM(VALOR) AS VALOR FROM ( " +\
-                            "SELECT A.*,B.CUENCA,B.UBICACION,B.TIPO FROM ASIGNACIONES_INVPOZOS A " +\
-                            "LEFT JOIN ASIGNACIONES_GRALES B " +\
-                            "ON A.ID = B.ID " +\
-                            "ORDER BY FECHA " +\
-                          ") " + self.conditionalQuery() +\
-                          "GROUP BY FECHA,DESCRIPTOR",
+            'produccion': u"SELECT FECHA,SUM(ACEITE_MBD) AS ACEITE_MBD, SUM(GAS_MMPCD) AS GAS_MMPCD FROM ASIGNACIONES_PRODUCCION " +\
+	                  "WHERE ID IN ( " +\
+			  "  SELECT DISTINCT ID FROM ASIGNACIONES_GRALES " + self.conditionalQuery() +\
+			  ") GROUP BY FECHA",
+
+#            'pozos_inv_': "SELECT FECHA,DESCRIPTOR,SUM(VALOR) AS VALOR FROM ( " +\
+#                            "SELECT A.*,B.CUENCA,B.UBICACION,B.TIPO FROM ASIGNACIONES_INVPOZOS A " +\
+#                            "LEFT JOIN ASIGNACIONES_GRALES B " +\
+#                            "ON A.ID = B.ID " +\
+#                            "ORDER BY FECHA " +\
+#                          ") " + self.conditionalQuery() +\
+#                          "GROUP BY FECHA,DESCRIPTOR",
+
+            'pozos_inv': "SELECT * FROM (" +\
+	                 "SELECT FECHA,DESCRIPTOR,SUM(VALOR) AS VALOR FROM ASIGNACIONES_INVPOZOS " +\
+                         "WHERE ID IN ( " +\
+                         "  SELECT DISTINCT ID FROM ASIGNACIONES_GRALES " + self.conditionalQuery() +\
+                         ") GROUP BY FECHA,DESCRIPTOR" +\
+			 ") AS FOO WHERE FECHA >= '2015/01/01' ORDER BY FECHA,DESCRIPTOR",
 
             'inv': "SELECT ANIO,ACTIVIDAD,SUB_ACTIVIDAD,SUM(MONTO_USD) AS MONTO_USD FROM ( "
                      "SELECT A.ID,A.NOMBRE,A.ACTIVIDAD,A.SUB_ACTIVIDAD,A.ANIO,A.MONTO_USD,B.UBICACION,B.CUENCA,B.TIPO " +\
@@ -52,17 +65,22 @@ class Service():
                    ") " + self.conditionalQuery() +\
                    "GROUP BY ANIO,ACTIVIDAD,SUB_ACTIVIDAD",
 
-            'reservas': "SELECT FECHA,TIPO_RESERVAS AS TIPO, SUM(RR_PCE_MMBPCE) AS RR_PCE_MMBPCE, SUM(RR_ACEITE_MMB) AS RR_ACEITE_MMB, SUM(RR_GAS_NATURAL_MMMPC) AS RR_GAS_NATURAL_MMMPC from ( " +\
+            'reservas_': "SELECT FECHA,TIPO_RESERVAS AS TIPO, SUM(RR_PCE_MMBPCE) AS RR_PCE_MMBPCE, SUM(RR_ACEITE_MMB) AS RR_ACEITE_MMB, SUM(RR_GAS_NATURAL_MMMPC) AS RR_GAS_NATURAL_MMMPC from ( " +\
                            "SELECT A.*, B.CUENCA, B.TIPO, B.UBICACION FROM ( " +\
                              "SELECT FECHA,NOMBRE_ASIG AS NOMBRE,ID_ASIG AS ID, TIPO AS TIPO_RESERVAS, SUM(RR_PCE_MMBPCE) AS RR_PCE_MMBPCE, SUM(RR_ACEITE_MMB) AS RR_ACEITE_MMB, SUM(RR_GAS_NATURAL_MMMPC) AS RR_GAS_NATURAL_MMMPC " +\
-                             "FROM CMDE_PUBLIC.RESERVAS_ASIG_CONT_TEST GROUP BY FECHA,TIPO,NOMBRE_ASIG,ID_ASIG " +\
+                             "FROM CMDE_PUBLIC.RESERVAS_ASIG_CONT_TEST WHERE ASIGNACION_CONTRATO LIKE 'A%' GROUP BY FECHA,TIPO,NOMBRE_ASIG,ID_ASIG " +\
                              "ORDER BY FECHA,NOMBRE_ASIG,TIPO " +\
                            ") A LEFT JOIN CMDE_RAW.ASIGNACIONES_GRALES B " +\
                            "ON A.ID = B.ID " +\
                          ") " + self.conditionalQuery() +\
                          "GROUP BY FECHA,TIPO_RESERVAS",
 
-            'cmt_ext': "SELECT ANIO,CONCEPTO,SUM(VALOR) AS VALOR FROM ( " +\
+            'reservas': "SELECT FECHA,TIPO,SUM(RR_PCE_MMBPCE) AS RR_PCE_MMBPCE, SUM(RR_ACEITE_MMB) AS RR_ACEITE_MMB, SUM(RR_GAS_NATURAL_MMMPC) AS RR_GAS_NATURAL_MMMPC FROM RESERVAS_ASIG_CONT_TEST " +\
+                        "WHERE ID_ASIG IN ( " +\
+                          " SELECT DISTINCT ID FROM ASIGNACIONES_GRALES " + self.conditionalQuery() +\
+                        ") GROUP BY FECHA,TIPO ORDER BY FECHA,TIPO",
+
+            'cmt_ext_': "SELECT ANIO,CONCEPTO,SUM(VALOR) AS VALOR FROM ( " +\
                             "SELECT A.*, B.CUENCA, B.UBICACION, B.TIPO FROM (SELECT * FROM ASIGNACIONES_CMT_EXTRACCION WHERE CONCEPTO NOT IN ('Qo','Qg')) A " +\
                             "LEFT JOIN ASIGNACIONES_GRALES B " +\
                             "ON A.ID = B.ID " +\
@@ -70,7 +88,11 @@ class Service():
                         "GROUP BY ANIO,CONCEPTO " +\
                         "ORDER BY ANIO,CONCEPTO",
 
-            'cmt_exp': "SELECT ANIO,CONCEPTO,SUM(VALOR) AS VALOR FROM ( " +\
+            'cmt_ext': "SELECT ANIO,CONCEPTO,SUM(VALOR) AS VALOR FROM ASIGNACIONES_CMT_EXTRACCION WHERE CONCEPTO NOT IN ('Qo','Qg') AND " +\
+                       " ID IN ( SELECT DISTINCT ID FROM ASIGNACIONES_GRALES "+ self.conditionalQuery() +") "+\
+                       "GROUP BY ANIO,CONCEPTO ORDER BY ANIO,CONCEPTO",
+
+            'cmt_exp_': "SELECT ANIO,CONCEPTO,SUM(VALOR) AS VALOR FROM ( " +\
                             "SELECT A.*, B.CUENCA, B.UBICACION, B.TIPO FROM ASIGNACIONES_CMT_EXPLORACION A " +\
                             "LEFT JOIN ASIGNACIONES_GRALES B " +\
                             "ON A.ID = B.ID " +\
@@ -78,7 +100,11 @@ class Service():
                        "GROUP BY ANIO,CONCEPTO " +\
                        "ORDER BY ANIO,CONCEPTO",
 
-            'seguimiento_ext': "SELECT ANIO,TIPO_OBSERVACION,CONCEPTO,SUM(VALOR) AS VALOR FROM ( " +\
+            'cmt_exp':"SELECT ANIO,CONCEPTO,SUM(VALOR) AS VALOR FROM ASIGNACIONES_CMT_EXPLORACION " +\
+                        "WHERE ID IN ( SELECT DISTINCT ID FROM ASIGNACIONES_GRALES "+ self.conditionalQuery() +" ) "+\
+                        "GROUP BY ANIO,CONCEPTO ORDER BY ANIO,CONCEPTO",
+
+            'seguimiento_ext_': "SELECT ANIO,TIPO_OBSERVACION,CONCEPTO,SUM(VALOR) AS VALOR FROM ( " +\
                                 "SELECT A.*, B.CUENCA, B.UBICACION, B.TIPO FROM ("+\
                                     "SELECT * FROM ASIGNACIONES_SEGUIMIENTO_EXT WHERE CONCEPTO NOT IN ('Np','Gp')" +\
                                     "ORDER BY " +\
@@ -103,15 +129,23 @@ class Service():
                             "GROUP BY ANIO,TIPO_OBSERVACION,CONCEPTO " +\
                             "ORDER BY ANIO,TIPO_OBSERVACION,CONCEPTO",
 
-            'seguimiento_exp': "SELECT ANIO,TIPO_OBSERVACION,CONCEPTO,SUM(VALOR) AS VALOR FROM ( " +\
-                                "SELECT A.*, B.CUENCA, B.UBICACION, B.TIPO FROM ASIGNACIONES_SEGUIMIENTO_EXP_ A " +\
+            'seguimiento_ext': "SELECT ANIO,TIPO_OBSERVACION,CONCEPTO,SUM(VALOR) AS VALOR FROM ASIGNACIONES_SEGUIMIENTO_EXT " +\
+                               "WHERE CONCEPTO NOT IN ('Np','Gp') AND ID IN ( SELECT DISTINCT ID FROM ASIGNACIONES_GRALES "+ self.conditionalQuery() +") " +\
+                               "GROUP BY ANIO,TIPO_OBSERVACION,CONCEPTO ORDER BY ANIO,TIPO_OBSERVACION,CONCEPTO",
+
+            'seguimiento_exp_': "SELECT ANIO,TIPO_OBSERVACION,CONCEPTO,SUM(VALOR) AS VALOR FROM ( " +\
+                                "SELECT A.*, B.CUENCA, B.UBICACION, B.TIPO FROM ASIGNACIONES_SEGUIMIENTO_EXP_NEW A " +\
                                 "LEFT JOIN ASIGNACIONES_GRALES B " +\
                                 "ON A.ID = B.ID " +\
                             ") " + self.conditionalQuery() +\
                             "GROUP BY ANIO,TIPO_OBSERVACION,CONCEPTO " +\
                             "ORDER BY ANIO,TIPO_OBSERVACION,CONCEPTO",
 
-            'aprovechamiento': "SELECT FECHA,VALOR FROM ( " +\
+            'seguimiento_exp': "SELECT ANIO,TIPO_OBSERVACION,CONCEPTO,SUM(VALOR) AS VALOR FROM ASIGNACIONES_SEGUIMIENTO_EXP "+\
+                               "WHERE ID IN ( SELECT DISTINCT ID FROM ASIGNACIONES_GRALES "+ self.conditionalQuery() +") "+\
+                               "GROUP BY ANIO,TIPO_OBSERVACION,CONCEPTO ORDER BY 1,2,3",
+
+            'aprovechamiento_': "SELECT FECHA,VALOR FROM ( " +\
                                    "SELECT FECHA,CONCEPTO,SUM(VALOR) AS VALOR FROM ( " +\
                                         "SELECT A.*, B.CUENCA,B.TIPO,B.UBICACION FROM ASIGNACIONES_APROVECHAMIENTO A " +\
                                         "LEFT JOIN ASIGNACIONES_GRALES B " +\
@@ -119,7 +153,12 @@ class Service():
                                    ") " + self.conditionalQuery() +\
                                    "GROUP BY FECHA,CONCEPTO " +\
                                    "ORDER BY FECHA,CONCEPTO " +\
-                               ") WHERE CONCEPTO = 'Gas natural No aprovechado  (mmpcd)'"
+                               ") WHERE CONCEPTO = 'Gas natural No aprovechado  (mmpcd)'",
+
+            'aprovechamiento': "SELECT FECHA,SUM(VALOR) AS VALOR FROM ASIGNACIONES_APROVECHAMIENTO "+\
+                               "WHERE CONCEPTO = 'Gas natural No aprovechado  (mmpcd)' AND "+\
+                               "ID IN ( SELECT DISTINCT ID FROM ASIGNACIONES_GRALES "+ self.conditionalQuery() +" ) " +\
+                               "GROUP BY FECHA,CONCEPTO ORDER BY FECHA"
         }
         self.bd_service = 'cnih';
 
@@ -134,6 +173,7 @@ class Service():
         c = create_engine(conn_str)
         conn = c.connect()
         df = pd.read_sql(query,conn)
+        df.columns = df.columns.str.lower()
         conn.close()
         return df
 
@@ -141,7 +181,7 @@ class Service():
 
     def catalogo_general(self):
         query = "SELECT * FROM ASIGNACIONES_GRALES WHERE VIGENTE = 1"
-        conn_str = "oracle://cmde_raw:raw17@172.16.120.3:1521/" + self.bd_service
+        #conn_str = "oracle://cmde_raw:raw17@172.16.120.3:1521/" + self.bd_service
         df = self.connectionResult(query,self.connStr)#conn_str)
 
         #try:
@@ -169,24 +209,24 @@ class Service():
     def conditionalQuery(self):
         keys = self.params.keys()
         items = [ (k,"'" + self.params.getvalue(k) + "'") for k in keys ]
-        filtro = filter(lambda x:x[1][1:4] != 'Tod',items)
+        filtro = list(filter(lambda x:x[1][1:4] != 'Tod',items))
         query = ' AND '.join(map(lambda x:'='.join(x),filtro))
         return 'WHERE ' + query + ' ' if query else query
 
 
     def produccion(self):
         if(self.ID != 'Todas'):
-            query = "SELECT * FROM CMDE_PUBLIC.ASIGNACIONES_PRODUCCION WHERE ID='" + self.ID + "'"
+            query = "SELECT * FROM ASIGNACIONES_PRODUCCION WHERE ID='" + self.ID + "'"
         else:
             query = self.queries['produccion']
 
         conn_str = "oracle://durencio:daniel2017@172.16.120.3:1521/" + self.bd_service
 
-        df = self.connectionResult(query,conn_str)
-
-        for i in ['nombre']:
-            if i in df.columns.tolist():
-                df[i] = df[i].str.decode('latin1').str.encode('utf-8')
+        df = self.connectionResult(query,self.connStr)
+        df['fecha'] = pd.to_datetime(df.fecha)
+        #for i in ['nombre']:
+        #    if i in df.columns.tolist():
+        #        df[i] = df[i].str.decode('latin1').str.encode('utf-8')
 
         df = df.to_json(orient='records')
         return df
@@ -196,16 +236,16 @@ class Service():
     def pozos_inv(self):
         if(self.ID != 'Todas'):
             query = "SELECT * FROM ASIGNACIONES_INVPOZOS WHERE ID='" + self.ID +"' "+\
-                    "ORDER BY FECHA"
+                    "AND FECHA >= '2015/01/01' ORDER BY FECHA"
         else:
             query = self.queries['pozos_inv']
 
         conn_str = 'oracle://cmde_raw:raw17@172.16.120.3:1521/' + self.bd_service
-        df = self.connectionResult(query,conn_str)
+        df = self.connectionResult(query,self.connStr)
 
-        for i in ['descriptor','nombre','id']:
-            if i in df.columns.tolist():
-                df[i] = df[i].str.decode('latin1').str.encode('utf-8')
+        #for i in ['descriptor','nombre','id']:
+        #    if i in df.columns.tolist():
+        #        df[i] = df[i].str.decode('latin1').str.encode('utf-8')
 
         result = df.to_json(orient='records')
         return result
@@ -235,7 +275,7 @@ class Service():
 
     def reservas(self):
         if(self.ID != 'Todas'):
-            query = "SELECT FECHA,TIPO,SUM(RR_PCE_MMBPCE) AS RR_PCE_MMBPCE,SUM(RR_ACEITE_MMB) AS RR_ACEITE_MMB, SUM(RR_GAS_NATURAL_MMMPC) AS RR_GAS_NATURAL_MMMPC FROM CMDE_PUBLIC.RESERVAS_ASIG_CONT_TEST " +\
+            query = "SELECT FECHA,TIPO,SUM(RR_PCE_MMBPCE) AS RR_PCE_MMBPCE,SUM(RR_ACEITE_MMB) AS RR_ACEITE_MMB, SUM(RR_GAS_NATURAL_MMMPC) AS RR_GAS_NATURAL_MMMPC FROM RESERVAS_ASIG_CONT_TEST " +\
                     "WHERE ID_ASIG='" + self.ID + "' " +\
                     "GROUP BY FECHA,TIPO,NOMBRE_ASIG,ID_ASIG ORDER BY FECHA,NOMBRE_ASIG,TIPO"
         else:
@@ -247,8 +287,10 @@ class Service():
             fechas = x.fecha.unique().tolist()
 
             for i,d in enumerate(fechas):
-                a = x[x.fecha == pd.to_datetime(d)].reset_index().copy()
+                #a = x[x.fecha == pd.to_datetime(d)].reset_index().copy()
+                a = x[x.fecha == d].reset_index().copy()
                 b = a.set_index('tipo')[[col]].transpose().copy()
+                #print(b)
                 b['probadas'] = b['1P']
                 b['probables'] = b['2P'] - b['1P']
                 b['posibles'] = b['3P'] - b['2P']
@@ -265,8 +307,8 @@ class Service():
             result = result.rename(columns={ 'tipo_':'tipo', 'rr':col })
             return result
 
-
-        df = self.connectionResult(query,conn_str)
+        df = self.connectionResult(query,self.connStr)
+        #print(df)
         #df = transform_reserves(df) if len(df) != 0 else df
 
         def transform_All(col):
@@ -293,7 +335,7 @@ class Service():
 
             if(tipo == 'AE'):
                 query = "SELECT ANIO,CONCEPTO,VALOR FROM ASIGNACIONES_CMT_EXPLORACION WHERE ID='" + self.ID + "'"
-                df = self.connectionResult(query,conn_str)
+                df = self.connectionResult(query,self.connStr)
 
                 #for i in ['nombre','estatus']:
                 #    df[i] = df[i].str.decode('latin1').str.encode('utf-8')
@@ -301,7 +343,7 @@ class Service():
 
             elif(tipo == 'A'):
                 query = "SELECT ANIO,CONCEPTO,VALOR FROM ASIGNACIONES_CMT_EXTRACCION WHERE ID='" + self.ID + "' AND CONCEPTO NOT IN ('Qo','Qg')"
-                df = self.connectionResult(query,conn_str)
+                df = self.connectionResult(query,self.connStr)
 
             df = df.to_json(orient='records')
 
@@ -309,8 +351,8 @@ class Service():
             query_exp = self.queries['cmt_exp']
             query_ext = self.queries['cmt_ext']
 
-            df_exp = self.connectionResult(query_exp,conn_str).to_json(orient='records')
-            df_ext = self.connectionResult(query_ext,conn_str).to_json(orient='records')
+            df_exp = self.connectionResult(query_exp,self.connStr).to_json(orient='records')
+            df_ext = self.connectionResult(query_ext,self.connStr).to_json(orient='records')
 
             df = json.dumps({ "exp":df_exp, "ext":df_ext })
 
@@ -324,21 +366,29 @@ class Service():
             tipo = 'A' if len(self.ID.split('-')[0]) == 1 else 'AE'
 
             if(tipo == 'AE'):
-                query = "SELECT ANIO,CONCEPTO,VALOR,TIPO_OBSERVACION FROM ASIGNACIONES_SEGUIMIENTO_EXP_ WHERE ID='" + self.ID + "'"
-                df = self.connectionResult(query,conn_str)
+                query = "SELECT ANIO,CONCEPTO,VALOR,TIPO_OBSERVACION FROM ASIGNACIONES_SEGUIMIENTO_EXP WHERE ID='" + self.ID + "'"
+                df = self.connectionResult(query,self.connStr).to_json(orient='records')
 
             elif(tipo == 'A'):
-                query = "SELECT ANIO,CONCEPTO,VALOR,TIPO_OBSERVACION FROM ASIGNACIONES_SEGUIMIENTO_EXT WHERE ID='" + self.ID + "' AND CONCEPTO NOT IN ('Np','Gp')"
-                df = self.connectionResult(query,conn_str)
+                query1 = "SELECT ANIO,CONCEPTO,VALOR,TIPO_OBSERVACION FROM ASIGNACIONES_SEGUIMIENTO_EXT WHERE ID='" + self.ID + "' AND CONCEPTO NOT IN ('Np','Gp')"
+                query2 = "SELECT ANIO,CONCEPTO,VALOR,TIPO_OBSERVACION FROM ASIGNACIONES_SEGUIMIENTO_EXP WHERE ID='" + self.ID + "'"
+                df1 = self.connectionResult(query1,self.connStr)
+                df2 = self.connectionResult(query2,self.connStr)
 
-            df = df.to_json(orient='records')
+                if len(df2) == 0:
+                    df = df1
+                    df = df.to_json(orient='records')
+                else:
+                    df = json.dumps({ 'exp':df2.to_json(orient='records'), 'ext':df1.to_json(orient='records') })
+
+            #df = df.to_json(orient='records')
 
         else:
             query_exp = self.queries['seguimiento_exp']
             query_ext = self.queries['seguimiento_ext']
 
-            df_exp = self.connectionResult(query_exp,conn_str).to_json(orient='records')
-            df_ext = self.connectionResult(query_ext,conn_str).to_json(orient='records')
+            df_exp = self.connectionResult(query_exp,self.connStr).to_json(orient='records')
+            df_ext = self.connectionResult(query_ext,self.connStr).to_json(orient='records')
 
             df = json.dumps({ 'exp':df_exp, 'ext':df_ext })
 
@@ -352,11 +402,12 @@ class Service():
             query = self.queries['aprovechamiento']
 
         conn_str = "oracle://cmde_raw:raw17@172.16.120.3:1521/cnih"
-        df = self.connectionResult(query,conn_str)
+        df = self.connectionResult(query,self.connStr)
 
-        for i in ['nombre','concepto']:
-            if i in df.columns.tolist():
-                df[i] = df[i].str.decode('latin1').str.encode('utf-8')
+        df['fecha'] = pd.to_datetime(df.fecha)
+        #for i in ['nombre','concepto']:
+        #    if i in df.columns.tolist():
+        #        df[i] = df[i].str.decode('latin1').str.encode('utf-8')
 
         df = df.to_json(orient='records')
         return df
@@ -366,7 +417,7 @@ class Service():
         obj = {}
         obj['pozos_inv'] = self.pozos_inv()
         obj['produccion'] = self.produccion()
-        obj['inv'] = self.inv()
+        #obj['inv'] = self.inv()
         obj['reservas'] = self.reservas()
         obj['cmt'] = self.cmt()
         obj['seguimiento'] = self.seguimiento()
@@ -376,11 +427,11 @@ class Service():
     def config_data(self):
         query = "select * from asignaciones_config"
         conn_str = "oracle://cmde_public:public17@172.16.120.3:1521/cnih"
-        df = self.connectionResult(query,conn_str)
+        df = self.connectionResult(query,self.connStr)
 
-        for i in ['notes','topic']:
-            if i in df.columns.tolist():
-                df[i] = df[i].str.decode('latin1').str.encode('utf-8')
+        #for i in ['notes','topic']:
+        #    if i in df.columns.tolist():
+        #        df[i] = df[i].str.decode('latin1').str.encode('utf-8')
 
         df = df.to_json(orient='records')
         return df
