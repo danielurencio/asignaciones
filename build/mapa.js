@@ -93,7 +93,8 @@ function leafletMap(shapes) {
 			});
 
 
-			var OpenStreetMap_BlackAndWhite = L.tileLayer('http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png',{
+			var OpenStreetMap_BlackAndWhite = L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',{
+				//'http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png',{
 																	maxZoom: 18,
 																	attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 			}).addTo(mymap);
