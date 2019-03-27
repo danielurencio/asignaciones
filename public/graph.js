@@ -253,7 +253,7 @@ function DatosGrales(data)  {
                   "<div style='display:table-cell;position:relative;vertical-align:middle;'>" +
                       "<div style='display:table;width:100%;height:100%;'>" +
                           "<div style='display:table-cell;vertical-align:middle;color:white;color:"+colors_[2]+"'>" +
-                              "<div class='dato_duro'>"+ Number((d3.sum(grales_.map(function(d) { return d.SUPERFICIE_KM2 }))).toFixed(0)).toLocaleString('es-MX') +"</div>" +
+                              "<div class='dato_duro'>"+ Number((d3.sum(grales_.map(function(d) { return d.SUPERFICIE_KM2 }))).toFixed(3)).toLocaleString('es-MX') +"</div>" +
                               "<div class='dato_duro_subt'>kilómetros<sup>2</sup></div>" +
                           "</div>" +
                       "</div>" +
