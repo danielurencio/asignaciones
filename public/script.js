@@ -1,5 +1,5 @@
-var produccion = true;
-var HOSTNAME = produccion ? 'https://asignaciones.hidrocarburos.gob.mx/' : 'http://172.16.24.57/';
+var produccion = false;
+var HOSTNAME = produccion ? 'https://asignaciones.hidrocarburos.gob.mx/' : 'http://172.16.24.199:5003/';
 
  $(document).ready(function() {
 
