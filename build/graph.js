@@ -2134,12 +2134,12 @@ function seguimiento(data,tipo_) {
          }
 
 
-         var c_ = conceptos.map(function(d) { return '<option style="font-size:0.7em;" id='+d+'>' + conceptos_traduccion[d] + '</option>'; });
+         var c_ = conceptos.map(function(d) { return '<option id='+d+'>' + conceptos_traduccion[d] + '</option>'; });
 
          var _input_ = "&ensp;<input id='acumulado' type='checkbox'></input>&nbsp;Acumulado";
          var str =
          "<div style='width:100%;height:100%;'>"+
-           "<div style='width:100%;height:30px;display:table;text-align:center;font-size:0.7em;'>" +
+           "<div style='width:100%;height:30px;display:table;text-align:center;font-size:1em;'>" +
               "<select id='botonera'>" + c_ + "</select>" +
               _input_ +
           "</div>" +
