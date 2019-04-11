@@ -681,9 +681,9 @@ function LineChart(data) {
                               + parseDate(points[0].fecha) +
                           '</div>' +
                               points.map(function(d) {
-
+                                var decimales = d.valor > 1 ? 1 : 3;
                                 return '<div style="padding-left:8px;">'
-                                          + '<b style="color:'+ d.color +'">' + d.hidrocarburo + ':</b> ' + Number(d.valor.toFixed(1)).toLocaleString('es-MX') +
+                                          + '<b style="color:'+ d.color +'">' + d.hidrocarburo + ':</b> ' + Number(d.valor.toFixed(decimales)).toLocaleString('es-MX') +
                                        '</div>';
                               }).join('');
                         '</div>';
