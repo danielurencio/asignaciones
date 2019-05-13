@@ -1,5 +1,5 @@
 var produccion = false;
-var HOSTNAME = produccion ? 'https://asignaciones.hidrocarburos.gob.mx/' : '';
+var HOSTNAME = produccion ? 'https://asignaciones.hidrocarburos.gob.mx/' : 'http://asignaciones.test.cnh.gob.mx/';
 
  $(document).ready(function() {
 
@@ -82,6 +82,7 @@ var LogicaEntera = function(datos_grales) {
         var notas_alPie = {};
         var last_update = {};
         var sources = {};
+        var maxfecha = {};
 
         notas_update.forEach(function(d) {
           notas_alPie[d.topic] = d.notes;
@@ -90,6 +91,7 @@ var LogicaEntera = function(datos_grales) {
           var date_update = meses[isoDate[1].replace(/^0/,'')] + ' - ' + isoDate[0];
           last_update[d.topic] = date_update;
           sources[d.topic] = d.source;
+          maxfecha[d.topic] = d.maxfecha;
         });
 
 
@@ -391,7 +393,8 @@ d3.json('file_.json',function(err,data_) {
         'mymap':mymap,
         'notas':notas_alPie,
         'last_update':last_update,
-        'sources':sources
+        'sources':sources,
+        'maxfecha':maxfecha
       };
 
       function AjaxCall(data,mymap,asignaciones) {
@@ -1067,6 +1070,13 @@ function switcher(id,mapNdataObj) {
                     var reservas = mapNdataObj.ajaxData.reservas;
                     reservas = _.sortBy(reservas,function (d) { return d.fecha; });
 
+                    var pocasReservas = d3.max(_.flatten(reservas.map(function(d) {
+                                return Object.values(d).filter(function(f) { return typeof(f) == 'number' })
+                              })));
+
+                    pocasReservas = pocasReservas < 1 ? pocasReservas : null;
+
+
                     if(reservas.length > 0) {
 
                           // ----------------- AGREGAR FRAME QUE INCLUYE BOTONES TIPO RADIO --------------------
@@ -1086,21 +1096,25 @@ function switcher(id,mapNdataObj) {
                           //$('#visor').html(visor);
 
                           // ----------------- AGREGAR FRAME QUE INCLUYE BOTONES TIPO RADIO --------------------
+                          var floatToFixed = pocasReservas ? '3' : '1';
 
                           var plot_config = {
                             title:'',
                             subtitle:'Millones de barriles de petróleo crudo equivalente',
                             yAxis:'MMBPCE',
+                            yMax: pocasReservas ? pocasReservas : null,
                             where:'visor_chart',
                             chart: {
                               type:'column'
                             },
                             noRange:1,
                             xAxis: {
+                              /*
                               type:'datetime',
                               dateTimeLabelFormats: {
                                 year:'%Y'
                               },
+                              */
                               labels: {
                                 style: {
                                   fontSize:'1em'
@@ -1109,11 +1123,11 @@ function switcher(id,mapNdataObj) {
                             },
                             stackLabels:true,
                             tooltip:'"<div><b>" +' +
-                                          '(new Date(this.x).getFullYear()) + "</b>:<br> " +' +
+                                          '(this.x) + "</b>:<br> " +' +
                                           'this.points.map(function(d) { '+
                                               'var key = d.key;' +
                                               'var key = "<span style=\'font-weight:800;color:" + d.color + "\'>"+ d.key.toUpperCase() + "</span>";' +
-                                              'return "  " + key + ": " + Number(d.y.toFixed(1)).toLocaleString("es-MX") ' +
+                                              'return "  " + key + ": " + Number(d.y.toFixed('+ floatToFixed +')).toLocaleString("es-MX") ' +
                                           '}).join("<br>") +' +
                                       '"</div>";'
                           };
@@ -1171,7 +1185,6 @@ function switcher(id,mapNdataObj) {
                           var reservasPlot = new BarChart(plot_config);
 
                           reservasPlot.plot(stack_fn('rr_pce_mmbpce'),function(d) { return d },reservas);
-
 
                     } else {
                           noDato();

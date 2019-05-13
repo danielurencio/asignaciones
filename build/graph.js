@@ -289,6 +289,16 @@ function DatosGrales(data)  {
     '12':'Diciembre',
   };
 
+  function fechA(ts) {
+    var f = new Date(ts).toISOString();
+    var mes = +f.split('-')[1]-1//String(f.getMonth() + 1);
+    var anio = +f.split('-')[0]//.getFullYear(ts)
+    var ff = new Date(anio,mes)
+    var mes = String(ff.getMonth() +1)
+    var anio = ff.getFullYear();
+    return meses[mes].toLowerCase() + ' - ' + anio;
+  };
+
   d3.select('div#row_b>div#col_1')
     .style({
       'background-color':colors_[4],
@@ -299,27 +309,27 @@ function DatosGrales(data)  {
       var prod = _.sortBy(data.ajaxData.produccion,function (d) { return d.fecha; });
       var prod = prod[prod.length -1 ];
 
-      function fechA(ts) {
-        var f = new Date(ts).toISOString();
-        var mes = +f.split('-')[1]-1//String(f.getMonth() + 1);
-        var anio = +f.split('-')[0]//.getFullYear(ts)
-        var ff = new Date(anio,mes)
-        var mes = String(ff.getMonth() +1)
-        var anio = ff.getFullYear();
-        return meses[mes].toLowerCase() + ' - ' + anio;
-      }
-
       var _aceite_ = data.ajaxData.produccion.length > 0 ? (+prod.aceite_mbd.toFixed(0)).toLocaleString('es-MX') : 0;
       var _gas_ = data.ajaxData.produccion.length > 0 ? (+prod.gas_mmpcd.toFixed(0)).toLocaleString('es-MX') : 0;
       var _fecha_ = data.ajaxData.produccion.length > 0 ? fechA(prod.fecha) : '-';
+      var _lastFecha_ = fechA(data.maxfecha['Producción']).toLowerCase();
+
+
+      var siUltimo = _fecha_ == _lastFecha_;
+
+      if(!siUltimo) {
+          _aceite_ = 0;
+          _gas_ = 0;
+          _fecha_ = _lastFecha_;
+      }
 
       return "<div style='width:100%;height:100%;position:relative;display:table;table-layout:fixed;'>" +
                 "<div style='display:table-row;width:100%;height:50%;text-align:center;table-layout:fixed;position:relative;'>" +
                     "<div style='width:100%;display:table-cell;position:relative;vertical-align:middle;'>" +
                         "<div style='display:table;width:100%;height:100%;'>" +
                             "<div style='width:100%;display:table-cell;vertical-align:middle;'>" +
-                                "<div class='titulo_cuadro' style='margin:0px;color:"+colors_[0]+"'>PRODUCCIÓN</div>" +
-                                "<div class='subtitulo_cuadro' style='color:"+colors_[0]+"'>"+ _fecha_ +"</div>" +
+                                "<div class='titulo_cuadro' style='margin:0px;color:" + colors_[0] + "'>PRODUCCIÓN</div>" +
+                                "<div class='subtitulo_cuadro' style='color:" + colors_[0] + "'>" + _fecha_ + "</div>" +
 
                                 "<div style='width:100%;text-align:center;margin:0px;'>" +
                                   "<div style='display:inline-block;'>" +
@@ -354,17 +364,31 @@ function DatosGrales(data)  {
         'color':'white'
       })
       .html(function(d) {
+
+
         var resv_ = _.sortBy(data.ajaxData.reservas,function (d) { return d.fecha; });
         var resv = resv_[resv_.length -1 ];
 
         var resv_ = resv_.filter(function(f) { return f.fecha == resv.fecha });
         var _fecha_ = data.ajaxData.reservas.length > 0 ? +(new Date(resv.fecha).getFullYear()) + 1 : '-';
+        var _lastFecha_ = fechA(data.maxfecha['Reservas']).toLowerCase().split(' - ')[1];
+
+        var siUltimo = _fecha_ == _lastFecha_;
+
+        if(!siUltimo) {
+            _fecha_ = _lastFecha_;
+        }
 
         function filas(str_) {
           var _pce_ = data.ajaxData.reservas.length > 0 ? (+resv_.filter(function(f) { return f.tipo == str_ })[0].rr_pce_mmbpce.toFixed(0)).toLocaleString('es-MX') : '0';
           var _aceite_ = data.ajaxData.reservas.length > 0 ? (+resv_.filter(function(f) { return f.tipo == str_ })[0].rr_aceite_mmb.toFixed(0)).toLocaleString('es-MX') : '0';
           var _gas_ = data.ajaxData.reservas.length > 0 ? (+resv_.filter(function(f) { return f.tipo == str_ })[0].rr_gas_natural_mmmpc.toFixed(0)).toLocaleString('es-MX') : '0';
 
+          if(!siUltimo) {
+              _pce_ = 0;
+              _aceite_ = 0;
+              _gas_ = 0;
+          }
 
           var style = "display:table-cell;text-align:right;padding:5px;"
           var ff =
@@ -590,7 +614,7 @@ function LineChart(data) {
                     opposite:true,
                     labels: {
                       align:'left',
-                      format: '{value:,.0f}',
+                      //format: '{value:,.0f}',
                       style: {
                         fontSize:'0.9em'
                         //color:'red'
@@ -607,7 +631,7 @@ function LineChart(data) {
                     },
                     opposite:false,
                     labels: {
-                      format: '{value:,.0f}',
+                      //format: '{value:,.0f}',
                       style:{
                         fontSize:'0.9em'
                         //color:'green'
@@ -785,11 +809,12 @@ function Wrangler(config, groups_) {
                                             var isoYear = isoDate[0];
                                             var isoMonth = +isoDate[1] - 1;
                                             var date_ = new Date(isoYear,isoMonth);
+                                            var siReservas = Object.keys(d).some(function(r) { return /^rr_/.test(r); });
 
                                             var type = {
                                                 'nombre': d[config.nombre],
                                                 'id': d[config.id],
-                                                'x': String(d[config.x]).length == '4' ? new Date(d[config.x],0).getTime() : date_.getTime(),//d[config.x],
+                                                'x': String(d[config.x]).length == '4' ? new Date(d[config.x],0).getTime() : siReservas ? date_.getFullYear() : date_.getTime(),//d[config.x],
                                                 'y': +d[config.y],
                                                 'name':g,
                                                 'stack':stackName
@@ -828,6 +853,7 @@ function Wrangler(config, groups_) {
 
 
 function BarChart(config,pozos) {
+
       // Los parámetros de este prototipo pueden cambiar el título, orientación de las barras y demás.
       this.plot = function(data,fn,reservas) {
             var stack_ = fn(data);
@@ -891,12 +917,12 @@ function BarChart(config,pozos) {
                       },
                       enabled:config.stackLabels,
                       formatter:function() {
-                        var result = Number(this.total.toFixed(1)).toLocaleString('es-MX');
+                        var result = Number(this.total.toFixed( config.yMax ? 3 : 1 )).toLocaleString('es-MX');
                         return result;
                       }
                     },
                     labels: {
-                      format: '{value:,.0f}',
+                      format: config.yMax ? '{value:,.3f}' : '{value:,.0f}',
                       style: {
                         fontSize:'1em'
                       }
@@ -933,6 +959,7 @@ function BarChart(config,pozos) {
                 },
                 plotOptions: {
                     column: {
+                        formatter: config.yMax ? function() { return Highcharts.numberFormat(this.y,3) } : null ,
                         pointPadding: 0.2,
                         borderWidth: 0,
                         stacking:'normal'

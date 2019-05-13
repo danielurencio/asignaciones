@@ -107,8 +107,8 @@ function leafletMap(shapes) {
 						'<div style="text-align:left;">' +
 							'<span style="color:'+ polygonColor['Extraccion'] +'">&block;</span>&ensp;Extracción&ensp;<br>' +
 							'<span style="color:'+ polygonColor['Exploracion'] +'">&block;</span>&ensp;Exploración<br>'+
-							'<span style="color:'+ polygonColor['Exploracion y Extraccion'] +'">&block;</span>&ensp;Exploración y Extracción&ensp;<br>' +
-							'<span style="color:'+ polygonColor['Extraccion Temporal'] +'">&block;</span>&ensp;Extracción Temporal&ensp;<br>' +
+							//'<span style="color:'+ polygonColor['Exploracion y Extraccion'] +'">&block;</span>&ensp;Exploración y Extracción&ensp;<br>' +
+							//'<span style="color:'+ polygonColor['Extraccion Temporal'] +'">&block;</span>&ensp;Extracción Temporal&ensp;<br>' +
 							'<span style="color:'+ polygonColor['Resguardo'] +'">&block;</span>&ensp;Resguardo&nbsp;'
 						'</div>'
 				'</div>';
