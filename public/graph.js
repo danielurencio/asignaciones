@@ -177,10 +177,15 @@ function DatosGrales(data)  {
     var n_campos_reservas = _.uniq(_.flatten(grales_.map(function(d) { return d.CAMPOS_CON_RESERVAS ? d.CAMPOS_CON_RESERVAS.split(';') : null })))
                              .filter(function(f) { return f }).length;
 
-    var seg = _.sortBy(data.ajaxData.seguimiento.ext,function(d) { return d.anio; }).filter(function(f) { return f.tipo_observacion == 'Real' });
+    // FIX: Ceros en gastos de operación por asignación.
 
-    var anio_extent = d3.extent(seg.filter(function(f) { return f.concepto == 'G_Op' }).map(function(d) { return d.anio })).join(' - ');
+    var expext = Object.keys(data.ajaxData.seguimiento).sort()
+    expect = expext.length ? expext.reduce(function(a,b) { return a + b; }) == 'expext' : false;
+    var seg_ext = expext ? data.ajaxData.seguimiento.ext : data.ajaxData.seguimiento;
+    var seg = _.sortBy(seg_ext,function(d) { return d.anio; }).filter(function(f) { return f.tipo_observacion == 'Real' });
+    // FIX.
 
+    var anio_extent = data.rango['Seguimiento de actividad']//d3.extent(seg.filter(function(f) { return f.concepto == 'G_Op' }).map(function(d) { return d.anio })).join(' - ');
     var gop = Number(d3.sum(seg.filter(function(f) { return f.concepto == 'G_Op' }).map(function(d) { return d.valor })).toFixed(0)).toLocaleString('es-MX');
 
 
@@ -217,12 +222,13 @@ function DatosGrales(data)  {
 
     var agregados = Object.keys(data.ajaxData.seguimiento).every(function(d) { return !+d }) && Object.keys(data.ajaxData.seguimiento).length > 0;
     var seg = data.ajaxData.seguimiento;
-
+    var anio_extent = _.flatten([ data.rango['Seguimiento de actividad'].split(' - '), data.rango['Seguimiento de inversión'].split(' - ') ]);
+    anio_extent = d3.extent(anio_extent).join(' - ')
 
     if(agregados) {
 
-          var anio_extent = d3.extent(seg['ext'].filter(function(f) { return new RegExp(/^I(n|N)/).test(f.concepto) && f.tipo_observacion == 'Real' }).map(function(d) { return d.anio }));
-          anio_extent = anio_extent.join(' - ');
+          //var anio_extent = d3.extent(seg['ext'].filter(function(f) { return new RegExp(/^I(n|N)/).test(f.concepto) && f.tipo_observacion == 'Real' }).map(function(d) { return d.anio }));
+          //anio_extent = anio_extent.join(' - ');
 
           var inv = Object.keys(seg).map(function(d) {
               var inv_ = seg[d].filter(function(f) { return new RegExp(/^I(n|N)/).test(f.concepto) && f.tipo_observacion == 'Real' });
@@ -234,8 +240,8 @@ function DatosGrales(data)  {
           inv = d3.sum(inv);
 
     } else {
-          var anio_extent = d3.extent(seg.filter(function(f) { return new RegExp(/^I(n|N)/).test(f.concepto) && f.tipo_observacion == 'Real' }).map(function(d) { return d.anio }));
-          anio_extent = anio_extent.join(' - ');
+          //var anio_extent = d3.extent(seg.filter(function(f) { return new RegExp(/^I(n|N)/).test(f.concepto) && f.tipo_observacion == 'Real' }).map(function(d) { return d.anio }));
+          //anio_extent = anio_extent.join(' - ');
 
           var inv = seg.filter(function(f) { return new RegExp(/^I(n|N)/).test(f.concepto) && f.tipo_observacion == 'Real' })
              .map(function(d) { return d.valor });
@@ -2115,7 +2121,8 @@ function seguimiento(data,tipo_) {
          }
 
          var anios = _.sortBy(_.uniq(data.map(function(d) { return String(d.anio); })));
-         var tipo_obs = _.uniq(data.map(function(d) { return d.tipo_observacion; }));
+         var tipo_obs = _.uniq(data.map(function(d) { return d.tipo_observacion; })).sort(); // <--- IMPORTANTÍSIMO QUE ESTEN ORDENADOS ASÍ: 'Plan','Real'
+
          var conceptos = _.uniq(data.map(function(d) { return d.concepto }));
 
 
@@ -2313,7 +2320,7 @@ function seguimiento(data,tipo_) {
                    var str = '<tr width="100%;">'+
                                 '<td style="width:33.33%;">'+ d.anio +'</td>'+
                                 '<td style="width:33.33%;">'+ (+d.valor.toFixed(1)).toLocaleString('es-MX', { minimumFractionDigits:1 }) +'</td>'+
-                                '<td style="width:33.33%;" id=a_'+ id +'>'+ ' - ' +'</td>'
+                                '<td style="width:33.33%;" id=a_'+ id +'>'+ ' - ' +'</td>'+
                              '</tr>'
 
                    return str;

@@ -1,5 +1,6 @@
 var produccion = false;
 var HOSTNAME = produccion ? 'https://asignaciones.hidrocarburos.gob.mx/' : 'http://asignaciones.test.cnh.gob.mx/';
+var HOSTNAME = '';
 
  $(document).ready(function() {
 
@@ -83,6 +84,7 @@ var LogicaEntera = function(datos_grales) {
         var last_update = {};
         var sources = {};
         var maxfecha = {};
+        var rango_extent = {};
 
         notas_update.forEach(function(d) {
           notas_alPie[d.topic] = d.notes;
@@ -92,6 +94,7 @@ var LogicaEntera = function(datos_grales) {
           last_update[d.topic] = date_update;
           sources[d.topic] = d.source;
           maxfecha[d.topic] = d.maxfecha;
+          rango_extent[d.topic] = d.rango;
         });
 
 
@@ -394,7 +397,8 @@ d3.json('file_.json',function(err,data_) {
         'notas':notas_alPie,
         'last_update':last_update,
         'sources':sources,
-        'maxfecha':maxfecha
+        'maxfecha':maxfecha,
+        'rango':rango_extent
       };
 
       function AjaxCall(data,mymap,asignaciones) {
@@ -534,12 +538,13 @@ d3.json('file_.json',function(err,data_) {
                       var noms = ['cuenca','ubicacion','tipo','asignacion'].map(function(d) { return [d.toUpperCase(),$('.' + d + '>option:selected').text()] })
 
                       for(var k in ajaxData) {
+                        //console.log(k)
                         ajaxData[k] = JSON.parse(ajaxData[k])
                         var isJson = Object.keys(ajaxData[k]).every(function(d) { return !+d });
 
                         if(isJson) {
                             Object.keys(ajaxData[k]).forEach(function(d) {
-                                ajaxData[k][d] = JSON.parse(ajaxData[k][d])
+                                ajaxData[k][d] = typeof(ajaxData[k][d]) != 'object' ? JSON.parse(ajaxData[k][d]) : ajaxData[k][d]
                             })
                         }
 /*
@@ -1199,7 +1204,6 @@ function switcher(id,mapNdataObj) {
               //===========================================================================================================
                     if( mapNdataObj.ajaxData.pozos_inv.length > 0) {
 
-
                           var pozos_ = JSON.parse(JSON.stringify(mapNdataObj.ajaxData.pozos_inv));
 
                           pozos_.forEach(function(d) {
@@ -1376,6 +1380,7 @@ function switcher(id,mapNdataObj) {
                         pozosPlot.plot(stackedPozos,removeEdges,pozos)
 
                         $('input[type=radio]').on('change',function() {
+
                               var categoria = $('input[type=radio]:checked').val();
                               var stack_pozos = new Wrangler(config, groups_[categoria]);
                               var stackedPozos = stack_pozos.stackData(pozos);
